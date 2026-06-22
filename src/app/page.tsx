@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { SidebarNav } from "@/components/dashboard/SidebarNav";
 import { LiveMatchHub } from "@/components/dashboard/LiveMatchHub";
@@ -33,10 +33,9 @@ export default function Home() {
   const [activeView, setActiveView] = useState<'main' | 'exchange' | 'profile' | 'inplay' | 'casino' | 'aviator' | 'chicken' | 'password' | 'ledger' | 'complete' | 'admin' | 'admin-login'>('main');
   const [isMobileSlipOpen, setIsMobileSlipOpen] = useState(false);
   
-  // Real-time Betting State (connected to currentUser)
+  // Real-time Betting State
   const [balance, setBalance] = useState(0);
   const [exposure, setExposure] = useState(0);
-  const [profitAndLoss, setProfitAndLoss] = useState(0);
   const [myBets, setMyBets] = useState<any[]>([]);
 
   // Admin Login State
@@ -61,7 +60,7 @@ export default function Home() {
     }
   }, [currentUser]);
 
-  const handleSelectMarket = (team: string, market: string, type: 'Lagai' | 'Khai', price: string) => {
+  const handleSelectMarket = useCallback((team: string, market: string, type: 'Lagai' | 'Khai', price: string) => {
     const newSelection = {
       id: `${team}-${market}-${type}-${Date.now()}`,
       team,
@@ -80,7 +79,7 @@ export default function Home() {
       title: "Selection Added",
       description: `${team} - ${market} added @ ${price}`,
     });
-  };
+  }, [toast]);
 
   const removeSelection = (id: string) => {
     setSelections(prev => prev.filter(s => s.id !== id));
@@ -127,7 +126,10 @@ export default function Home() {
   };
 
   const handleAdminLogin = () => {
-    if (adminEmail === "rpkworldmuvies123@gmail.com" && adminPassword === "Prakashver123@") {
+    const email = adminEmail.trim();
+    const pass = adminPassword.trim();
+
+    if (email === "rpkworldmuvies123@gmail.com" && pass === "Prakashver123@") {
       setActiveView('admin');
       toast({
         title: "Admin Access Granted",
@@ -142,11 +144,15 @@ export default function Home() {
     }
   };
 
-  // If not logged in, show login view
+  const goToAdminPortal = useCallback(() => {
+    setActiveView('admin-login');
+  }, []);
+
+  // View Switcher logic
   if (!currentUser && activeView !== 'admin' && activeView !== 'admin-login') {
     return <LoginView 
       onLoginSuccess={(user) => setCurrentUser(user)} 
-      onAdminPortal={() => setActiveView('admin-login')}
+      onAdminPortal={goToAdminPortal}
     />;
   }
 
@@ -156,7 +162,7 @@ export default function Home() {
         <Navbar 
           balance={balance} 
           exposure={exposure} 
-          profitAndLoss={profitAndLoss}
+          profitAndLoss={0}
           clientCode={currentUser?.clientCode}
           onProfileClick={() => setActiveView('profile')} 
           onLogoClick={() => setActiveView('main')} 

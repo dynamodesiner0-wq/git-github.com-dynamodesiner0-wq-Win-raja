@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { ShieldCheck, User, Lock, ArrowRight, Database } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { doc, getDoc } from "firebase/firestore";
@@ -21,12 +22,12 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Secret trigger for Admin Panel
+  // Secret trigger for Admin Panel Portal
   useEffect(() => {
     const trigger = clientCode.trim().toLowerCase();
     if (trigger === "winraja@main" || trigger === "admin") {
       onAdminPortal();
-      setClientCode(""); // Clear it after trigger
+      setClientCode(""); 
     }
   }, [clientCode, onAdminPortal]);
 
@@ -72,7 +73,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
             title: "Login Successful",
             description: `Welcome back, ${userData.name}!`,
           });
-          onLoginSuccess(userData);
+          onLoginSuccess({ ...userData, clientCode: cleanCode });
         } else {
           toast({
             variant: "destructive",
