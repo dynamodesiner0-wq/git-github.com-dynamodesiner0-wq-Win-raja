@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -89,7 +88,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       toast({
         variant: "destructive",
         title: "Sync Failed",
-        description: "Could not fetch user list. Check network."
+        description: "Could not fetch user list."
       });
     } finally {
       setLoading(false);
@@ -133,7 +132,6 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       createdAt: new Date().toISOString()
     };
     
-    // Mutation: Non-blocking write
     setDoc(userRef, newUserDoc, { merge: true })
       .then(() => {
         toast({ title: "Success", description: `ID ${cleanCode} created successfully.` });

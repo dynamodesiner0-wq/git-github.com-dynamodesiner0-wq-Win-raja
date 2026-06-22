@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -55,7 +54,6 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
 
     setLoading(true);
     try {
-      // Explicitly target the users collection with the clientCode as the ID
       const userRef = doc(db, "users", cleanCode);
       const userSnap = await getDoc(userRef);
 
@@ -89,7 +87,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
         toast({
           variant: "destructive",
           title: "Not Found",
-          description: `ID ${cleanCode} does not exist in our database.`,
+          description: `ID ${cleanCode} does not exist.`,
         });
       }
     } catch (error: any) {
@@ -97,7 +95,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
       toast({
         variant: "destructive",
         title: "Connection Error",
-        description: "Failed to reach server. Please try again.",
+        description: "Failed to reach server.",
       });
     } finally {
       setLoading(false);
