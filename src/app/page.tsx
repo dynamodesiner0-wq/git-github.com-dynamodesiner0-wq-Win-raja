@@ -10,6 +10,7 @@ import { ProfileView } from "@/components/dashboard/ProfileView";
 import { ChangePasswordView } from "@/components/dashboard/ChangePasswordView";
 import { MainDashboard } from "@/components/dashboard/MainDashboard";
 import { InPlayList } from "@/components/dashboard/InPlayList";
+import { LedgerView } from "@/components/dashboard/LedgerView";
 import { SmartPredictorModal } from "@/components/predictor/SmartPredictorModal";
 import { fetchLiveMatches, type LiveMatchData } from "@/lib/api/sports";
 import { useToast } from "@/hooks/use-toast";
@@ -23,7 +24,7 @@ export default function Home() {
   const [isPredictorOpen, setIsPredictorOpen] = useState(false);
   const [liveMatches, setLiveMatches] = useState<LiveMatchData[]>([]);
   const [activeMatch, setActiveMatch] = useState<LiveMatchData | null>(null);
-  const [activeView, setActiveView] = useState<'main' | 'exchange' | 'profile' | 'inplay' | 'casino' | 'aviator' | 'chicken' | 'password'>('main');
+  const [activeView, setActiveView] = useState<'main' | 'exchange' | 'profile' | 'inplay' | 'casino' | 'aviator' | 'chicken' | 'password' | 'ledger'>('main');
   const [isMobileSlipOpen, setIsMobileSlipOpen] = useState(false);
   
   // Real-time Betting State
@@ -118,7 +119,7 @@ export default function Home() {
         onLogoClick={() => setActiveView('main')} 
       />
       <div className="flex flex-1 overflow-hidden">
-        {activeView !== 'main' && activeView !== 'inplay' && activeView !== 'casino' && activeView !== 'aviator' && activeView !== 'chicken' && activeView !== 'profile' && activeView !== 'password' && (
+        {activeView !== 'main' && activeView !== 'inplay' && activeView !== 'casino' && activeView !== 'aviator' && activeView !== 'chicken' && activeView !== 'profile' && activeView !== 'password' && activeView !== 'ledger' && (
           <SidebarNav activeView={activeView === 'exchange' ? 'exchange' : 'profile'} onViewChange={setActiveView} />
         )}
         
@@ -159,6 +160,8 @@ export default function Home() {
             />
           ) : activeView === 'password' ? (
             <ChangePasswordView onBackToMenu={() => setActiveView('main')} />
+          ) : activeView === 'ledger' ? (
+            <LedgerView onBackToMenu={() => setActiveView('main')} />
           ) : (
             <ProfileView 
               balance={balance} 

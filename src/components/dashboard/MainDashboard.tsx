@@ -43,7 +43,7 @@ function DashboardCard({ title, imageUrl, onClick, isLarge }: DashboardCardProps
 }
 
 interface MainDashboardProps {
-  onViewChange: (view: 'main' | 'exchange' | 'profile' | 'inplay' | 'casino' | 'aviator' | 'chicken' | 'password') => void;
+  onViewChange: (view: 'main' | 'exchange' | 'profile' | 'inplay' | 'casino' | 'aviator' | 'chicken' | 'password' | 'ledger') => void;
 }
 
 export function MainDashboard({ onViewChange }: MainDashboardProps) {
@@ -80,7 +80,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
     },
     { 
       title: "My Ledger", 
-      view: 'profile' as const,
+      view: 'ledger' as const,
       imageUrl: "https://i.ibb.co/GvH3WBRz/CL.png" 
     },
     { 
