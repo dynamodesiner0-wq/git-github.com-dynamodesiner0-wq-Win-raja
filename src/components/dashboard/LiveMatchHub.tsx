@@ -1,32 +1,45 @@
+
 "use client";
 
 import { useState } from "react";
-import { Monitor, Info, Minus } from "lucide-react";
+import { Monitor, Info, Minus, BrainCircuit } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
-export function LiveMatchHub() {
+interface LiveMatchHubProps {
+  onSelectMarket: (team: string, type: 'Lagai' | 'Khai', price: string) => void;
+  onOpenPredictor: () => void;
+}
+
+export function LiveMatchHub({ onSelectMarket, onOpenPredictor }: LiveMatchHubProps) {
   return (
     <div className="flex-1 bg-[#f0f2f5] overflow-y-auto custom-scrollbar">
       {/* News Banner */}
       <div className="bg-[#0b2146] text-white py-2 px-4 flex items-center gap-3">
         <Badge className="bg-yellow-500 text-black text-[10px] font-bold rounded-sm px-1.5 h-5">NEW</Badge>
-        <marquee className="text-xs font-medium">
-          हमारे पास नए गेम आ गए हैं। Chicken Road और 32 Cards का मज़ा लें, सही समय पर खेलें और जीतें!
-        </marquee>
+        <div className="flex-1 overflow-hidden">
+          <marquee className="text-xs font-medium">
+            हमारे पास नए गेम आ गए हैं। Chicken Road और 32 Cards का मज़ा लें, सही समय पर खेलें और जीतें!
+          </marquee>
+        </div>
       </div>
 
       <div className="p-2 space-y-3 max-w-[800px] mx-auto">
         {/* Video Player Placeholder */}
-        <div className="aspect-video bg-black rounded-lg relative flex items-center justify-center overflow-hidden">
+        <div className="aspect-video bg-black rounded-lg relative flex items-center justify-center overflow-hidden shadow-lg">
           <div className="h-12 w-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+          <div className="absolute top-4 left-4 flex gap-2">
+            <Badge className="bg-red-600 text-white animate-pulse">LIVE</Badge>
+            <Badge className="bg-black/50 text-white">4.2k Watching</Badge>
+          </div>
         </div>
 
         {/* Match Selector Tabs */}
         <div className="flex gap-1 overflow-x-auto pb-1 no-scrollbar">
-          <div className="bg-[#0b2146] text-white px-4 py-2 rounded-t-lg text-[10px] font-bold uppercase whitespace-nowrap border-b-2 border-yellow-500 shrink-0">
-            Kinada Kings v Vijayawada Sunshiners
+          <div className="bg-[#0b2146] text-white px-4 py-2 rounded-t-lg text-[10px] font-bold uppercase whitespace-nowrap border-b-2 border-yellow-500 shrink-0 cursor-pointer">
+            England v New Zealand
           </div>
-          <div className="bg-[#2c58a0] text-white/70 px-4 py-2 rounded-t-lg text-[10px] font-bold uppercase whitespace-nowrap shrink-0">
+          <div className="bg-[#2c58a0] text-white/70 px-4 py-2 rounded-t-lg text-[10px] font-bold uppercase whitespace-nowrap shrink-0 cursor-pointer hover:text-white transition-colors">
             South Africa W v India W
           </div>
         </div>
@@ -34,7 +47,18 @@ export function LiveMatchHub() {
         {/* Detailed Scoreboard Card */}
         <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
           <div className="bg-[#2c58a0] text-white px-4 py-3 flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider">England Need 281 Runs To Win</h3>
+            <div className="flex items-center gap-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider">England Need 281 Runs To Win</h3>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-7 bg-yellow-500 hover:bg-yellow-400 text-black font-black text-[10px] gap-1 px-2"
+                onClick={onOpenPredictor}
+              >
+                <BrainCircuit className="h-3.5 w-3.5" />
+                AI PREDICT
+              </Button>
+            </div>
             <div className="flex items-center gap-2">
               <button className="p-1 hover:bg-white/10 rounded"><Monitor className="h-4 w-4 text-yellow-500" /></button>
               <button className="p-1 hover:bg-white/10 rounded"><Minus className="h-4 w-4" /></button>
@@ -88,44 +112,9 @@ export function LiveMatchHub() {
               </tr>
             </thead>
             <tbody className="divide-y">
-              <MarketRow team="England" />
-              <MarketRow team="New Zealand" />
-              <MarketRow team="The Draw" />
-            </tbody>
-          </table>
-        </div>
-
-        {/* Session Market */}
-        <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
-          <div className="bg-[#2c58a0] text-white px-4 py-2 flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase">Session</h3>
-            <Minus className="h-4 w-4" />
-          </div>
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="bg-[#f0f2f5] border-b text-[10px] font-black uppercase text-[#2c58a0]">
-                <th className="text-left p-3">Market</th>
-                <th className="w-24 p-3 text-center">Not</th>
-                <th className="w-24 p-3 text-center">Yes</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="hover:bg-muted/30">
-                <td className="p-3">
-                  <span className="font-bold uppercase block">49 Over Run ENG</span>
-                  <span className="text-[10px] text-destructive font-bold">0</span>
-                </td>
-                <td className="p-0">
-                  <div className="bg-khai h-12 flex flex-col items-center justify-center border-l border-white">
-                    <span className="text-sm font-black text-khai">0.00</span>
-                  </div>
-                </td>
-                <td className="p-0">
-                  <div className="bg-lagai h-12 flex flex-col items-center justify-center border-l border-white">
-                    <span className="text-sm font-black text-lagai">0.00</span>
-                  </div>
-                </td>
-              </tr>
+              <MarketRow team="England" onSelect={onSelectMarket} backPrice="1.45" layPrice="1.47" />
+              <MarketRow team="New Zealand" onSelect={onSelectMarket} backPrice="3.20" layPrice="3.25" />
+              <MarketRow team="The Draw" onSelect={onSelectMarket} backPrice="12.0" layPrice="12.5" />
             </tbody>
           </table>
         </div>
@@ -134,24 +123,30 @@ export function LiveMatchHub() {
   );
 }
 
-function MarketRow({ team }: { team: string }) {
+function MarketRow({ team, onSelect, backPrice, layPrice }: { team: string; onSelect: any; backPrice: string; layPrice: string }) {
   return (
     <tr className="hover:bg-muted/30">
       <td className="p-3">
-        <span className="font-black uppercase text-sm block">{team}</span>
+        <span className="font-black uppercase text-sm block text-[#0b2146]">{team}</span>
         <span className="text-[10px] text-destructive font-bold">0</span>
       </td>
       <td className="p-0">
-        <div className="bg-lagai h-16 flex flex-col items-center justify-center border-l border-white">
-          <span className="text-xl font-black text-lagai">0.00</span>
-          <span className="text-[8px] font-bold opacity-70">0</span>
-        </div>
+        <button 
+          onClick={() => onSelect(team, 'Lagai', backPrice)}
+          className="w-full bg-lagai h-16 flex flex-col items-center justify-center border-l border-white hover:brightness-95 transition-all active:scale-95"
+        >
+          <span className="text-xl font-black text-lagai">{backPrice}</span>
+          <span className="text-[8px] font-bold opacity-70">10k</span>
+        </button>
       </td>
       <td className="p-0">
-        <div className="bg-khai h-16 flex flex-col items-center justify-center border-l border-white">
-          <span className="text-xl font-black text-khai">0.00</span>
-          <span className="text-[8px] font-bold opacity-70">0</span>
-        </div>
+        <button 
+          onClick={() => onSelect(team, 'Khai', layPrice)}
+          className="w-full bg-khai h-16 flex flex-col items-center justify-center border-l border-white hover:brightness-95 transition-all active:scale-95"
+        >
+          <span className="text-xl font-black text-khai">{layPrice}</span>
+          <span className="text-[8px] font-bold opacity-70">5k</span>
+        </button>
       </td>
     </tr>
   );
