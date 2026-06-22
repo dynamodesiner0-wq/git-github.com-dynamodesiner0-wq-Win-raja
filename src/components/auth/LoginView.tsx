@@ -32,11 +32,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
 
   const handleLogin = async () => {
     if (!db) {
-      toast({
-        variant: "destructive",
-        title: "Connecting...",
-        description: "Firebase initializing. Please wait.",
-      });
+      toast({ variant: "destructive", title: "Connecting...", description: "Firebase initializing. Please wait." });
       return;
     }
 
@@ -44,62 +40,32 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
     const cleanPass = password.trim();
 
     if (!cleanCode || !cleanPass) {
-      toast({
-        variant: "destructive",
-        title: "Missing Info",
-        description: "ID and Password are required.",
-      });
+      toast({ variant: "destructive", title: "Missing Info", description: "ID and Password are required." });
       return;
     }
 
     setLoading(true);
     try {
-      // Look up directly by the document ID which is the client code
       const userRef = doc(db, "users", cleanCode);
       const userSnap = await getDoc(userRef);
 
       if (userSnap.exists()) {
         const userData = userSnap.data();
-        
         if (userData.password === cleanPass) {
           if (userData.status === "Suspended") {
-            toast({
-              variant: "destructive",
-              title: "Blocked",
-              description: "Your account is suspended.",
-            });
+            toast({ variant: "destructive", title: "Blocked", description: "Your account is suspended." });
             return;
           }
-          
-          toast({
-            title: "Access Granted",
-            description: `Welcome, ${userData.name}.`,
-          });
-          
+          toast({ title: "Access Granted", description: `Welcome, ${userData.name}.` });
           onLoginSuccess({ ...userData, clientCode: cleanCode });
         } else {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Incorrect password.",
-          });
+          toast({ variant: "destructive", title: "Error", description: "Incorrect password." });
         }
       } else {
-        toast({
-          variant: "destructive",
-          title: "Not Found",
-          description: `ID ${cleanCode} does not exist.`,
-        });
+        toast({ variant: "destructive", title: "Not Found", description: `ID ${cleanCode} does not exist.` });
       }
     } catch (error: any) {
-      console.error("Login error:", error);
-      toast({
-        variant: "destructive",
-        title: "Connection Error",
-        description: error.message?.includes("offline") 
-          ? "You are currently offline. Check your network." 
-          : "Failed to connect to server. Try again.",
-      });
+      toast({ variant: "destructive", title: "Connection Error", description: "Failed to connect to server." });
     } finally {
       setLoading(false);
     }
@@ -118,8 +84,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
             </h1>
             <Badge 
               variant={db ? "outline" : "destructive"} 
-              className={cn("mt-2 flex gap-1 items-center font-black uppercase transition-all", 
-                db ? "text-green-400 border-green-400/30" : "animate-pulse")}
+              className={cn("mt-2 flex gap-1 items-center font-black uppercase", db ? "text-green-400 border-green-400/30" : "animate-pulse")}
             >
               {db ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
               {db ? "Cloud Connection Live" : "Connecting..."}
@@ -130,7 +95,6 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
 
         <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl space-y-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 h-24 w-24 bg-blue-50 rounded-bl-[5rem] -mr-8 -mt-8" />
-          
           <div className="space-y-4 relative">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-[#0b2146]/40 uppercase tracking-widest ml-1">Client ID</label>
@@ -144,7 +108,6 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
                 />
               </div>
             </div>
-
             <div className="space-y-2">
               <label className="text-[10px] font-black text-[#0b2146]/40 uppercase tracking-widest ml-1">Password</label>
               <div className="relative">
@@ -158,22 +121,15 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
                 />
               </div>
             </div>
-
             <Button 
               onClick={handleLogin}
               disabled={loading}
-              className="w-full h-16 rounded-2xl bg-gradient-to-r from-[#1a4b8c] to-[#2c58a0] text-white font-black text-lg uppercase shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+              className="w-full h-16 rounded-2xl bg-gradient-to-r from-[#1a4b8c] to-[#2c58a0] text-white font-black text-lg uppercase shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
               {loading ? "Verifying..." : "Login to Account"}
               {!loading && <ArrowRight className="ml-2 h-5 w-5" />}
             </Button>
           </div>
-        </div>
-
-        <div className="text-center">
-          <p className="text-white/20 text-[10px] font-black uppercase tracking-widest">
-            SECURE PORTAL V3.5 • 2026
-          </p>
         </div>
       </div>
     </div>
