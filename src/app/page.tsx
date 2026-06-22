@@ -13,11 +13,13 @@ import { LedgerView } from "@/components/dashboard/LedgerView";
 import { CompleteGamesView } from "@/components/dashboard/CompleteGamesView";
 import { AviatorGameView } from "@/components/dashboard/AviatorGameView";
 import { SmartPredictorModal } from "@/components/predictor/SmartPredictorModal";
+import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { fetchLiveMatches, type LiveMatchData } from "@/lib/api/sports";
 import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ReceiptText, AlertCircle } from "lucide-react";
+import { ReceiptText, AlertCircle, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function Home() {
   const { toast } = useToast();
@@ -25,7 +27,7 @@ export default function Home() {
   const [isPredictorOpen, setIsPredictorOpen] = useState(false);
   const [liveMatches, setLiveMatches] = useState<LiveMatchData[]>([]);
   const [activeMatch, setActiveMatch] = useState<LiveMatchData | null>(null);
-  const [activeView, setActiveView] = useState<'main' | 'exchange' | 'profile' | 'inplay' | 'casino' | 'aviator' | 'chicken' | 'password' | 'ledger' | 'complete'>('main');
+  const [activeView, setActiveView] = useState<'main' | 'exchange' | 'profile' | 'inplay' | 'casino' | 'aviator' | 'chicken' | 'password' | 'ledger' | 'complete' | 'admin' | 'admin-login'>('main');
   const [isMobileSlipOpen, setIsMobileSlipOpen] = useState(false);
   
   // Real-time Betting State
@@ -33,6 +35,10 @@ export default function Home() {
   const [exposure, setExposure] = useState(0);
   const [profitAndLoss, setProfitAndLoss] = useState(0);
   const [myBets, setMyBets] = useState<any[]>([]);
+
+  // Admin Login State
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
 
   useEffect(() => {
     async function loadInitialData() {
@@ -110,17 +116,35 @@ export default function Home() {
     });
   };
 
+  const handleAdminLogin = () => {
+    if (adminEmail === "rpkworldmuvies123@gmail.com" && adminPassword === "Prakashver123@") {
+      setActiveView('admin');
+      toast({
+        title: "Admin Access Granted",
+        description: "Welcome back, Prakash.",
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Access Denied",
+        description: "Invalid Admin Credentials.",
+      });
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[#f4f7fa]">
-      <Navbar 
-        balance={balance} 
-        exposure={exposure} 
-        profitAndLoss={profitAndLoss}
-        onProfileClick={() => setActiveView('profile')} 
-        onLogoClick={() => setActiveView('main')} 
-      />
+      {activeView !== 'admin' && (
+        <Navbar 
+          balance={balance} 
+          exposure={exposure} 
+          profitAndLoss={profitAndLoss}
+          onProfileClick={() => setActiveView('profile')} 
+          onLogoClick={() => setActiveView('main')} 
+        />
+      )}
       <div className="flex flex-1 overflow-hidden">
-        {activeView !== 'main' && activeView !== 'inplay' && activeView !== 'casino' && activeView !== 'aviator' && activeView !== 'chicken' && activeView !== 'profile' && activeView !== 'password' && activeView !== 'ledger' && activeView !== 'complete' && (
+        {activeView !== 'main' && activeView !== 'inplay' && activeView !== 'casino' && activeView !== 'aviator' && activeView !== 'chicken' && activeView !== 'profile' && activeView !== 'password' && activeView !== 'ledger' && activeView !== 'complete' && activeView !== 'admin' && activeView !== 'admin-login' && (
           <SidebarNav activeView={activeView === 'exchange' ? 'exchange' : 'profile'} onViewChange={setActiveView} />
         )}
         
@@ -142,6 +166,48 @@ export default function Home() {
               setBalance={setBalance}
               onBackToMenu={() => setActiveView('main')}
             />
+          ) : activeView === 'admin-login' ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 bg-[#0b2146]">
+              <div className="w-full max-w-md bg-white rounded-3xl p-8 shadow-2xl">
+                <div className="flex flex-col items-center mb-8">
+                  <div className="h-16 w-16 bg-[#1a4b8c] rounded-2xl flex items-center justify-center mb-4">
+                    <ShieldCheck className="h-10 w-10 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-black text-[#0b2146] uppercase">Admin Control</h2>
+                  <p className="text-sm text-muted-foreground">Restricted Access Only</p>
+                </div>
+                <div className="space-y-4">
+                  <Input 
+                    placeholder="Admin Email" 
+                    value={adminEmail}
+                    onChange={(e) => setAdminEmail(e.target.value)}
+                    className="h-12 rounded-xl"
+                  />
+                  <Input 
+                    type="password" 
+                    placeholder="Password" 
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    className="h-12 rounded-xl"
+                  />
+                  <Button 
+                    onClick={handleAdminLogin}
+                    className="w-full h-12 bg-[#1a4b8c] hover:bg-[#2c58a0] text-white font-black rounded-xl"
+                  >
+                    LOGIN TO PANEL
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => setActiveView('main')}
+                    className="w-full"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : activeView === 'admin' ? (
+            <AdminDashboard onLogout={() => setActiveView('main')} />
           ) : (activeView === 'casino' || activeView === 'chicken') ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-6">
               <div className="h-24 w-24 rounded-full bg-blue-100 flex items-center justify-center">
@@ -177,6 +243,7 @@ export default function Home() {
               exposure={exposure} 
               myBets={myBets} 
               onBackToMenu={() => setActiveView('main')}
+              onAdminClick={() => setActiveView('admin-login')}
             />
           )}
 

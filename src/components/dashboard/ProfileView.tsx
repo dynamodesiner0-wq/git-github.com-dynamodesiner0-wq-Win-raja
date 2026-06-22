@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -11,7 +10,7 @@ import {
   DialogTitle, 
   DialogTrigger 
 } from "@/components/ui/dialog";
-import { Check, Circle } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ProfileViewProps {
@@ -19,9 +18,10 @@ interface ProfileViewProps {
   exposure: number;
   myBets: any[];
   onBackToMenu: () => void;
+  onAdminClick?: () => void;
 }
 
-export function ProfileView({ balance, exposure, myBets, onBackToMenu }: ProfileViewProps) {
+export function ProfileView({ balance, exposure, myBets, onBackToMenu, onAdminClick }: ProfileViewProps) {
   const [rateDiff, setRateDiff] = useState("0.05");
   const [isRateModalOpen, setIsRateModalOpen] = useState(false);
 
@@ -41,12 +41,20 @@ export function ProfileView({ balance, exposure, myBets, onBackToMenu }: Profile
 
       <div className="p-4 flex flex-col items-center gap-6 max-w-[600px] mx-auto">
         {/* Back Button */}
-        <Button 
-          onClick={onBackToMenu}
-          className="bg-gradient-to-b from-[#1a4b8c] to-[#0b2146] hover:opacity-90 text-white font-black text-xs h-12 px-10 rounded-full shadow-lg border-b-4 border-[#0b2146] uppercase mb-2"
-        >
-          BACK TO MAIN MENU
-        </Button>
+        <div className="w-full flex justify-between items-center px-2">
+          <Button 
+            onClick={onBackToMenu}
+            className="bg-gradient-to-b from-[#1a4b8c] to-[#0b2146] hover:opacity-90 text-white font-black text-xs h-12 px-10 rounded-full shadow-lg border-b-4 border-[#0b2146] uppercase"
+          >
+            BACK TO MAIN MENU
+          </Button>
+          <button 
+            onClick={onAdminClick}
+            className="h-10 w-10 rounded-full bg-white/50 border border-border flex items-center justify-center text-muted-foreground hover:text-[#1a4b8c] hover:bg-white transition-all shadow-sm"
+          >
+            <ShieldCheck className="h-5 w-5" />
+          </button>
+        </div>
 
         {/* Rate Information Section */}
         <div className="w-full bg-white rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-border/50">
