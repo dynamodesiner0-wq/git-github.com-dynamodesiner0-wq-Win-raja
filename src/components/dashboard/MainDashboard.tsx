@@ -51,8 +51,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
     { 
       title: "In Play", 
       view: 'inplay' as const,
-      imageUrl: "https://i.ibb.co/mFBqVD8f/image-search-1782096841440.png",
-      isLarge: true
+      imageUrl: "https://i.ibb.co/mFBqVD8f/image-search-1782096841440.png"
     },
     { 
       title: "Casino", 
@@ -118,7 +117,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
 
       {/* Branding Footer */}
       <div className="flex justify-center p-8 mt-4">
-        <div className="bg-white px-8 py-2 rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-blue-100">
+        <div className="bg-white px-8 py-2 rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-blue-100">
           <span className="text-[11px] font-bold text-[#1a4b8c] uppercase">Copy Right @ 1x247 2026</span>
         </div>
       </div>
