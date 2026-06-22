@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -13,6 +12,7 @@ import { InPlayList } from "@/components/dashboard/InPlayList";
 import { LedgerView } from "@/components/dashboard/LedgerView";
 import { CompleteGamesView } from "@/components/dashboard/CompleteGamesView";
 import { AviatorGameView } from "@/components/dashboard/AviatorGameView";
+import { ChickenRoadGameView } from "@/components/dashboard/ChickenRoadGameView";
 import { SmartPredictorModal } from "@/components/predictor/SmartPredictorModal";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { LoginView } from "@/components/auth/LoginView";
@@ -23,7 +23,7 @@ import { ReceiptText, AlertCircle, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useFirestore } from "@/firebase";
-import { doc, setDoc, addDoc, collection, updateDoc, increment, serverTimestamp } from "firebase/firestore";
+import { doc, updateDoc, increment, addDoc, collection } from "firebase/firestore";
 
 export default function Home() {
   const { toast } = useToast();
@@ -106,14 +106,12 @@ export default function Home() {
       status: 'OPEN'
     }));
 
-    // Local Updates
     setBalance(prev => prev - totalStake);
     setExposure(prev => prev + totalStake);
     setMyBets(prev => [...newBets, ...prev]);
     setSelections([]);
     setIsMobileSlipOpen(false);
 
-    // Persistence
     try {
       const userRef = doc(db, "users", currentUser.clientCode.toUpperCase());
       updateDoc(userRef, {
@@ -121,7 +119,6 @@ export default function Home() {
         exposure: increment(totalStake)
       });
 
-      // Log each bet for admin
       newBets.forEach(bet => {
         addDoc(collection(db, "bets"), bet);
       });
@@ -198,6 +195,13 @@ export default function Home() {
               setBalance={setBalance}
               onBackToMenu={() => setActiveView('main')}
             />
+          ) : activeView === 'chicken' ? (
+            <ChickenRoadGameView 
+              user={currentUser}
+              balance={balance} 
+              setBalance={setBalance}
+              onBackToMenu={() => setActiveView('main')}
+            />
           ) : activeView === 'admin-login' ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8 bg-[#0b2146]">
               <div className="w-full max-w-md bg-white rounded-3xl p-8 shadow-2xl">
@@ -213,14 +217,14 @@ export default function Home() {
                     placeholder="Admin Email" 
                     value={adminEmail}
                     onChange={(e) => setAdminEmail(e.target.value)}
-                    className="h-12 rounded-xl text-[#0b2146]"
+                    className="h-12 rounded-xl text-[#0b2146] font-bold"
                   />
                   <Input 
                     type="password" 
                     placeholder="Password" 
                     value={adminPassword}
                     onChange={(e) => setAdminPassword(e.target.value)}
-                    className="h-12 rounded-xl text-[#0b2146]"
+                    className="h-12 rounded-xl text-[#0b2146] font-bold"
                   />
                   <Button 
                     onClick={handleAdminLogin}
@@ -243,7 +247,7 @@ export default function Home() {
               setActiveView('main');
               setCurrentUser(null);
             }} />
-          ) : (activeView === 'casino' || activeView === 'chicken') ? (
+          ) : activeView === 'casino' ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-6">
               <div className="h-24 w-24 rounded-full bg-blue-100 flex items-center justify-center">
                 <AlertCircle className="h-12 w-12 text-[#1a4b8c]" />

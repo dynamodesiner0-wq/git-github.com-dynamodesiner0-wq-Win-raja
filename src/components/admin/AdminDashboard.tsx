@@ -86,7 +86,6 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     if (!db) return;
     setLoading(true);
     try {
-      // Removed orderBy to ensure all docs show up even if timestamp is missing
       const q = query(collection(db, "users"));
       const querySnapshot = await getDocs(q);
       const userList = querySnapshot.docs.map(doc => ({
@@ -255,7 +254,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                         {bet.userName?.[0] || 'U'}
                       </div>
                       <div>
-                        <p className="text-xs font-black text-[#0b2146]">{bet.userName} <span className="font-normal opacity-50 ml-1">played {bet.sport === 'AVIATOR' ? 'Aviator' : 'a Bet'}</span></p>
+                        <p className="text-xs font-black text-[#0b2146]">{bet.userName} <span className="font-normal opacity-50 ml-1">played {bet.sport === 'AVIATOR' ? 'Aviator' : bet.sport === 'CHICKEN' ? 'Chicken Road' : 'a Bet'}</span></p>
                         <p className="text-[10px] text-muted-foreground uppercase">{bet.sport} • {new Date(bet.timestamp).toLocaleTimeString()}</p>
                       </div>
                     </div>
