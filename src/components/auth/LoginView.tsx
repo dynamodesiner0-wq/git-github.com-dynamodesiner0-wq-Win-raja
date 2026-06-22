@@ -82,7 +82,6 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
                className="h-full object-contain drop-shadow-2xl"
              />
           </div>
-          <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] mt-2">Precision Sports Betting Platform</p>
         </div>
 
         <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl space-y-6 relative overflow-hidden">

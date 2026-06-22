@@ -125,6 +125,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
     setDoc(userRef, userData)
       .then(() => {
         toast({ title: "ID BANN GAYI!", description: `Client ${code} ab live hai.` });
+        // RESET FIELDS TO ALLOW UNLIMITED CREATION
         setNewUserName(""); 
         setNewUserCode(""); 
         setNewUserPassword(""); 
