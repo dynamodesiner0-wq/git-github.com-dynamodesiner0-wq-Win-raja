@@ -1,15 +1,16 @@
 /**
- * @fileOverview Service for fetching live sports data and ball-by-ball updates.
- * Supports multiple API keys for high availability and handles both CricAPI and RapidAPI styles.
+ * @fileOverview Service for fetching live sports data using prioritized RapidAPI key.
+ * Handles headers and endpoint logic for real-time cricket updates.
  */
 
-const API_KEYS = [
-  "fa512f4407msh89d1dc6640547a5p165182jsna14a75fc51d1", // Nayi RapidAPI Key
+const PRIORITY_KEY = "fa512f4407msh89d1dc6640547a5p165182jsna14a75fc51d1";
+const FALLBACK_KEYS = [
   "ff4e95c9fafb9fbde03e02893640f019f248f62c9fadf49550e94b151175cfa8",
   "41dfbcf5f7b7905848ab1a1cf7130ced"
 ];
 
 const CRIC_BASE_URL = "https://api.cricapi.com/v1";
+const RAPID_HOST = "cricket-live-score2.p.rapidapi.com";
 
 export interface BallUpdate {
   ball: string;
@@ -60,74 +61,69 @@ const MOCK_MATCHES: LiveMatchData[] = [
 ];
 
 /**
- * Helper to fetch with API key fallback.
- * Checks if the key is a RapidAPI key (usually 50 chars) and applies correct headers.
+ * Fetches live matches using the prioritized RapidAPI key first.
  */
-async function fetchWithFallback(endpoint: string) {
-  for (const key of API_KEYS) {
-    try {
-      const isRapidKey = key.includes('msh'); // Common marker for RapidAPI keys
-      
-      const options: RequestInit = {
-        method: 'GET',
-        headers: isRapidKey ? {
-          'X-RapidAPI-Key': key,
-          'X-RapidAPI-Host': 'cricket-live-score2.p.rapidapi.com' // Example host, adjusts per provider
-        } : {}
-      };
-
-      // If it's a CricAPI key, we append it to the URL
-      const url = isRapidKey 
-        ? `https://cricket-live-score2.p.rapidapi.com/${endpoint}` // Hypothetical RapidAPI endpoint
-        : `${CRIC_BASE_URL}/${endpoint}&apikey=${key}`;
-
-      // Note: Since we don't have the exact RapidAPI provider URL, we default to the reliable CricAPI fallback 
-      // but prioritize the new key in the rotation logic.
-      const finalUrl = isRapidKey ? `${CRIC_BASE_URL}/${endpoint}&apikey=${key}` : `${CRIC_BASE_URL}/${endpoint}&apikey=${key}`;
-
-      const response = await fetch(finalUrl);
-      if (!response.ok) continue;
-      
-      const data = await response.json();
-      if (data.status === "success" && data.data && data.data.length > 0) {
-        return data;
-      }
-    } catch (error) {
-      console.error(`Error with API Key:`, error);
-    }
-  }
-  return null;
-}
-
 export async function fetchLiveMatches(): Promise<LiveMatchData[]> {
+  // Step 1: Try RapidAPI with the user's priority key
   try {
-    const data = await fetchWithFallback("currentMatches?offset=0");
-    
-    if (!data || !data.data || data.data.length === 0) {
-      console.log("No live API data found, loading Professional Simulation matches...");
-      return MOCK_MATCHES;
-    }
-
-    return data.data.map((m: any) => {
-      const teams = m.name.split(' v ');
-      return {
-        id: m.id,
-        name: m.name,
-        status: m.status || "Match In Progress",
-        score: m.score?.[0]?.r ? `${m.score[0].r}/${m.score[0].w} (${m.score[0].o} ov)` : "Score Updating...",
-        homeTeam: (teams[0] || "Home Team").toUpperCase(),
-        awayTeam: (teams[1] || "Away Team").toUpperCase(),
-        sport: "CRICKET"
-      };
+    const response = await fetch(`https://${RAPID_HOST}/matches/live`, {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-key': PRIORITY_KEY,
+        'x-rapidapi-host': RAPID_HOST
+      }
     });
-  } catch (e) {
-    return MOCK_MATCHES;
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data && data.matches && data.matches.length > 0) {
+        return data.matches.map((m: any) => ({
+          id: m.match_id?.toString() || Math.random().toString(),
+          name: `${m.team_a} vs ${m.team_b}`,
+          status: m.status || "Live Match",
+          score: m.score || "Updating...",
+          homeTeam: m.team_a?.toUpperCase() || "TEAM A",
+          awayTeam: m.team_b?.toUpperCase() || "TEAM B",
+          sport: "CRICKET"
+        }));
+      }
+    }
+  } catch (error) {
+    console.error("RapidAPI Priority Key Error:", error);
   }
+
+  // Step 2: Fallback to CricAPI keys if RapidAPI fails
+  for (const key of FALLBACK_KEYS) {
+    try {
+      const response = await fetch(`${CRIC_BASE_URL}/currentMatches?offset=0&apikey=${key}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.status === "success" && data.data && data.data.length > 0) {
+          return data.data.map((m: any) => {
+            const teams = m.name.split(' v ');
+            return {
+              id: m.id,
+              name: m.name,
+              status: m.status || "Match In Progress",
+              score: m.score?.[0]?.r ? `${m.score[0].r}/${m.score[0].w} (${m.score[0].o} ov)` : "Score Updating...",
+              homeTeam: (teams[0] || "Home Team").toUpperCase(),
+              awayTeam: (teams[1] || "Away Team").toUpperCase(),
+              sport: "CRICKET"
+            };
+          });
+        }
+      }
+    } catch (e) {
+      console.error("CricAPI Fallback Error:", e);
+    }
+  }
+
+  // Step 3: Use simulated data if all APIs fail
+  console.log("Using Professional Simulation Data (All APIs Unavailable)");
+  return MOCK_MATCHES;
 }
 
 export async function fetchBallByBall(matchId: string): Promise<BallUpdate[]> {
-  // Mocking realistic commentary stream
-  const balls = ["0.1", "0.2", "0.3", "0.4", "0.5", "0.6"];
   const scenarios = [
     { r: 0, d: "Defended solidly to mid-on.", w: false, b: false },
     { r: 1, d: "Quick single taken towards cover.", w: false, b: false },
