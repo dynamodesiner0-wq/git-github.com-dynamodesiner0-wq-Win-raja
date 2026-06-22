@@ -276,7 +276,12 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
               <div className="relative w-full md:w-96">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search ID or Name..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 h-12 rounded-xl border-none shadow-md text-[#0b2146] font-bold" />
+                <Input 
+                  placeholder="Search ID or Name..." 
+                  value={searchQuery} 
+                  onChange={(e) => setSearchQuery(e.target.value)} 
+                  className="pl-10 h-12 rounded-xl border-none shadow-md text-[#0b2146] font-bold" 
+                />
               </div>
               <Dialog>
                 <DialogTrigger asChild>
@@ -284,24 +289,47 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     <UserPlus className="h-4 w-4" /> Create New ID
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="rounded-3xl sm:max-w-md bg-white">
-                  <DialogHeader><DialogTitle className="text-xl font-black uppercase text-[#0b2146]">Add User ID</DialogTitle></DialogHeader>
+                <DialogContent className="rounded-3xl sm:max-w-md bg-white p-6">
+                  <DialogHeader>
+                    <DialogTitle className="text-xl font-black uppercase text-[#0b2146]">Add User ID</DialogTitle>
+                  </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-1">
                        <label className="text-[10px] font-black text-muted-foreground uppercase px-1">Full Name</label>
-                       <Input value={newUserName} onChange={(e) => setNewUserName(e.target.value)} placeholder="Full Name" className="h-12 rounded-xl bg-gray-50 border-none text-[#0b2146] font-bold" />
+                       <Input 
+                        value={newUserName} 
+                        onChange={(e) => setNewUserName(e.target.value)} 
+                        placeholder="Full Name" 
+                        className="h-12 rounded-xl bg-gray-50 border-none text-[#0b2146] font-bold" 
+                       />
                     </div>
                     <div className="space-y-1">
                        <label className="text-[10px] font-black text-muted-foreground uppercase px-1">Client ID</label>
-                       <Input value={newUserCode} onChange={(e) => setNewUserCode(e.target.value)} placeholder="Client ID (e.g. C101)" className="h-12 rounded-xl bg-gray-50 border-none uppercase text-[#0b2146] font-bold" />
+                       <Input 
+                        value={newUserCode} 
+                        onChange={(e) => setNewUserCode(e.target.value)} 
+                        placeholder="Client ID (e.g. C101)" 
+                        className="h-12 rounded-xl bg-gray-50 border-none uppercase text-[#0b2146] font-bold" 
+                       />
                     </div>
                     <div className="space-y-1">
                        <label className="text-[10px] font-black text-muted-foreground uppercase px-1">Password</label>
-                       <Input value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} placeholder="Password" className="h-12 rounded-xl bg-gray-50 border-none text-[#0b2146] font-bold" />
+                       <Input 
+                        value={newUserPassword} 
+                        onChange={(e) => setNewUserPassword(e.target.value)} 
+                        placeholder="Password" 
+                        className="h-12 rounded-xl bg-gray-50 border-none text-[#0b2146] font-bold" 
+                       />
                     </div>
                     <div className="space-y-1">
                        <label className="text-[10px] font-black text-muted-foreground uppercase px-1">Initial Balance</label>
-                       <Input type="number" value={newUserBalance} onChange={(e) => setNewUserBalance(e.target.value)} placeholder="Initial Balance" className="h-12 rounded-xl bg-gray-50 border-none text-[#0b2146] font-bold" />
+                       <Input 
+                        type="number" 
+                        value={newUserBalance} 
+                        onChange={(e) => setNewUserBalance(e.target.value)} 
+                        placeholder="Initial Balance" 
+                        className="h-12 rounded-xl bg-gray-50 border-none text-[#0b2146] font-bold" 
+                       />
                     </div>
                   </div>
                   <DialogFooter>
@@ -342,11 +370,17 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                               <DialogTrigger asChild>
                                 <Button onClick={() => setSelectedUser(user)} size="sm" className="bg-blue-600 text-[10px] font-black h-8 px-4 rounded-lg uppercase shadow-md">Deposit</Button>
                               </DialogTrigger>
-                              <DialogContent className="rounded-3xl bg-white">
+                              <DialogContent className="rounded-3xl bg-white p-6">
                                 <DialogHeader><DialogTitle className="font-black uppercase text-[#0b2146]">Deposit to {selectedUser?.name}</DialogTitle></DialogHeader>
                                 <div className="py-6">
                                    <label className="text-[10px] font-black text-muted-foreground uppercase px-1 mb-2 block">Enter Amount</label>
-                                   <Input type="number" placeholder="Amount" value={addAmount} onChange={(e) => setAddAmount(e.target.value)} className="h-14 text-2xl font-black rounded-2xl bg-gray-50 border-none text-[#0b2146]" />
+                                   <Input 
+                                    type="number" 
+                                    placeholder="Amount" 
+                                    value={addAmount} 
+                                    onChange={(e) => setAddAmount(e.target.value)} 
+                                    className="h-14 text-2xl font-black rounded-2xl bg-gray-50 border-none text-[#0b2146]" 
+                                   />
                                 </div>
                                 <DialogFooter><Button onClick={handleAddBalance} disabled={loading} className="w-full h-12 bg-green-600 font-black uppercase rounded-xl">Confirm</Button></DialogFooter>
                               </DialogContent>
