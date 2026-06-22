@@ -36,7 +36,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
       toast({
         variant: "destructive",
         title: "Database Not Ready",
-        description: "Connecting to server...",
+        description: "Trying to reconnect to server...",
       });
       return;
     }

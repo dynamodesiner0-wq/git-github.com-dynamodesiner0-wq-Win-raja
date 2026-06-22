@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { collection, getDocs, setDoc, doc, updateDoc, increment, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, setDoc, doc, updateDoc, increment, query, orderBy, getDoc } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
 
 interface UserRecord {
@@ -79,9 +79,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         ...doc.data()
       })) as UserRecord[];
       
-      // Filter out any potential duplicates from DB just in case
-      const uniqueUsers = Array.from(new Map(userList.map(item => [item.clientCode, item])).values());
-      setUsers(uniqueUsers);
+      setUsers(userList);
     } catch (error: any) {
       console.error("Fetch Error:", error);
       toast({
@@ -112,37 +110,37 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       return;
     }
 
-    // Check for duplicate in current state before optimistic update
-    if (users.some(u => u.clientCode === cleanCode)) {
-      toast({ variant: "destructive", title: "Duplicate ID", description: `ID ${cleanCode} already exists.` });
-      return;
-    }
-
-    const newUserDoc = {
-      name: cleanName,
-      clientCode: cleanCode,
-      password: cleanPass,
-      balance: balanceNum,
-      exposure: 0,
-      status: "Active" as const,
-      role: "User",
-      createdAt: new Date().toISOString()
-    };
-    
-    // Optimistic UI Update - Ensure we don't add duplicates
-    setUsers(prev => {
-      if (prev.some(u => u.clientCode === cleanCode)) return prev;
-      return [{ id: cleanCode, ...newUserDoc }, ...prev];
-    });
-
+    setLoading(true);
     try {
-      await setDoc(doc(db, "users", cleanCode), newUserDoc);
+      const userRef = doc(db, "users", cleanCode);
+      const userSnap = await getDoc(userRef);
+      
+      if (userSnap.exists()) {
+        toast({ variant: "destructive", title: "Duplicate ID", description: `ID ${cleanCode} already exists.` });
+        setLoading(false);
+        return;
+      }
+
+      const newUserDoc = {
+        name: cleanName,
+        clientCode: cleanCode,
+        password: cleanPass,
+        balance: balanceNum,
+        exposure: 0,
+        status: "Active",
+        role: "User",
+        createdAt: new Date().toISOString()
+      };
+      
+      await setDoc(userRef, newUserDoc);
+      
       toast({ title: "Success", description: `ID ${cleanCode} created successfully.` });
       setNewUserName(""); setNewUserCode(""); setNewUserPassword(""); setNewUserBalance("");
+      fetchUsers();
     } catch (error: any) {
       toast({ variant: "destructive", title: "Database Error", description: error.message });
-      // Rollback UI
-      setUsers(prev => prev.filter(u => u.clientCode !== cleanCode));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -151,25 +149,18 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     const amount = parseFloat(addAmount);
     if (isNaN(amount)) return;
     
-    const userRef = doc(db, "users", selectedUser.clientCode);
-
-    // Optimistic Update
-    setUsers(prev => prev.map(u => 
-      u.clientCode === selectedUser.clientCode ? { ...u, balance: (u.balance || 0) + amount } : u
-    ));
-
+    setLoading(true);
     try {
+      const userRef = doc(db, "users", selectedUser.clientCode);
       await updateDoc(userRef, {
         balance: increment(amount)
       });
       toast({ title: "Deposit Confirmed", description: `Added ₹${amount} to ${selectedUser.name}.` });
+      fetchUsers();
     } catch (error: any) {
       toast({ variant: "destructive", title: "Update Failed", description: error.message });
-      // Rollback UI
-      setUsers(prev => prev.map(u => 
-        u.clientCode === selectedUser.clientCode ? { ...u, balance: (u.balance || 0) - amount } : u
-      ));
     } finally {
+      setLoading(false);
       setAddAmount(""); setSelectedUser(null);
     }
   };
@@ -247,7 +238,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     <Input type="number" value={newUserBalance} onChange={(e) => setNewUserBalance(e.target.value)} placeholder="Initial Balance" className="h-12 rounded-xl bg-gray-50 border-none" />
                   </div>
                   <DialogFooter>
-                    <Button onClick={handleCreateUser} className="w-full h-12 bg-blue-600 font-black uppercase rounded-xl">Save to Cloud</Button>
+                    <Button onClick={handleCreateUser} disabled={loading} className="w-full h-12 bg-blue-600 font-black uppercase rounded-xl">Save to Cloud</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -287,7 +278,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                               <DialogContent className="rounded-3xl bg-white">
                                 <DialogHeader><DialogTitle className="font-black uppercase">Deposit to {selectedUser?.name}</DialogTitle></DialogHeader>
                                 <div className="py-6"><Input type="number" placeholder="Amount" value={addAmount} onChange={(e) => setAddAmount(e.target.value)} className="h-14 text-2xl font-black rounded-2xl bg-gray-50 border-none" /></div>
-                                <DialogFooter><Button onClick={handleAddBalance} className="w-full h-12 bg-green-600 font-black uppercase rounded-xl">Confirm</Button></DialogFooter>
+                                <DialogFooter><Button onClick={handleAddBalance} disabled={loading} className="w-full h-12 bg-green-600 font-black uppercase rounded-xl">Confirm</Button></DialogFooter>
                               </DialogContent>
                             </Dialog>
                           </td>
