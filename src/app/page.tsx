@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -14,34 +15,38 @@ import { CompleteGamesView } from "@/components/dashboard/CompleteGamesView";
 import { AviatorGameView } from "@/components/dashboard/AviatorGameView";
 import { ChickenRoadGameView } from "@/components/dashboard/ChickenRoadGameView";
 import { SmartPredictorModal } from "@/components/predictor/SmartPredictorModal";
-import { AdminDashboard } from "@/components/admin/AdminDashboard";
-import { LoginView } from "@/components/auth/LoginView";
 import { fetchLiveMatches, type LiveMatchData } from "@/lib/api/sports";
 import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ReceiptText, AlertCircle, ShieldCheck } from "lucide-react";
+import { ReceiptText, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useFirestore } from "@/firebase";
 import { doc, updateDoc, increment, addDoc, collection } from "firebase/firestore";
 
 export default function Home() {
   const { toast } = useToast();
   const db = useFirestore();
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  
+  // Default user to bypass login
+  const [currentUser, setCurrentUser] = useState<any>({
+    name: "Guest User",
+    clientCode: "GUEST101",
+    balance: 25000,
+    exposure: 0,
+    status: "Active",
+    createdAt: new Date().toISOString()
+  });
+
   const [selections, setSelections] = useState<any[]>([]);
   const [isPredictorOpen, setIsPredictorOpen] = useState(false);
   const [liveMatches, setLiveMatches] = useState<LiveMatchData[]>([]);
   const [activeMatch, setActiveMatch] = useState<LiveMatchData | null>(null);
-  const [activeView, setActiveView] = useState<'main' | 'exchange' | 'profile' | 'inplay' | 'casino' | 'aviator' | 'chicken' | 'password' | 'ledger' | 'complete' | 'admin' | 'admin-login'>('main');
+  const [activeView, setActiveView] = useState<'main' | 'exchange' | 'profile' | 'inplay' | 'casino' | 'aviator' | 'chicken' | 'password' | 'ledger' | 'complete'>('main');
   const [isMobileSlipOpen, setIsMobileSlipOpen] = useState(false);
   
-  const [balance, setBalance] = useState(0);
+  const [balance, setBalance] = useState(25000);
   const [exposure, setExposure] = useState(0);
   const [myBets, setMyBets] = useState<any[]>([]);
-
-  const [adminEmail, setAdminEmail] = useState("");
-  const [adminPassword, setAdminPassword] = useState("");
 
   useEffect(() => {
     async function loadInitialData() {
@@ -53,13 +58,6 @@ export default function Home() {
     }
     loadInitialData();
   }, []);
-
-  useEffect(() => {
-    if (currentUser) {
-      setBalance(currentUser.balance || 0);
-      setExposure(currentUser.exposure || 0);
-    }
-  }, [currentUser]);
 
   const handleSelectMarket = useCallback((team: string, market: string, type: 'Lagai' | 'Khai', price: string) => {
     const newSelection = {
@@ -89,7 +87,7 @@ export default function Home() {
   const clearSelections = () => setSelections([]);
 
   const handlePlaceBets = async (totalStake: number) => {
-    if (totalStake <= 0 || !db || !currentUser) return;
+    if (totalStake <= 0 || !currentUser) return;
 
     if (totalStake > balance) {
       toast({ variant: "destructive", title: "Insufficient Balance" });
@@ -112,67 +110,41 @@ export default function Home() {
     setSelections([]);
     setIsMobileSlipOpen(false);
 
-    try {
-      const userRef = doc(db, "users", currentUser.clientCode.toUpperCase());
-      updateDoc(userRef, {
-        balance: increment(-totalStake),
-        exposure: increment(totalStake)
-      });
+    if (db) {
+      try {
+        const userRef = doc(db, "users", currentUser.clientCode.toUpperCase());
+        updateDoc(userRef, {
+          balance: increment(-totalStake),
+          exposure: increment(totalStake)
+        }).catch(() => {
+          // Fallback if user doc doesn't exist in Firestore
+          console.log("Local balance updated only.");
+        });
 
-      newBets.forEach(bet => {
-        addDoc(collection(db, "bets"), bet);
-      });
-
-      toast({ title: "Success! Bets Placed" });
-    } catch (e) {
-      console.error(e);
+        newBets.forEach(bet => {
+          addDoc(collection(db, "bets"), bet);
+        });
+      } catch (e) {
+        console.error(e);
+      }
     }
+
+    toast({ title: "Success! Bets Placed" });
   };
-
-  const handleAdminLogin = () => {
-    const email = adminEmail.trim();
-    const pass = adminPassword.trim();
-
-    if (email === "rpkworldmuvies123@gmail.com" && pass === "Prakashver123@") {
-      setActiveView('admin');
-      toast({
-        title: "Admin Access Granted",
-        description: "Welcome back, Prakash.",
-      });
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Access Denied",
-        description: "Invalid Admin Credentials.",
-      });
-    }
-  };
-
-  const goToAdminPortal = useCallback(() => {
-    setActiveView('admin-login');
-  }, []);
-
-  if (!currentUser && activeView !== 'admin' && activeView !== 'admin-login') {
-    return <LoginView 
-      onLoginSuccess={(user) => setCurrentUser(user)} 
-      onAdminPortal={goToAdminPortal}
-    />;
-  }
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[#f4f7fa]">
-      {activeView !== 'admin' && activeView !== 'admin-login' && (
-        <Navbar 
-          balance={balance} 
-          exposure={exposure} 
-          profitAndLoss={0}
-          clientCode={currentUser?.clientCode}
-          onProfileClick={() => setActiveView('profile')} 
-          onLogoClick={() => setActiveView('main')} 
-        />
-      )}
+      <Navbar 
+        balance={balance} 
+        exposure={exposure} 
+        profitAndLoss={0}
+        clientCode={currentUser?.clientCode}
+        onProfileClick={() => setActiveView('profile')} 
+        onLogoClick={() => setActiveView('main')} 
+      />
+      
       <div className="flex flex-1 overflow-hidden">
-        {activeView !== 'main' && activeView !== 'inplay' && activeView !== 'casino' && activeView !== 'aviator' && activeView !== 'chicken' && activeView !== 'profile' && activeView !== 'password' && activeView !== 'ledger' && activeView !== 'complete' && activeView !== 'admin' && activeView !== 'admin-login' && (
+        {activeView !== 'main' && activeView !== 'inplay' && activeView !== 'casino' && activeView !== 'aviator' && activeView !== 'chicken' && activeView !== 'profile' && activeView !== 'password' && activeView !== 'ledger' && activeView !== 'complete' && (
           <SidebarNav activeView={activeView === 'exchange' ? 'exchange' : 'profile'} onViewChange={setActiveView} />
         )}
         
@@ -202,51 +174,6 @@ export default function Home() {
               setBalance={setBalance}
               onBackToMenu={() => setActiveView('main')}
             />
-          ) : activeView === 'admin-login' ? (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 bg-[#0b2146]">
-              <div className="w-full max-w-md bg-white rounded-3xl p-8 shadow-2xl">
-                <div className="flex flex-col items-center mb-8">
-                  <div className="h-16 w-16 bg-[#1a4b8c] rounded-2xl flex items-center justify-center mb-4">
-                    <ShieldCheck className="h-10 w-10 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-black text-[#0b2146] uppercase">Admin Control</h2>
-                  <p className="text-sm text-muted-foreground">Restricted Access Only</p>
-                </div>
-                <div className="space-y-4">
-                  <Input 
-                    placeholder="Admin Email" 
-                    value={adminEmail}
-                    onChange={(e) => setAdminEmail(e.target.value)}
-                    className="h-12 rounded-xl text-[#0b2146] font-bold"
-                  />
-                  <Input 
-                    type="password" 
-                    placeholder="Password" 
-                    value={adminPassword}
-                    onChange={(e) => setAdminPassword(e.target.value)}
-                    className="h-12 rounded-xl text-[#0b2146] font-bold"
-                  />
-                  <Button 
-                    onClick={handleAdminLogin}
-                    className="w-full h-12 bg-[#1a4b8c] hover:bg-[#2c58a0] text-white font-black rounded-xl"
-                  >
-                    LOGIN TO PANEL
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    onClick={() => setActiveView('main')}
-                    className="w-full"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ) : activeView === 'admin' ? (
-            <AdminDashboard onLogout={() => {
-              setActiveView('main');
-              setCurrentUser(null);
-            }} />
           ) : activeView === 'casino' ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-6">
               <div className="h-24 w-24 rounded-full bg-blue-100 flex items-center justify-center">
@@ -283,7 +210,7 @@ export default function Home() {
               exposure={exposure} 
               myBets={myBets} 
               onBackToMenu={() => setActiveView('main')}
-              onLogout={() => setCurrentUser(null)}
+              onLogout={() => window.location.reload()}
             />
           )}
 
