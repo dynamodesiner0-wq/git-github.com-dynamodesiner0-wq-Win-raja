@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +29,8 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { getFirestore, collection, getDocs, setDoc, doc, updateDoc, increment } from "firebase/firestore";
+import { collection, getDocs, setDoc, doc, updateDoc, increment } from "firebase/firestore";
+import { useFirestore } from "@/firebase";
 
 interface UserRecord {
   id: string;
@@ -47,6 +47,7 @@ interface AdminDashboardProps {
 
 export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const { toast } = useToast();
+  const db = useFirestore();
   const [activeTab, setActiveTab] = useState<'stats' | 'users'>('stats');
   const [searchQuery, setSearchQuery] = useState("");
   const [users, setUsers] = useState<UserRecord[]>([]);
@@ -62,10 +63,10 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
   const [addAmount, setAddAmount] = useState("");
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
+    if (!db) return;
     setLoading(true);
     try {
-      const db = getFirestore();
       const querySnapshot = await getDocs(collection(db, "users"));
       const userList = querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -77,19 +78,19 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [db]);
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
 
   const handleCreateUser = async () => {
+    if (!db) return;
     if (!newUserName || !newUserCode || !newUserPassword || !newUserBalance) {
       toast({ variant: "destructive", title: "Missing Details", description: "All fields are required." });
       return;
     }
     
-    const db = getFirestore();
     const clientCodeUpper = newUserCode.toUpperCase();
     const userDocRef = doc(db, "users", clientCodeUpper);
 
@@ -118,11 +119,10 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   };
 
   const handleAddBalance = async () => {
-    if (!selectedUser || !addAmount) return;
+    if (!db || !selectedUser || !addAmount) return;
     const amount = parseFloat(addAmount);
     
     try {
-      const db = getFirestore();
       const userRef = doc(db, "users", selectedUser.clientCode);
       await updateDoc(userRef, {
         balance: increment(amount)
@@ -379,7 +379,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         )}
       </div>
       <footer className="bg-white p-4 text-center border-t border-gray-100">
-        <p className="text-[10px] font-bold text-[#0b2146]/40 uppercase tracking-widest">WinRaja Admin System v3.0 • Prakash Verma Confidential • copyright winraja 2026</p>
+        <p className="text-[10px] font-bold text-[#0b2146]/40 uppercase tracking-widest">copyright winraja 2026 • Prakash Verma Confidential • secure portal v3.0</p>
       </footer>
     </div>
   );

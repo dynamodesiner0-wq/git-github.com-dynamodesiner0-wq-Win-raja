@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ShieldCheck, User, Lock, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { doc, getDoc, getFirestore } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
+import { useFirestore } from "@/firebase";
 
 interface LoginViewProps {
   onLoginSuccess: (userData: any) => void;
@@ -15,6 +15,7 @@ interface LoginViewProps {
 
 export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
   const { toast } = useToast();
+  const db = useFirestore();
   const [clientCode, setClientCode] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,6 +30,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
   }, [clientCode, onAdminPortal]);
 
   const handleLogin = async () => {
+    if (!db) return;
     if (!clientCode || !password) {
       toast({
         variant: "destructive",
@@ -40,7 +42,6 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
 
     setLoading(true);
     try {
-      const db = getFirestore();
       const userRef = doc(db, "users", clientCode.toUpperCase());
       const userSnap = await getDoc(userRef);
 
