@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ShieldCheck, User, Lock, ArrowRight } from "lucide-react";
+import { ShieldCheck, User, Lock, ArrowRight, Database } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { doc, getDoc } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
@@ -35,7 +35,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
       toast({
         variant: "destructive",
         title: "Database Error",
-        description: "Firebase is not initialized. Please refresh.",
+        description: "Firebase connection is offline. Please refresh the page.",
       });
       return;
     }
@@ -87,12 +87,12 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
           description: "This Client Code does not exist in our database.",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
       toast({
         variant: "destructive",
         title: "Connection Error",
-        description: "Could not connect to the server. Check your internet.",
+        description: error.message || "Could not connect to the database.",
       });
     } finally {
       setLoading(false);
@@ -106,10 +106,17 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
           <div className="h-20 w-20 bg-gradient-to-br from-blue-500 to-[#1a4b8c] rounded-3xl mx-auto flex items-center justify-center shadow-2xl shadow-blue-500/20 mb-4 transform -rotate-6">
             <ShieldCheck className="h-12 w-12 text-white" />
           </div>
-          <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">
-            WinRaja <span className="text-blue-400">Exchange</span>
-          </h1>
-          <p className="text-white/40 text-xs font-black uppercase tracking-[0.3em]">Authorized Access Only</p>
+          <div className="flex flex-col items-center">
+            <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">
+              WinRaja <span className="text-blue-400">Exchange</span>
+            </h1>
+            {!db && (
+              <Badge variant="destructive" className="mt-2 flex gap-1 items-center animate-pulse">
+                <Database className="h-3 w-3" /> DATABASE OFFLINE
+              </Badge>
+            )}
+          </div>
+          <p className="text-white/40 text-xs font-black uppercase tracking-[0.3em] mt-2">Authorized Access Only</p>
         </div>
 
         <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl space-y-6 relative overflow-hidden">
