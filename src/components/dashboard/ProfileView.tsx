@@ -3,14 +3,16 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from "@/components/ui/dialog";
+import { Check, Circle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ProfileViewProps {
   balance: number;
@@ -21,15 +23,18 @@ interface ProfileViewProps {
 
 export function ProfileView({ balance, exposure, myBets, onBackToMenu }: ProfileViewProps) {
   const [rateDiff, setRateDiff] = useState("0.05");
+  const [isRateModalOpen, setIsRateModalOpen] = useState(false);
+
+  const rates = ["0.00", "0.01", "0.02", "0.03", "0.04", "0.05"];
 
   return (
     <div className="flex-1 bg-[#f4f7fa] overflow-y-auto pb-10">
-      {/* Banner */}
+      {/* Top Marquee Banner */}
       <div className="bg-[#0b2146] text-white py-2 px-4 flex items-center justify-between sticky top-0 z-10 shadow-md">
         <Badge className="bg-yellow-500 text-black text-[10px] font-black px-2 py-0.5 rounded-md hover:bg-yellow-400 border-none shrink-0">NEW</Badge>
         <div className="flex-1 overflow-hidden ml-4">
           <marquee className="text-[11px] font-bold text-center block">
-            नए रोमांचक गेम्स लाइव हो गए हैं। Chicken Road और 32 Cards का मज़ा लें। 
+             हमारे एक्सचेंज पर अब नए रोमांचक गेम्स लाइव हो गए हैं। Chicken Road और 32 Cards का मज़ा लें। 
           </marquee>
         </div>
       </div>
@@ -38,42 +43,65 @@ export function ProfileView({ balance, exposure, myBets, onBackToMenu }: Profile
         {/* Back Button */}
         <Button 
           onClick={onBackToMenu}
-          className="bg-[#1a4b8c] hover:bg-[#2c58a0] text-white font-black text-xs h-10 px-10 rounded-full shadow-lg border-b-4 border-[#0b2146] uppercase"
+          className="bg-gradient-to-b from-[#1a4b8c] to-[#0b2146] hover:opacity-90 text-white font-black text-xs h-12 px-10 rounded-full shadow-lg border-b-4 border-[#0b2146] uppercase mb-2"
         >
           BACK TO MAIN MENU
         </Button>
 
         {/* Rate Information Section */}
-        <div className="w-full bg-white rounded-2xl overflow-hidden shadow-sm border border-border/50">
-          <div className="bg-gradient-to-r from-[#1a4b8c] to-[#2c58a0] p-2 text-center text-white">
-            <h3 className="text-sm font-black uppercase tracking-wide">Rate Information</h3>
+        <div className="w-full bg-white rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-border/50">
+          <div className="bg-[#1a4b8c] p-3 text-center text-white border-b border-white/10">
+            <h3 className="text-sm font-black uppercase tracking-widest">Rate Information</h3>
           </div>
-          <div className="p-4 flex flex-col gap-4">
-            <div className="space-y-2">
-              <label className="text-xs font-black text-[#1a4b8c] uppercase tracking-tight">Rate Difference</label>
-              <div className="flex items-center gap-4">
-                <Select value={rateDiff} onValueChange={setRateDiff}>
-                  <SelectTrigger className="flex-1 bg-white border-[#1a4b8c]/20 h-12 rounded-xl text-sm font-bold text-[#0b2146] focus:ring-0">
-                    <SelectValue placeholder="Select rate" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0.05">0.05</SelectItem>
-                    <SelectItem value="0.10">0.10</SelectItem>
-                    <SelectItem value="0.25">0.25</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button className="bg-[#1a4b8c] hover:bg-[#2c58a0] text-white font-black h-12 px-10 rounded-full shadow-md border-b-2 border-[#0b2146]">
-                  Update
-                </Button>
-              </div>
-            </div>
+          <div className="p-6">
+            <Dialog open={isRateModalOpen} onOpenChange={setIsRateModalOpen}>
+              <DialogTrigger asChild>
+                <div className="cursor-pointer">
+                  <label className="text-xs font-black text-[#1a4b8c] uppercase tracking-tight mb-2 block ml-1">Rate Difference</label>
+                  <div className="flex items-center justify-between bg-white border-2 border-blue-50 h-14 rounded-xl px-4 text-lg font-black text-[#0b2146] shadow-sm">
+                    <span>{rateDiff}</span>
+                    <div className="h-5 w-5 rounded-full border-2 border-[#1a4b8c] flex items-center justify-center">
+                       <div className="h-2.5 w-2.5 rounded-full bg-[#1a4b8c]" />
+                    </div>
+                  </div>
+                </div>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[400px] p-0 border-none bg-white rounded-3xl overflow-hidden">
+                <div className="divide-y divide-gray-100">
+                  {rates.map((rate) => (
+                    <div 
+                      key={rate} 
+                      onClick={() => {
+                        setRateDiff(rate);
+                        setIsRateModalOpen(false);
+                      }}
+                      className="flex items-center justify-between p-5 cursor-pointer hover:bg-blue-50/50 transition-colors"
+                    >
+                      <span className="text-xl font-bold text-[#0b2146]">{rate}</span>
+                      <div className={cn(
+                        "h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all",
+                        rateDiff === rate ? "border-[#0b2146]" : "border-gray-300"
+                      )}>
+                        {rateDiff === rate && <div className="h-3 w-3 rounded-full bg-[#0b2146]" />}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Button 
+              className="w-full mt-6 h-14 bg-gradient-to-r from-[#1a4b8c] to-[#2c58a0] hover:from-[#2c58a0] hover:to-[#1a4b8c] text-white font-black text-lg rounded-full shadow-lg border-b-4 border-[#0b2146] uppercase transition-all active:scale-[0.98]"
+            >
+              Update
+            </Button>
           </div>
         </div>
 
         {/* Personal Information Section */}
-        <div className="w-full bg-white rounded-2xl overflow-hidden shadow-sm border border-border/50">
-          <div className="bg-gradient-to-r from-[#1a4b8c] to-[#2c58a0] p-2 text-center text-white">
-            <h3 className="text-sm font-black uppercase tracking-wide">Personal Information</h3>
+        <div className="w-full bg-white rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-border/50">
+          <div className="bg-[#1a4b8c] p-3 text-center text-white border-b border-white/10">
+            <h3 className="text-sm font-black uppercase tracking-widest">Personal Information</h3>
           </div>
           <div className="p-0">
             <InfoRow label="Client Code" value="C123051" />
@@ -85,19 +113,19 @@ export function ProfileView({ balance, exposure, myBets, onBackToMenu }: Profile
         </div>
 
         {/* Company Information Section */}
-        <div className="w-full bg-white rounded-2xl overflow-hidden shadow-sm border border-border/50">
-          <div className="bg-gradient-to-r from-[#1a4b8c] to-[#2c58a0] p-2 text-center text-white">
-            <h3 className="text-sm font-black uppercase tracking-wide">Company Information</h3>
+        <div className="w-full bg-white rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-border/50">
+          <div className="bg-[#1a4b8c] p-3 text-center text-white border-b border-white/10">
+            <h3 className="text-sm font-black uppercase tracking-widest">Company Information</h3>
           </div>
           <div className="p-0">
-            <InfoRow label="Help Line No" value="" />
+            <InfoRow label="Help Line No" value="N/A" />
           </div>
         </div>
 
         {/* Footer */}
         <div className="flex justify-center mt-6">
-          <div className="bg-white px-8 py-2 rounded-full shadow-md border border-blue-50">
-            <span className="text-[10px] font-bold text-[#1a4b8c]/60 uppercase">copyright winraja 2026</span>
+          <div className="bg-white px-10 py-2.5 rounded-full shadow-md border border-blue-50">
+            <span className="text-[12px] font-black text-[#1a4b8c] uppercase tracking-tight">copyright winraja 2026</span>
           </div>
         </div>
       </div>
