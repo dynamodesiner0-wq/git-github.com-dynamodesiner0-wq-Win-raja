@@ -67,6 +67,9 @@ export function ProfileView({ balance, exposure, myBets, onBackToMenu }: Profile
                 </div>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[400px] p-0 border-none bg-white rounded-3xl overflow-hidden">
+                <DialogHeader className="sr-only">
+                  <DialogTitle>Select Rate Difference</DialogTitle>
+                </DialogHeader>
                 <div className="divide-y divide-gray-100">
                   {rates.map((rate) => (
                     <div 
