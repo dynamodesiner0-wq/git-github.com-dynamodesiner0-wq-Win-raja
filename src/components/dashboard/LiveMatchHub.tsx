@@ -1,217 +1,158 @@
-
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { Monitor, Info, Minus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  TrendingUp, 
-  BrainCircuit, 
-  ChevronRight, 
-  Trophy,
-  MonitorPlay,
-  PlayCircle,
-  Loader2,
-  RefreshCw
-} from "lucide-react";
-import { SmartPredictorModal } from "@/components/predictor/SmartPredictorModal";
-import { 
-  Carousel, 
-  CarouselContent, 
-  CarouselItem, 
-  CarouselNext, 
-  CarouselPrevious 
-} from "@/components/ui/carousel";
-import { LiveCommentary } from "./LiveCommentary";
-import { fetchLiveMatches, type LiveMatchData } from "@/lib/api/sports";
-
-const banners = [
-  { id: 1, title: "IPL 2024 Special", subtitle: "Get 200% Welcome Bonus", color: "from-blue-600 to-indigo-900" },
-  { id: 2, title: "Champions League Final", subtitle: "Zero Margin on All Bets", color: "from-accent to-primary" },
-];
 
 export function LiveMatchHub() {
-  const [selectedMatch, setSelectedMatch] = useState<any>(null);
-  const [activeLiveMatch, setActiveLiveMatch] = useState<string | null>(null);
-  const [matches, setMatches] = useState<LiveMatchData[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  async function loadMatches() {
-    setLoading(true);
-    const data = await fetchLiveMatches();
-    // If API returns nothing, we keep a fallback for UI demo purposes
-    if (data && data.length > 0) {
-      setMatches(data);
-      setActiveLiveMatch(data[0].id);
-    } else {
-      // Fallback/Mock data if API key is restricted or no matches live
-      setMatches([
-        {
-          id: "m1",
-          name: "Arsenal vs Liverpool",
-          status: "62' Live",
-          score: "2 - 1",
-        },
-        {
-          id: "m2",
-          name: "Mumbai Indians vs Chennai Super Kings",
-          status: "Live - 16.2 Ov",
-          score: "142/4",
-        }
-      ]);
-      setActiveLiveMatch("m2");
-    }
-    setLoading(false);
-  }
-
-  useEffect(() => {
-    loadMatches();
-    const interval = setInterval(loadMatches, 30000); // Refresh every 30s
-    return () => clearInterval(interval);
-  }, []);
-
   return (
-    <div className="flex-1 p-4 space-y-6 overflow-y-auto custom-scrollbar">
-      {/* Banner Carousel */}
-      <Carousel className="w-full">
-        <CarouselContent>
-          {banners.map((banner) => (
-            <CarouselItem key={banner.id}>
-              <div className={`h-40 md:h-48 rounded-2xl bg-gradient-to-r ${banner.color} p-6 flex flex-col justify-center relative overflow-hidden group`}>
-                <div className="relative z-10">
-                  <Badge className="mb-2 bg-white/20 text-white border-none backdrop-blur-md">PROMOTION</Badge>
-                  <h2 className="text-2xl font-black font-headline tracking-tighter mb-1">{banner.title}</h2>
-                  <p className="text-white/80 font-medium text-sm">{banner.subtitle}</p>
-                </div>
-                <div className="absolute right-0 top-0 h-full w-1/2 opacity-20 group-hover:scale-110 transition-transform duration-700">
-                   <MonitorPlay className="h-full w-full rotate-12 translate-x-12" />
-                </div>
-              </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-      </Carousel>
-
-      {/* Main Content Area */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2 space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl font-headline font-black tracking-tight flex items-center gap-2">
-                 <Trophy className="h-5 w-5 text-accent" />
-                 LIVE SPORTS
-              </h1>
-              {loading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-            </div>
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={loadMatches}
-                className="p-2 hover:bg-secondary/50 rounded-lg text-muted-foreground transition-colors"
-              >
-                <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
-              </button>
-              <Tabs defaultValue="all" className="w-full md:w-auto">
-                <TabsList className="bg-secondary/50 w-full md:w-auto h-9">
-                  <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
-                  <TabsTrigger value="cricket" className="text-xs">Cricket</TabsTrigger>
-                  <TabsTrigger value="soccer" className="text-xs">Soccer</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {matches.map((match) => (
-              <Card key={match.id} className={cn(
-                "bg-card/40 border-border/40 overflow-hidden hover:bg-card/60 transition-all",
-                activeLiveMatch === match.id && "border-accent/30 bg-accent/[0.02]"
-              )}>
-                <div className="p-4 flex flex-col md:flex-row items-stretch md:items-center gap-4">
-                  <div className="flex-1 flex flex-col gap-1 min-w-[180px]">
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase">
-                      <span className="text-accent">{match.name.includes('vs') ? 'Match' : 'Event'}</span>
-                      <span className="text-border">•</span>
-                      <span>IN-PLAY</span>
-                    </div>
-                    <div className="flex items-center justify-between mt-1">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-bold">{match.name}</span>
-                        <span className="text-[10px] font-black text-destructive animate-pulse flex items-center gap-1 mt-0.5">
-                          <span className="h-1 w-1 rounded-full bg-destructive" />
-                          {match.status}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 bg-secondary/50 px-2 py-1 rounded-lg border border-border/50">
-                         <span className="text-sm font-black font-mono text-accent">{match.score || '0-0'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
-                      <BetButton label="1" odds={(1.4 + Math.random() * 2).toFixed(2)} type="back" />
-                      <BetButton label="X" odds={(3.0 + Math.random() * 5).toFixed(2)} type="back" />
-                      <BetButton label="2" odds={(2.1 + Math.random() * 4).toFixed(2)} type="lay" />
-                    </div>
-                    
-                    <div className="flex items-center gap-2 border-l border-border/50 pl-3 ml-1">
-                      <button 
-                        onClick={() => setSelectedMatch(match)}
-                        className="p-1.5 rounded-lg hover:bg-accent/10 text-accent transition-all group/ai"
-                      >
-                        <BrainCircuit className="h-4 w-4 group-hover/ai:scale-110 transition-transform" />
-                      </button>
-                      <button 
-                        onClick={() => setActiveLiveMatch(match.id)}
-                        className={`p-1.5 rounded-lg transition-colors ${activeLiveMatch === match.id ? 'bg-accent/20 text-accent' : 'text-muted-foreground hover:bg-secondary'}`}
-                      >
-                        <PlayCircle className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Live Feed Sidebar */}
-        <div className="hidden xl:block space-y-4">
-          <div className="flex items-center justify-between px-2">
-             <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Match Center</h3>
-             <Badge variant="outline" className="text-[8px] h-4 text-accent border-accent/20">LIVE</Badge>
-          </div>
-          {activeLiveMatch ? (
-            <LiveCommentary matchId={activeLiveMatch} />
-          ) : (
-            <div className="bg-secondary/10 border border-dashed border-border rounded-xl p-8 text-center">
-              <p className="text-xs text-muted-foreground italic">Select a match to see ball-by-ball updates</p>
-            </div>
-          )}
-        </div>
+    <div className="flex-1 bg-[#f0f2f5] overflow-y-auto custom-scrollbar">
+      {/* News Banner */}
+      <div className="bg-[#0b2146] text-white py-2 px-4 flex items-center gap-3">
+        <Badge className="bg-yellow-500 text-black text-[10px] font-bold rounded-sm px-1.5 h-5">NEW</Badge>
+        <marquee className="text-xs font-medium">
+          हमारे पास नए गेम आ गए हैं। Chicken Road और 32 Cards का मज़ा लें, सही समय पर खेलें और जीतें!
+        </marquee>
       </div>
 
-      <SmartPredictorModal 
-        isOpen={!!selectedMatch} 
-        onClose={() => setSelectedMatch(null)} 
-        matchData={selectedMatch} 
-      />
+      <div className="p-2 space-y-3 max-w-[800px] mx-auto">
+        {/* Video Player Placeholder */}
+        <div className="aspect-video bg-black rounded-lg relative flex items-center justify-center overflow-hidden">
+          <div className="h-12 w-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+        </div>
+
+        {/* Match Selector Tabs */}
+        <div className="flex gap-1 overflow-x-auto pb-1 no-scrollbar">
+          <div className="bg-[#0b2146] text-white px-4 py-2 rounded-t-lg text-[10px] font-bold uppercase whitespace-nowrap border-b-2 border-yellow-500 shrink-0">
+            Kinada Kings v Vijayawada Sunshiners
+          </div>
+          <div className="bg-[#2c58a0] text-white/70 px-4 py-2 rounded-t-lg text-[10px] font-bold uppercase whitespace-nowrap shrink-0">
+            South Africa W v India W
+          </div>
+        </div>
+
+        {/* Detailed Scoreboard Card */}
+        <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
+          <div className="bg-[#2c58a0] text-white px-4 py-3 flex items-center justify-between">
+            <h3 className="text-xs font-bold uppercase tracking-wider">England Need 281 Runs To Win</h3>
+            <div className="flex items-center gap-2">
+              <button className="p-1 hover:bg-white/10 rounded"><Monitor className="h-4 w-4 text-yellow-500" /></button>
+              <button className="p-1 hover:bg-white/10 rounded"><Minus className="h-4 w-4" /></button>
+            </div>
+          </div>
+          
+          <div className="p-4 grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-bold text-[#2c58a0]">J. Cox 0 (12)*</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-bold text-[#2c58a0]">J. Root 75 (137)</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-bold text-[#2c58a0]">K. Jamieson 37-3 (14.0)</span>
+              </div>
+            </div>
+
+            <div className="text-right space-y-1">
+              <div className="text-sm font-bold text-[#2c58a0]">ENG 291-10 & 182-5 (84.0 & 48.0)</div>
+              <div className="text-sm font-bold text-[#2c58a0]">NZ 391-10 & 362-10 (96.2 & 87.1)</div>
+              <div className="flex justify-end gap-1.5 mt-4">
+                {[0, 1, 0, 0, 0, 0].map((run, i) => (
+                  <div key={i} className="h-6 w-6 rounded-full bg-[#2c58a0] text-white flex items-center justify-center text-[10px] font-bold">
+                    {run}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bookmaker Table */}
+        <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
+          <div className="bg-[#2c58a0] text-white px-4 py-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h3 className="text-xs font-bold uppercase">Bookmaker</h3>
+              <Badge className="bg-white/20 text-[10px] font-normal h-5">Cashout</Badge>
+              <Info className="h-3 w-3 opacity-70" />
+            </div>
+            <Minus className="h-4 w-4" />
+          </div>
+          
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-[#f0f2f5] border-b text-[10px] font-black uppercase text-[#2c58a0]">
+                <th className="text-left p-3">Teams</th>
+                <th className="w-24 p-3 text-center">Lagai</th>
+                <th className="w-24 p-3 text-center">Khai</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              <MarketRow team="England" />
+              <MarketRow team="New Zealand" />
+              <MarketRow team="The Draw" />
+            </tbody>
+          </table>
+        </div>
+
+        {/* Session Market */}
+        <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
+          <div className="bg-[#2c58a0] text-white px-4 py-2 flex items-center justify-between">
+            <h3 className="text-xs font-bold uppercase">Session</h3>
+            <Minus className="h-4 w-4" />
+          </div>
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-[#f0f2f5] border-b text-[10px] font-black uppercase text-[#2c58a0]">
+                <th className="text-left p-3">Market</th>
+                <th className="w-24 p-3 text-center">Not</th>
+                <th className="w-24 p-3 text-center">Yes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="hover:bg-muted/30">
+                <td className="p-3">
+                  <span className="font-bold uppercase block">49 Over Run ENG</span>
+                  <span className="text-[10px] text-destructive font-bold">0</span>
+                </td>
+                <td className="p-0">
+                  <div className="bg-khai h-12 flex flex-col items-center justify-center border-l border-white">
+                    <span className="text-sm font-black text-khai">0.00</span>
+                  </div>
+                </td>
+                <td className="p-0">
+                  <div className="bg-lagai h-12 flex flex-col items-center justify-center border-l border-white">
+                    <span className="text-sm font-black text-lagai">0.00</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
 
-function BetButton({ label, odds, type }: { label: string; odds: string; type: "back" | "lay" }) {
+function MarketRow({ team }: { team: string }) {
   return (
-    <button className={`w-12 h-10 md:w-14 md:h-11 flex flex-col items-center justify-center rounded-lg transition-all border border-border/20 ${
-      type === 'back' 
-      ? 'bg-blue-500/10 hover:bg-blue-500/20 border-blue-500/20' 
-      : 'bg-pink-500/10 hover:bg-pink-500/20 border-pink-500/20'
-    }`}>
-      <span className="text-[8px] font-bold text-muted-foreground uppercase">{label}</span>
-      <span className="text-xs font-black font-mono text-white">{odds}</span>
-    </button>
+    <tr className="hover:bg-muted/30">
+      <td className="p-3">
+        <span className="font-black uppercase text-sm block">{team}</span>
+        <span className="text-[10px] text-destructive font-bold">0</span>
+      </td>
+      <td className="p-0">
+        <div className="bg-lagai h-16 flex flex-col items-center justify-center border-l border-white">
+          <span className="text-xl font-black text-lagai">0.00</span>
+          <span className="text-[8px] font-bold opacity-70">0</span>
+        </div>
+      </td>
+      <td className="p-0">
+        <div className="bg-khai h-16 flex flex-col items-center justify-center border-l border-white">
+          <span className="text-xl font-black text-khai">0.00</span>
+          <span className="text-[8px] font-bold opacity-70">0</span>
+        </div>
+      </td>
+    </tr>
   );
 }
-
-import { cn } from "@/lib/utils";
