@@ -65,6 +65,17 @@ export function InPlayList({ onBack, onSelectMatch }: InPlayListProps) {
         </div>
       </div>
 
+      {/* Featured Match Banner Image from User */}
+      <div className="px-4 pt-4 max-w-[600px] mx-auto">
+        <div className="rounded-2xl overflow-hidden shadow-lg border border-border/50">
+          <img 
+            src="https://i.ibb.co/mFBqVD8f/image-search-1782096841440.png" 
+            alt="Featured InPlay Matches" 
+            className="w-full h-auto object-cover"
+          />
+        </div>
+      </div>
+
       {/* Back Button Container */}
       <div className="flex justify-center p-4">
         <Button 

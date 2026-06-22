@@ -18,6 +18,12 @@
       "description": "Professional tennis court",
       "imageUrl": "https://picsum.photos/seed/tennis/1200/800",
       "imageHint": "tennis court"
+    },
+    {
+      "id": "inplay-banner",
+      "description": "Live In Play matches reference",
+      "imageUrl": "https://i.ibb.co/mFBqVD8f/image-search-1782096841440.png",
+      "imageHint": "sports exchange"
     }
   ]
 }
