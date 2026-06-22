@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -11,7 +10,7 @@ import { SmartPredictorModal } from "@/components/predictor/SmartPredictorModal"
 import { fetchLiveMatches, type LiveMatchData } from "@/lib/api/sports";
 import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { ReceiptText, Badge } from "lucide-react";
+import { ReceiptText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
@@ -23,8 +22,8 @@ export default function Home() {
   const [activeView, setActiveView] = useState<'exchange' | 'profile'>('exchange');
   const [isMobileSlipOpen, setIsMobileSlipOpen] = useState(false);
   
-  // Real Betting State
-  const [balance, setBalance] = useState(15000.00);
+  // Real-time Betting State
+  const [balance, setBalance] = useState(25000.00);
   const [exposure, setExposure] = useState(0);
   const [myBets, setMyBets] = useState<any[]>([]);
 
@@ -40,6 +39,7 @@ export default function Home() {
   }, []);
 
   const handleSelectMarket = (team: string, type: 'Lagai' | 'Khai', price: string) => {
+    console.log("Selection made:", { team, type, price });
     const newSelection = {
       id: `${team}-${type}-${Date.now()}`,
       team,
@@ -49,10 +49,16 @@ export default function Home() {
       sport: "CRICKET"
     };
     setSelections(prev => [newSelection, ...prev]);
-    // Auto open slip on mobile when a selection is made
-    if (window.innerWidth < 1280) {
+    
+    // Auto open slip on mobile/small screens
+    if (typeof window !== 'undefined' && window.innerWidth < 1280) {
       setIsMobileSlipOpen(true);
     }
+
+    toast({
+      title: "Selection Added",
+      description: `${team} added to slip @ ${price}`,
+    });
   };
 
   const removeSelection = (id: string) => {
@@ -62,7 +68,9 @@ export default function Home() {
   const clearSelections = () => setSelections([]);
 
   const handlePlaceBets = (totalStake: number) => {
-    if (!totalStake || totalStake <= 0) {
+    console.log("Placing bets for total stake:", totalStake);
+    
+    if (totalStake <= 0) {
       toast({
         variant: "destructive",
         title: "Invalid Stake",
@@ -75,7 +83,7 @@ export default function Home() {
       toast({
         variant: "destructive",
         title: "Insufficient Balance",
-        description: "Please deposit funds to place this bet.",
+        description: "Your balance is too low for this bet.",
       });
       return;
     }
@@ -87,6 +95,7 @@ export default function Home() {
       status: 'OPEN'
     }));
 
+    // Update Global State
     setBalance(prev => prev - totalStake);
     setExposure(prev => prev + totalStake);
     setMyBets(prev => [...newBets, ...prev]);
@@ -94,8 +103,8 @@ export default function Home() {
     setIsMobileSlipOpen(false);
 
     toast({
-      title: "Bets Placed Successfully!",
-      description: `${newBets.length} bet(s) have been added to your account.`,
+      title: "Success! Bets Placed",
+      description: `${newBets.length} bet(s) confirmed and active.`,
     });
   };
 
@@ -121,21 +130,21 @@ export default function Home() {
             <ProfileView balance={balance} exposure={exposure} myBets={myBets} />
           )}
 
-          {/* Mobile Bet Slip Trigger */}
+          {/* Mobile Bet Slip Drawer */}
           {activeView === 'exchange' && selections.length > 0 && (
-            <div className="xl:hidden fixed bottom-4 right-4 z-50">
+            <div className="xl:hidden fixed bottom-6 right-6 z-50">
               <Sheet open={isMobileSlipOpen} onOpenChange={setIsMobileSlipOpen}>
                 <SheetTrigger asChild>
-                  <Button className="rounded-full h-14 w-14 bg-accent shadow-2xl animate-bounce">
+                  <Button className="rounded-full h-16 w-16 bg-accent text-white shadow-2xl animate-bounce hover:scale-110 transition-transform">
                     <div className="relative">
-                      <ReceiptText className="h-6 w-6" />
-                      <span className="absolute -top-3 -right-3 bg-red-600 text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center border-2 border-white">
+                      <ReceiptText className="h-8 w-8" />
+                      <span className="absolute -top-4 -right-4 bg-red-600 text-white text-[12px] font-black h-6 w-6 rounded-full flex items-center justify-center border-2 border-white">
                         {selections.length}
                       </span>
                     </div>
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="bottom" className="h-[80vh] p-0 bg-[#f0f2f5] border-t-2 border-accent">
+                <SheetContent side="bottom" className="h-[85vh] p-0 bg-[#f0f2f5] border-t-4 border-accent rounded-t-3xl">
                   <BettingSlip 
                     selections={selections} 
                     myBets={myBets}
