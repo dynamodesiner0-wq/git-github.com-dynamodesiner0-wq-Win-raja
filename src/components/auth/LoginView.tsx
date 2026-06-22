@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -45,6 +46,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
     setLoading(true);
     try {
       const userRef = doc(db, "users", cleanCode);
+      // Fast getDoc call
       const userSnap = await getDoc(userRef);
 
       if (userSnap.exists()) {
@@ -52,20 +54,23 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
         if (userData.password === cleanPass) {
           if (userData.status === "Suspended") {
             toast({ variant: "destructive", title: "Account Blocked", description: "Please contact administrator." });
+            setLoading(false);
             return;
           }
-          toast({ title: "Welcome back!", description: `Logged in as ${userData.name}` });
+          // Instant success
           onLoginSuccess({ ...userData, clientCode: cleanCode });
+          toast({ title: "Welcome back!", description: `Logged in as ${userData.name}` });
         } else {
           toast({ variant: "destructive", title: "Error", description: "Invalid password provided." });
+          setLoading(false);
         }
       } else {
         toast({ variant: "destructive", title: "User Not Found", description: `ID ${cleanCode} is not registered.` });
+        setLoading(false);
       }
     } catch (error: any) {
       console.error("Login error:", error);
       toast({ variant: "destructive", title: "Connection Error", description: "Server is unreachable. Check internet." });
-    } finally {
       setLoading(false);
     }
   };

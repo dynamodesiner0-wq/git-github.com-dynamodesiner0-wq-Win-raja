@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -29,8 +30,6 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { collection, onSnapshot, setDoc, doc, query, orderBy, limit } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 
 interface UserRecord {
   id: string;
@@ -124,6 +123,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
     try {
       await setDoc(userRef, userData);
       toast({ title: "ID CREATED!", description: `Client ${code} is now active.` });
+      
       // Reset fields for unlimited creation
       setNewUserName(""); 
       setNewUserCode(""); 
@@ -131,11 +131,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
       setNewUserBalance("");
       setIsDialogOpen(false);
     } catch (e: any) {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ 
-        path: userRef.path, 
-        operation: 'write', 
-        requestResourceData: userData 
-      }));
+      console.error("Create User Error:", e);
       toast({ variant: "destructive", title: "Error", description: "Failed to create ID." });
     } finally {
       setLoading(false);
@@ -282,7 +278,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                     </tr>
                   </thead>
                   <tbody className="divide-y text-black">
-                    {users.filter(u => u.name?.toLowerCase().includes(searchQuery.toLowerCase()) || u.clientCode?.toLowerCase().includes(searchQuery.toLowerCase())).map(user => (
+                    {users.filter(u => (u.name || "").toLowerCase().includes(searchQuery.toLowerCase()) || (u.clientCode || "").toLowerCase().includes(searchQuery.toLowerCase())).map(user => (
                       <tr key={user.id} className="hover:bg-blue-50/30 transition-colors">
                         <td className="p-6 font-black uppercase">{user.name}</td>
                         <td className="p-6 font-mono text-blue-600 font-black">{user.clientCode}</td>
