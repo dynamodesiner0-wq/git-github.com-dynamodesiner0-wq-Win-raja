@@ -10,6 +10,9 @@ import { ProfileView } from "@/components/dashboard/ProfileView";
 import { SmartPredictorModal } from "@/components/predictor/SmartPredictorModal";
 import { fetchLiveMatches, type LiveMatchData } from "@/lib/api/sports";
 import { useToast } from "@/hooks/use-toast";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { ReceiptText, Badge } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const { toast } = useToast();
@@ -18,6 +21,7 @@ export default function Home() {
   const [liveMatches, setLiveMatches] = useState<LiveMatchData[]>([]);
   const [activeMatch, setActiveMatch] = useState<LiveMatchData | null>(null);
   const [activeView, setActiveView] = useState<'exchange' | 'profile'>('exchange');
+  const [isMobileSlipOpen, setIsMobileSlipOpen] = useState(false);
   
   // Real Betting State
   const [balance, setBalance] = useState(15000.00);
@@ -45,6 +49,10 @@ export default function Home() {
       sport: "CRICKET"
     };
     setSelections(prev => [newSelection, ...prev]);
+    // Auto open slip on mobile when a selection is made
+    if (window.innerWidth < 1280) {
+      setIsMobileSlipOpen(true);
+    }
   };
 
   const removeSelection = (id: string) => {
@@ -54,6 +62,15 @@ export default function Home() {
   const clearSelections = () => setSelections([]);
 
   const handlePlaceBets = (totalStake: number) => {
+    if (!totalStake || totalStake <= 0) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Stake",
+        description: "Please enter a valid amount to bet.",
+      });
+      return;
+    }
+
     if (totalStake > balance) {
       toast({
         variant: "destructive",
@@ -74,6 +91,7 @@ export default function Home() {
     setExposure(prev => prev + totalStake);
     setMyBets(prev => [...newBets, ...prev]);
     setSelections([]);
+    setIsMobileSlipOpen(false);
 
     toast({
       title: "Bets Placed Successfully!",
@@ -102,7 +120,37 @@ export default function Home() {
           ) : (
             <ProfileView balance={balance} exposure={exposure} myBets={myBets} />
           )}
+
+          {/* Mobile Bet Slip Trigger */}
+          {activeView === 'exchange' && selections.length > 0 && (
+            <div className="xl:hidden fixed bottom-4 right-4 z-50">
+              <Sheet open={isMobileSlipOpen} onOpenChange={setIsMobileSlipOpen}>
+                <SheetTrigger asChild>
+                  <Button className="rounded-full h-14 w-14 bg-accent shadow-2xl animate-bounce">
+                    <div className="relative">
+                      <ReceiptText className="h-6 w-6" />
+                      <span className="absolute -top-3 -right-3 bg-red-600 text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center border-2 border-white">
+                        {selections.length}
+                      </span>
+                    </div>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="h-[80vh] p-0 bg-[#f0f2f5] border-t-2 border-accent">
+                  <BettingSlip 
+                    selections={selections} 
+                    myBets={myBets}
+                    onRemove={removeSelection} 
+                    onClear={clearSelections}
+                    onPlaceBets={handlePlaceBets}
+                    isMobile
+                  />
+                </SheetContent>
+              </Sheet>
+            </div>
+          )}
         </main>
+        
+        {/* Desktop Sidebar Slip */}
         {activeView === 'exchange' && (
           <BettingSlip 
             selections={selections} 

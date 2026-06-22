@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { X, Trash2, Wallet, Zap, ReceiptText, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface BettingSlipProps {
   selections: any[];
@@ -14,21 +15,25 @@ interface BettingSlipProps {
   onRemove: (id: string) => void;
   onClear: () => void;
   onPlaceBets: (stake: number) => void;
+  isMobile?: boolean;
 }
 
-export function BettingSlip({ selections, myBets, onRemove, onClear, onPlaceBets }: BettingSlipProps) {
+export function BettingSlip({ selections, myBets, onRemove, onClear, onPlaceBets, isMobile }: BettingSlipProps) {
   const [stake, setStake] = useState("100");
 
-  const totalStakeValue = parseFloat(stake) * selections.length;
+  const stakeNum = parseFloat(stake) || 0;
+  const totalStakeValue = stakeNum * selections.length;
 
   const totalReturn = selections.reduce((acc, sel) => {
-    const s = parseFloat(stake) || 0;
     const p = parseFloat(sel.price) || 0;
-    return acc + (s * p);
+    return acc + (stakeNum * p);
   }, 0);
 
   return (
-    <div className="hidden xl:flex flex-col w-80 shrink-0 border-l h-[calc(100vh-64px)] bg-card/10 p-4 gap-4">
+    <div className={cn(
+      "flex flex-col h-full bg-card/10 p-4 gap-4",
+      isMobile ? "w-full" : "hidden xl:flex w-80 shrink-0 border-l h-[calc(100vh-64px)]"
+    )}>
       <Tabs defaultValue="slip" className="w-full flex-1 flex flex-col">
         <TabsList className="w-full bg-secondary/50 mb-4 h-11 p-1">
           <TabsTrigger value="slip" className="flex-1 font-bold gap-2">
@@ -39,7 +44,7 @@ export function BettingSlip({ selections, myBets, onRemove, onClear, onPlaceBets
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="slip" className="flex-1 flex flex-col gap-4 mt-0">
+        <TabsContent value="slip" className="flex-1 flex flex-col gap-4 mt-0 overflow-hidden">
           <div className="space-y-3 flex-1 overflow-y-auto custom-scrollbar pr-1">
             {selections.length === 0 ? (
               <div className="text-center py-20 opacity-50 flex flex-col items-center gap-3">
@@ -72,15 +77,16 @@ export function BettingSlip({ selections, myBets, onRemove, onClear, onPlaceBets
             )}
           </div>
 
-          <div className="mt-auto pt-4 border-t border-border space-y-4">
+          <div className="mt-auto pt-4 border-t border-border space-y-4 bg-background/50 p-2 -mx-2 -mb-2 rounded-t-2xl">
             <div className="space-y-2">
               <div className="flex justify-between items-center px-1">
                 <span className="text-xs font-bold text-muted-foreground uppercase">Enter Stake</span>
-                <span className="text-[10px] font-bold text-accent cursor-pointer hover:underline">MAX BET</span>
+                <span className="text-[10px] font-bold text-accent cursor-pointer hover:underline" onClick={() => setStake("10000")}>MAX BET</span>
               </div>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-mono">$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-mono">₹</span>
                 <Input 
+                  type="number"
                   value={stake}
                   onChange={(e) => setStake(e.target.value)}
                   className="pl-8 bg-secondary/80 border-border text-lg font-bold font-mono h-12 rounded-xl focus-visible:ring-accent"
@@ -93,7 +99,10 @@ export function BettingSlip({ selections, myBets, onRemove, onClear, onPlaceBets
                 <button 
                   key={v}
                   onClick={() => setStake(v)}
-                  className="py-2 text-[10px] font-bold bg-secondary hover:bg-secondary/80 rounded-lg border border-border transition-all active:scale-90"
+                  className={cn(
+                    "py-2 text-[10px] font-bold rounded-lg border border-border transition-all active:scale-90",
+                    stake === v ? "bg-accent text-white border-accent" : "bg-secondary hover:bg-secondary/80"
+                  )}
                 >
                   {v}
                 </button>
@@ -103,7 +112,7 @@ export function BettingSlip({ selections, myBets, onRemove, onClear, onPlaceBets
             <div className="space-y-2 bg-secondary/20 p-4 rounded-xl border border-border/50">
               <div className="flex justify-between text-xs font-medium text-muted-foreground">
                 <span>Total Stake</span>
-                <span>₹{totalStakeValue.toLocaleString()}</span>
+                <span className="text-white font-bold">₹{totalStakeValue.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-lg font-bold text-white">
                 <span>Est. Return</span>
@@ -114,7 +123,7 @@ export function BettingSlip({ selections, myBets, onRemove, onClear, onPlaceBets
             <Button 
               onClick={() => onPlaceBets(totalStakeValue)}
               disabled={selections.length === 0 || totalStakeValue <= 0}
-              className="w-full h-14 rounded-xl bg-accent text-accent-foreground font-black text-lg shadow-[0_0_20px_rgba(30,174,219,0.3)] flex items-center justify-center gap-2 group transition-all enabled:active:scale-95"
+              className="w-full h-14 rounded-xl bg-accent text-accent-foreground font-black text-lg shadow-[0_0_20px_rgba(30,174,219,0.3)] flex items-center justify-center gap-2 group transition-all enabled:active:scale-95 disabled:opacity-50"
             >
               <Zap className="h-5 w-5 fill-current group-hover:scale-125 transition-transform" />
               PLACE BETS
@@ -122,7 +131,7 @@ export function BettingSlip({ selections, myBets, onRemove, onClear, onPlaceBets
             
             <button 
               onClick={onClear}
-              className="w-full flex items-center justify-center gap-2 text-[10px] font-bold text-muted-foreground hover:text-destructive transition-colors"
+              className="w-full flex items-center justify-center gap-2 text-[10px] font-bold text-muted-foreground hover:text-destructive transition-colors pb-2"
             >
               <Trash2 className="h-3.5 w-3.5" />
               CLEAR ALL SELECTIONS
@@ -140,7 +149,7 @@ export function BettingSlip({ selections, myBets, onRemove, onClear, onPlaceBets
                <p className="text-xs text-muted-foreground/60 mt-1">Your recent activity will appear here.</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-3 pb-20">
               {myBets.map((bet, i) => (
                 <div key={i} className="bg-secondary/40 p-3 rounded-xl border border-border">
                   <div className="flex justify-between items-start mb-2">
