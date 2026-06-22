@@ -86,7 +86,6 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     if (!db) return;
     setLoading(true);
     try {
-      // Removed orderBy to ensure data shows even if createdAt is missing
       const q = query(collection(db, "users"));
       const querySnapshot = await getDocs(q);
       const userList = querySnapshot.docs.map(doc => ({
@@ -144,7 +143,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     
     setDoc(userRef, newUserDoc)
       .then(() => {
-        toast({ title: "ID Created Successfully", description: `${cleanCode} has been added.` });
+        toast({ title: "ID Created Successfully", description: `${cleanCode} has been added to Firebase.` });
         setNewUserName(""); 
         setNewUserCode(""); 
         setNewUserPassword(""); 
