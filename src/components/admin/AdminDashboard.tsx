@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { collection, getDocs, setDoc, doc, updateDoc, increment, query, orderBy, limit, onSnapshot, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, setDoc, doc, updateDoc, increment, query, orderBy, limit, onSnapshot } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
@@ -86,7 +86,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     if (!db) return;
     setLoading(true);
     try {
-      // Removed orderBy to avoid missing field errors preventing data display
+      // Removed orderBy to ensure data shows even if createdAt is missing
       const q = query(collection(db, "users"));
       const querySnapshot = await getDocs(q);
       const userList = querySnapshot.docs.map(doc => ({
