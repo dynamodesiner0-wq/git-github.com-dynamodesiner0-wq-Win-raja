@@ -169,7 +169,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   };
 
   return (
-    <div className="flex-1 bg-[#f0f2f5] flex flex-col h-screen overflow-hidden font-body">
+    <div className="flex-1 bg-[#f0f2f5] flex flex-col h-screen overflow-hidden font-body text-black">
       <header className="bg-[#0b2146] text-white p-4 flex justify-between shadow-xl shrink-0">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center p-1 shadow-lg overflow-hidden">
@@ -218,7 +218,12 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
             <div className="flex gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search ID..." className="pl-12 h-14 rounded-2xl bg-white shadow-sm border-none text-[#0b2146] font-bold" />
+                <Input 
+                  value={searchQuery} 
+                  onChange={(e) => setSearchQuery(e.target.value)} 
+                  placeholder="Search ID..." 
+                  className="pl-12 h-14 rounded-2xl bg-white shadow-sm border-none text-black font-bold" 
+                />
               </div>
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild><Button className="h-14 px-8 bg-blue-600 hover:bg-blue-700 rounded-2xl font-black uppercase text-xs gap-2 shadow-xl"><UserPlus className="h-4 w-4" /> Create New ID</Button></DialogTrigger>
@@ -227,19 +232,41 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                   <div className="space-y-4 py-4">
                     <div className="space-y-1">
                       <label className="text-[10px] font-black uppercase opacity-40 ml-1">Client Name</label>
-                      <Input value={newUserName} onChange={(e) => setNewUserName(e.target.value)} placeholder="Full Name" className="h-14 rounded-xl text-[#0b2146] font-bold" />
+                      <Input 
+                        value={newUserName} 
+                        onChange={(e) => setNewUserName(e.target.value)} 
+                        placeholder="Full Name" 
+                        className="h-14 rounded-xl text-black bg-white font-bold border-2" 
+                      />
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-black uppercase opacity-40 ml-1">Client ID</label>
-                      <Input value={newUserCode} onChange={(e) => setNewUserCode(e.target.value)} placeholder="e.g. C101" className="h-14 rounded-xl text-[#0b2146] font-bold uppercase" />
+                      <Input 
+                        value={newUserCode} 
+                        onChange={(e) => setNewUserCode(e.target.value)} 
+                        placeholder="e.g. C101" 
+                        className="h-14 rounded-xl text-black bg-white font-bold uppercase border-2" 
+                      />
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-black uppercase opacity-40 ml-1">Password</label>
-                      <Input value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} placeholder="Set Password" type="text" className="h-14 rounded-xl text-[#0b2146] font-bold" />
+                      <Input 
+                        value={newUserPassword} 
+                        onChange={(e) => setNewUserPassword(e.target.value)} 
+                        placeholder="Set Password" 
+                        type="text" 
+                        className="h-14 rounded-xl text-black bg-white font-bold border-2" 
+                      />
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-black uppercase opacity-40 ml-1">Initial Deposit</label>
-                      <Input value={newUserBalance} onChange={(e) => setNewUserBalance(e.target.value)} type="number" placeholder="0.00" className="h-14 rounded-xl text-[#0b2146] font-bold" />
+                      <Input 
+                        value={newUserBalance} 
+                        onChange={(e) => setNewUserBalance(e.target.value)} 
+                        type="number" 
+                        placeholder="0.00" 
+                        className="h-14 rounded-xl text-black bg-white font-bold border-2" 
+                      />
                     </div>
                   </div>
                   <DialogFooter><Button onClick={handleCreateUser} disabled={loading} className="w-full h-14 bg-[#0b2146] text-white font-black uppercase rounded-xl text-lg shadow-xl active:scale-95 transition-all">SAVE TO CLOUD</Button></DialogFooter>
@@ -255,14 +282,14 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                       <th className="p-6">Client Name</th><th className="p-6">ID Code</th><th className="p-6">Password</th><th className="p-6">Balance</th><th className="p-6 text-right">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y">
+                  <tbody className="divide-y text-black">
                     {users.filter(u => u.name?.toLowerCase().includes(searchQuery.toLowerCase()) || u.clientCode?.toLowerCase().includes(searchQuery.toLowerCase())).map(user => (
                       <tr key={user.id} className="hover:bg-blue-50/30 transition-colors">
-                        <td className="p-6 font-black text-[#0b2146] uppercase">{user.name}</td>
+                        <td className="p-6 font-black uppercase">{user.name}</td>
                         <td className="p-6 font-mono text-blue-600 font-black">{user.clientCode}</td>
                         <td className="p-6">
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-sm text-[#0b2146]">{showPasswords[user.clientCode] ? user.password : "••••••"}</span>
+                            <span className="font-mono text-sm">{showPasswords[user.clientCode] ? user.password : "••••••"}</span>
                             <button onClick={() => setShowPasswords(p => ({...p, [user.clientCode]: !p[user.clientCode]}))} className="text-muted-foreground hover:text-blue-600">
                               {showPasswords[user.clientCode] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </button>
@@ -288,16 +315,16 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                   <thead className="bg-[#f8f9fb] border-b text-[10px] font-black opacity-40 uppercase">
                     <tr><th className="p-6">User</th><th className="p-6">Market</th><th className="p-6">Stake</th><th className="p-6">Status</th></tr>
                   </thead>
-                  <tbody className="divide-y">
+                  <tbody className="divide-y text-black">
                     {liveBets.length === 0 ? (
                       <tr><td colSpan={4} className="p-20 text-center opacity-30 font-black uppercase text-xs">Waiting for bets...</td></tr>
                     ) : (
                       liveBets.map(bet => (
                         <tr key={bet.id}>
-                          <td className="p-6 font-black text-xs uppercase text-[#0b2146]">{bet.userName} <span className="opacity-40 font-mono ml-2">({bet.userId})</span></td>
+                          <td className="p-6 font-black text-xs uppercase">{bet.userName} <span className="opacity-40 font-mono ml-2">({bet.userId})</span></td>
                           <td className="p-6 text-xs flex flex-col">
-                            <span className="font-black text-[#0b2146] uppercase">{bet.sport} • {bet.team}</span>
-                            <span className="opacity-50 uppercase text-[9px] text-[#0b2146]">{bet.market}</span>
+                            <span className="font-black uppercase">{bet.sport} • {bet.team}</span>
+                            <span className="opacity-50 uppercase text-[9px]">{bet.market}</span>
                           </td>
                           <td className="p-6 font-black text-blue-600">₹{bet.stake?.toLocaleString()}</td>
                           <td className="p-6"><Badge className={cn("uppercase text-[9px] font-black", bet.type === 'Lagai' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600')}>{bet.type}</Badge></td>
