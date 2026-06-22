@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -95,10 +96,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   }, [db]);
 
   const handleCreateUser = async () => {
-    if (!db) {
-      toast({ variant: "destructive", title: "Wait", description: "Cloud not ready." });
-      return;
-    }
+    if (!db) return;
     
     const code = newUserCode.trim().toUpperCase();
     if (!newUserName || !code || !newUserPassword) {
@@ -222,7 +220,9 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild><Button className="h-14 px-8 bg-blue-600 hover:bg-blue-700 rounded-2xl font-black uppercase text-xs gap-2 shadow-xl"><UserPlus className="h-4 w-4" /> Create New ID</Button></DialogTrigger>
                 <DialogContent className="rounded-3xl bg-white border-none p-8 max-w-md">
-                  <DialogHeader><DialogTitle className="font-black uppercase text-xl text-[#0b2146]">New Client ID</DialogTitle></DialogHeader>
+                  <DialogHeader>
+                    <DialogTitle className="font-black uppercase text-xl text-[#0b2146]">New Client ID</DialogTitle>
+                  </DialogHeader>
                   <div className="space-y-4 py-4 text-black">
                     <div className="space-y-1">
                       <label className="text-[10px] font-black uppercase opacity-40 ml-1">Client Name</label>
@@ -230,7 +230,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                         value={newUserName} 
                         onChange={(e) => setNewUserName(e.target.value)} 
                         placeholder="Full Name" 
-                        className="h-14 rounded-xl text-black bg-white font-bold border-2" 
+                        className="h-14 rounded-xl text-[#0b2146] bg-white font-bold border-2" 
                       />
                     </div>
                     <div className="space-y-1">
@@ -239,7 +239,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                         value={newUserCode} 
                         onChange={(e) => setNewUserCode(e.target.value)} 
                         placeholder="e.g. C101" 
-                        className="h-14 rounded-xl text-black bg-white font-bold uppercase border-2" 
+                        className="h-14 rounded-xl text-[#0b2146] bg-white font-bold uppercase border-2" 
                       />
                     </div>
                     <div className="space-y-1">
@@ -249,7 +249,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                         onChange={(e) => setNewUserPassword(e.target.value)} 
                         placeholder="Set Password" 
                         type="text" 
-                        className="h-14 rounded-xl text-black bg-white font-bold border-2" 
+                        className="h-14 rounded-xl text-[#0b2146] bg-white font-bold border-2" 
                       />
                     </div>
                     <div className="space-y-1">
@@ -259,11 +259,13 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                         onChange={(e) => setNewUserBalance(e.target.value)} 
                         type="number" 
                         placeholder="0.00" 
-                        className="h-14 rounded-xl text-black bg-white font-bold border-2" 
+                        className="h-14 rounded-xl text-[#0b2146] bg-white font-bold border-2" 
                       />
                     </div>
                   </div>
-                  <DialogFooter><Button onClick={handleCreateUser} disabled={loading} className="w-full h-14 bg-[#0b2146] text-white font-black uppercase rounded-xl text-lg shadow-xl active:scale-95 transition-all">SAVE TO CLOUD</Button></DialogFooter>
+                  <DialogFooter>
+                    <Button onClick={handleCreateUser} disabled={loading} className="w-full h-14 bg-[#0b2146] text-white font-black uppercase rounded-xl text-lg shadow-xl active:scale-95 transition-all">SAVE TO CLOUD</Button>
+                  </DialogFooter>
                 </DialogContent>
               </Dialog>
             </div>

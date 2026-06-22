@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -25,15 +26,11 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
     const trigger = clientCode.trim().toLowerCase();
     if (trigger === "winraja@main" || trigger === "admin@raja") {
       onAdminPortal();
-      setClientCode(""); 
     }
   }, [clientCode, onAdminPortal]);
 
   const handleLogin = async () => {
-    if (!db) {
-      toast({ variant: "destructive", title: "Wait!", description: "Cloud connection initializing." });
-      return;
-    }
+    if (!db) return;
 
     const cleanCode = clientCode.trim().toUpperCase();
     const cleanPass = password.trim();
@@ -52,23 +49,22 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
         const userData = userSnap.data();
         if (userData.password === cleanPass) {
           if (userData.status === "Suspended") {
-            toast({ variant: "destructive", title: "Account Blocked", description: "Please contact administrator." });
+            toast({ variant: "destructive", title: "Account Blocked" });
             setLoading(false);
             return;
           }
-          // Fast transition
+          // Direct success call for speed
           onLoginSuccess({ ...userData, clientCode: cleanCode });
         } else {
-          toast({ variant: "destructive", title: "Error", description: "Invalid password provided." });
+          toast({ variant: "destructive", title: "Invalid Password" });
           setLoading(false);
         }
       } else {
-        toast({ variant: "destructive", title: "User Not Found", description: `ID ${cleanCode} is not registered.` });
+        toast({ variant: "destructive", title: "User Not Found" });
         setLoading(false);
       }
     } catch (error: any) {
-      console.error("Login error:", error);
-      toast({ variant: "destructive", title: "Connection Error", description: "Server is unreachable." });
+      toast({ variant: "destructive", title: "Connection Error" });
       setLoading(false);
     }
   };
@@ -76,7 +72,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
   return (
     <div className="min-h-screen bg-[#0b2146] flex items-center justify-center p-4 font-body">
       <div className="w-full max-w-[420px] space-y-8 animate-in fade-in zoom-in duration-300">
-        <div className="text-center space-y-2">
+        <div className="text-center">
           <div className="h-32 w-full relative mb-4 flex items-center justify-center">
              <img 
                src="https://i.ibb.co/SwJ1N5zm/image-search-1782116031060.png" 
@@ -119,15 +115,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
               disabled={loading}
               className="w-full h-16 rounded-2xl bg-gradient-to-r from-[#1a4b8c] to-[#2c58a0] text-white font-black text-lg uppercase shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70"
             >
-              {loading ? (
-                <div className="flex items-center gap-2">
-                  <Loader2 className="h-5 w-5 animate-spin" /> Verifying...
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  Login <ArrowRight className="h-5 w-5" />
-                </div>
-              )}
+              {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : <div className="flex items-center gap-2">Login <ArrowRight className="h-5 w-5" /></div>}
             </Button>
           </div>
         </div>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Check } from "lucide-react";
@@ -33,13 +34,13 @@ export function Navbar({ onProfileClick, onLogoClick, balance, exposure, profitA
 
         {/* Stats Right */}
         <div className="flex items-center gap-1.5">
-          {/* BAL Box (Blue/Dark) */}
+          {/* BAL Box */}
           <div className="bg-[#0b2146]/40 rounded-lg px-3 py-1 flex flex-col items-start min-w-[80px] h-12 justify-center border border-white/10">
             <span className="text-[8px] font-bold text-white/50 leading-none uppercase">BAL</span>
             <span className="text-sm font-black text-white">{balance.toFixed(0)}</span>
           </div>
           
-          {/* EXP Box (White) */}
+          {/* EXP Box */}
           <div className="bg-white rounded-lg px-3 py-1 flex flex-col items-start min-w-[80px] h-12 justify-center shadow-md">
             <span className="text-[8px] font-bold text-[#1a4b8c]/50 leading-none uppercase">EXP</span>
             <span className="text-sm font-black text-[#1a4b8c]">{exposure.toFixed(0)}</span>

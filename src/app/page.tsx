@@ -31,6 +31,7 @@ export default function Home() {
   
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [selections, setSelections] = useState<any[]>([]);
   const [isPredictorOpen, setIsPredictorOpen] = useState(false);
   const [liveMatches, setLiveMatches] = useState<LiveMatchData[]>([]);
@@ -42,13 +43,30 @@ export default function Home() {
   const [exposure, setExposure] = useState(0);
   const [myBets, setMyBets] = useState<any[]>([]);
 
-  // Fast initialization when user logs in
+  // Persistent Session Management
   useEffect(() => {
-    if (currentUser) {
-      setBalance(currentUser.balance || 0);
-      setExposure(currentUser.exposure || 0);
+    const savedUser = localStorage.getItem("winraja_user");
+    const savedAdmin = localStorage.getItem("winraja_admin");
+    if (savedAdmin === "true") {
+      setIsAdmin(true);
+    } else if (savedUser) {
+      setCurrentUser(JSON.parse(savedUser));
     }
-  }, [currentUser]);
+    setIsInitializing(false);
+  }, []);
+
+  useEffect(() => {
+    if (isAdmin) {
+      localStorage.setItem("winraja_admin", "true");
+      localStorage.removeItem("winraja_user");
+    } else if (currentUser) {
+      localStorage.setItem("winraja_user", JSON.stringify(currentUser));
+      localStorage.removeItem("winraja_admin");
+    } else {
+      localStorage.removeItem("winraja_user");
+      localStorage.removeItem("winraja_admin");
+    }
+  }, [isAdmin, currentUser]);
 
   // Sync user data in real-time if logged in
   useEffect(() => {
@@ -60,8 +78,6 @@ export default function Home() {
         setBalance(data.balance || 0);
         setExposure(data.exposure || 0);
       }
-    }, (err) => {
-      console.error("User sync error:", err);
     });
   }, [db, currentUser]);
 
@@ -82,7 +98,7 @@ export default function Home() {
   }, [toast]);
 
   const handlePlaceBets = async (totalStake: number) => {
-    if (totalStake <= 0 || !currentUser) return;
+    if (totalStake <= 0 || !currentUser || !db) return;
     if (totalStake > balance) {
       toast({ variant: "destructive", title: "Insufficient Balance" });
       return;
@@ -94,16 +110,29 @@ export default function Home() {
     setSelections([]);
     setIsMobileSlipOpen(false);
 
-    if (db) {
-      const userRef = doc(db, "users", currentUser.clientCode.toUpperCase());
-      updateDoc(userRef, { balance: increment(-totalStake), exposure: increment(totalStake) });
-      newBets.forEach(bet => addDoc(collection(db, "bets"), bet));
-    }
+    const userRef = doc(db, "users", currentUser.clientCode.toUpperCase());
+    updateDoc(userRef, { balance: increment(-totalStake), exposure: increment(totalStake) });
+    newBets.forEach(bet => addDoc(collection(db, "bets"), bet));
     toast({ title: "Success! Bets Placed" });
   };
 
+  const handleLogout = () => {
+    setIsAdmin(false);
+    setCurrentUser(null);
+    localStorage.removeItem("winraja_user");
+    localStorage.removeItem("winraja_admin");
+  };
+
+  if (isInitializing) {
+    return (
+      <div className="h-screen bg-[#0b2146] flex items-center justify-center">
+        <img src="https://i.ibb.co/SwJ1N5zm/image-search-1782116031060.png" className="h-20 animate-pulse" alt="Loading" />
+      </div>
+    );
+  }
+
   if (isAdmin) {
-    return <AdminDashboard onLogout={() => { setIsAdmin(false); setCurrentUser(null); }} />;
+    return <AdminDashboard onLogout={handleLogout} />;
   }
 
   if (!currentUser) {
@@ -157,7 +186,7 @@ export default function Home() {
           ) : activeView === 'complete' ? (
             <CompleteGamesView onBackToMenu={() => setActiveView('main')} />
           ) : (
-            <ProfileView user={currentUser} balance={balance} exposure={exposure} myBets={myBets} onBackToMenu={() => setActiveView('main')} onLogout={() => setCurrentUser(null)} />
+            <ProfileView user={currentUser} balance={balance} exposure={exposure} myBets={myBets} onBackToMenu={() => setActiveView('main')} onLogout={handleLogout} />
           )}
 
           {activeView === 'exchange' && selections.length > 0 && (
