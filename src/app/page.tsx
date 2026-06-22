@@ -60,7 +60,7 @@ export default function Home() {
     setIsInitializing(false);
   }, []);
 
-  // Sync state to localStorage
+  // Sync state to localStorage to prevent data loss on refresh
   useEffect(() => {
     if (isAdmin) {
       localStorage.setItem("winraja_admin", "true");
@@ -68,11 +68,11 @@ export default function Home() {
     } else if (currentUser) {
       localStorage.setItem("winraja_user", JSON.stringify(currentUser));
       localStorage.removeItem("winraja_admin");
-    } else {
+    } else if (!isInitializing) {
       localStorage.removeItem("winraja_admin");
       localStorage.removeItem("winraja_user");
     }
-  }, [isAdmin, currentUser]);
+  }, [isAdmin, currentUser, isInitializing]);
 
   // Real-time Firestore sync for user data
   useEffect(() => {
