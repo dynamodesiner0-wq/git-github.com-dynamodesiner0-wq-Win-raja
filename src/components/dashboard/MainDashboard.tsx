@@ -18,14 +18,28 @@ interface DashboardCardProps {
   onClick: () => void;
 }
 
-function DashboardCard({ title, icon: Icon, onClick }: DashboardCardProps) {
+function DashboardCard({ title, icon, onClick }: DashboardCardProps) {
+  const isImageUrl = typeof icon === 'string';
+  
   return (
     <button 
       onClick={onClick}
-      className="bg-white rounded-[2rem] p-6 flex flex-col items-center justify-center gap-4 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-blue-50 hover:scale-[1.02] transition-transform aspect-square group"
+      className="bg-white rounded-[2rem] p-6 flex flex-col items-center justify-center gap-4 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-blue-50 hover:scale-[1.02] transition-transform aspect-square group overflow-hidden"
     >
-      <div className="h-20 w-20 flex items-center justify-center">
-        <Icon className="h-16 w-16 text-[#1a4b8c] group-hover:scale-110 transition-transform duration-300" />
+      <div className="h-20 w-full flex items-center justify-center">
+        {isImageUrl ? (
+          <img 
+            src={icon} 
+            alt={title} 
+            className="h-full w-full object-contain group-hover:scale-110 transition-transform duration-300"
+            data-ai-hint="sports banner"
+          />
+        ) : (
+          (() => {
+            const Icon = icon;
+            return <Icon className="h-16 w-16 text-[#1a4b8c] group-hover:scale-110 transition-transform duration-300" />;
+          })()
+        )}
       </div>
       <span className="text-sm font-black text-[#0b2146] uppercase tracking-tight">{title}</span>
     </button>
@@ -38,7 +52,11 @@ interface MainDashboardProps {
 
 export function MainDashboard({ onViewChange }: MainDashboardProps) {
   const menuItems = [
-    { title: "In Play", icon: Trophy, view: 'inplay' as const },
+    { 
+      title: "In Play", 
+      icon: "https://i.ibb.co/mFBqVD8f/image-search-1782096841440.png", 
+      view: 'inplay' as const 
+    },
     { title: "Casino", icon: Gamepad2, view: 'casino' as const },
     { title: "Aviator", icon: Plane, view: 'aviator' as const },
     { title: "Chicken Road", icon: Bird, view: 'chicken' as const },
