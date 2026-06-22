@@ -86,7 +86,8 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     if (!db) return;
     setLoading(true);
     try {
-      const q = query(collection(db, "users"), orderBy("createdAt", "desc"));
+      // Removed orderBy to ensure documents show up even if createdAt is missing
+      const q = query(collection(db, "users"));
       const querySnapshot = await getDocs(q);
       const userList = querySnapshot.docs.map(doc => ({
         id: doc.id,
