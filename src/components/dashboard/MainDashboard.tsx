@@ -56,7 +56,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
     { 
       title: "Casino", 
       view: 'casino' as const,
-      imageUrl: "https://i.ibb.co/spQhXY5V/image-search-1782097782566.jpg" 
+      imageUrl: "https://i.ibb.co/Rp5QKFG7/casino.png" 
     },
     { 
       title: "Aviator", 
