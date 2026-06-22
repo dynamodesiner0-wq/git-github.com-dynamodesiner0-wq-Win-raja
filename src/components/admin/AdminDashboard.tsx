@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { collection, getDocs, setDoc, doc, query, orderBy, limit, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, setDoc, doc, query, orderBy, limit } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -73,23 +73,21 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   const [newUserPassword, setNewUserPassword] = useState("");
   const [newUserBalance, setNewUserBalance] = useState("");
 
-  const fetchUsers = useCallback(async () => {
+  // Real-time listener for users
+  useEffect(() => {
     if (!db) return;
-    setLoading(true);
-    try {
-      const q = collection(db, "users");
-      const snap = await getDocs(q);
+    const q = collection(db, "users");
+    const unsub = onSnapshot(q, (snap) => {
       const list = snap.docs.map(d => ({ id: d.id, ...d.data() } as UserRecord));
       setUsers(list);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
+    }, (err) => {
+      console.error("Users snapshot error:", err);
+    });
+    return () => unsub();
   }, [db]);
 
+  // Real-time listener for bets
   useEffect(() => {
-    fetchUsers();
     if (!db) return;
     const qBets = query(collection(db, "bets"), orderBy("timestamp", "desc"), limit(20));
     const unsub = onSnapshot(qBets, (s) => {
@@ -98,7 +96,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
        console.error("Bets snapshot error:", err);
     });
     return () => unsub();
-  }, [db, fetchUsers]);
+  }, [db]);
 
   const handleCreateUser = async () => {
     if (!db) {
@@ -131,7 +129,6 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
         setNewUserCode(""); 
         setNewUserPassword(""); 
         setNewUserBalance("");
-        fetchUsers();
       })
       .catch((e) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({ path: userRef.path, operation: 'write', requestResourceData: userData }));
@@ -158,7 +155,6 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
     setDoc(userRef, seedData)
       .then(() => {
         toast({ title: "Seed Successful", description: "Praveen ID (C885929) ready hai." });
-        fetchUsers();
       })
       .catch((e) => {
         toast({ variant: "destructive", title: "Seed Failed" });
@@ -170,8 +166,12 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
     <div className="flex-1 bg-[#f0f2f5] flex flex-col h-screen overflow-hidden font-body">
       <header className="bg-[#0b2146] text-white p-4 flex justify-between shadow-xl shrink-0">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-yellow-500 rounded-xl flex items-center justify-center text-black shadow-lg">
-            <Settings className="h-6 w-6" />
+          <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center p-1 shadow-lg overflow-hidden">
+            <img 
+              src="https://i.ibb.co/SwJ1N5zm/image-search-1782116031060.png" 
+              alt="WinRaja" 
+              className="h-full w-auto object-contain"
+            />
           </div>
           <h1 className="text-lg font-black uppercase tracking-tighter italic">WinRaja Admin Panel</h1>
         </div>
@@ -250,7 +250,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {users.filter(u => u.name.toLowerCase().includes(searchQuery.toLowerCase()) || u.clientCode.toLowerCase().includes(searchQuery.toLowerCase())).map(user => (
+                    {users.filter(u => u.name?.toLowerCase().includes(searchQuery.toLowerCase()) || u.clientCode?.toLowerCase().includes(searchQuery.toLowerCase())).map(user => (
                       <tr key={user.id} className="hover:bg-blue-50/30 transition-colors">
                         <td className="p-6 font-black text-[#0b2146] uppercase">{user.name}</td>
                         <td className="p-6 font-mono text-blue-600 font-black">{user.clientCode}</td>
@@ -266,6 +266,9 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                         <td className="p-6 text-right"><Badge className="bg-green-500 font-black text-[9px] h-5 px-3 uppercase">{user.status}</Badge></td>
                       </tr>
                     ))}
+                    {users.length === 0 && (
+                      <tr><td colSpan={5} className="p-20 text-center opacity-30 font-black uppercase text-xs">No Clients Found...</td></tr>
+                    )}
                   </tbody>
                 </table>
               </div>
