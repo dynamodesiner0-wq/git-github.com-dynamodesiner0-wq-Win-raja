@@ -10,7 +10,7 @@ import { ProfileView } from "@/components/dashboard/ProfileView";
 import { SmartPredictorModal } from "@/components/predictor/SmartPredictorModal";
 import { fetchLiveMatches, type LiveMatchData } from "@/lib/api/sports";
 import { useToast } from "@/hooks/use-toast";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ReceiptText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -40,7 +40,6 @@ export default function Home() {
   }, []);
 
   const handleSelectMarket = (team: string, market: string, type: 'Lagai' | 'Khai', price: string) => {
-    console.log("Selection made:", { team, market, type, price });
     const newSelection = {
       id: `${team}-${market}-${type}-${Date.now()}`,
       team,
@@ -144,6 +143,9 @@ export default function Home() {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="bottom" className="h-[85vh] p-0 bg-[#f0f2f5] border-t-4 border-accent rounded-t-3xl">
+                  <SheetHeader className="sr-only">
+                    <SheetTitle>Betting Slip</SheetTitle>
+                  </SheetHeader>
                   <BettingSlip 
                     selections={selections} 
                     myBets={myBets}
