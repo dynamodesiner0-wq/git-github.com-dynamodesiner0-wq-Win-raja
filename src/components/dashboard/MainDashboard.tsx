@@ -51,7 +51,8 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
     { 
       title: "In Play", 
       view: 'inplay' as const,
-      imageUrl: "https://i.ibb.co/mFBqVD8f/image-search-1782096841440.png" 
+      imageUrl: "https://i.ibb.co/mFBqVD8f/image-search-1782096841440.png",
+      isLarge: true
     },
     { 
       title: "Casino", 
@@ -81,7 +82,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
     { 
       title: "My Ledger", 
       view: 'profile' as const,
-      imageUrl: "https://picsum.photos/seed/ledger-placeholder/200/200" 
+      imageUrl: "https://i.ibb.co/GvH3WBRz/CL.png" 
     },
     { 
       title: "Change Password", 
@@ -109,6 +110,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
             key={i} 
             title={item.title} 
             imageUrl={item.imageUrl}
+            isLarge={item.isLarge}
             onClick={() => onViewChange(item.view)}
           />
         ))}
