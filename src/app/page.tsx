@@ -43,7 +43,7 @@ export default function Home() {
   const [exposure, setExposure] = useState(0);
   const [myBets, setMyBets] = useState<any[]>([]);
 
-  // Robust Session Persistence
+  // Robust Session Persistence - Reads from localStorage on mount
   useEffect(() => {
     const savedAdmin = localStorage.getItem("winraja_admin");
     const savedUser = localStorage.getItem("winraja_user");
@@ -51,12 +51,16 @@ export default function Home() {
     if (savedAdmin === "true") {
       setIsAdmin(true);
     } else if (savedUser) {
-      setCurrentUser(JSON.parse(savedUser));
+      try {
+        setCurrentUser(JSON.parse(savedUser));
+      } catch (e) {
+        localStorage.removeItem("winraja_user");
+      }
     }
     setIsInitializing(false);
   }, []);
 
-  // Sync state to localStorage
+  // Sync state to localStorage whenever it changes
   useEffect(() => {
     if (isAdmin) {
       localStorage.setItem("winraja_admin", "true");
@@ -64,6 +68,9 @@ export default function Home() {
     } else if (currentUser) {
       localStorage.setItem("winraja_user", JSON.stringify(currentUser));
       localStorage.removeItem("winraja_admin");
+    } else {
+      localStorage.removeItem("winraja_admin");
+      localStorage.removeItem("winraja_user");
     }
   }, [isAdmin, currentUser]);
 
