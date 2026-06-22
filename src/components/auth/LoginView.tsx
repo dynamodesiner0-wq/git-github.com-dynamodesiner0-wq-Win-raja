@@ -4,8 +4,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, User, Lock, ArrowRight, Wifi, WifiOff, Loader2 } from "lucide-react";
+import { ShieldCheck, User, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { doc, getDoc } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
@@ -77,24 +76,12 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
     <div className="min-h-screen bg-[#0b2146] flex items-center justify-center p-4 font-body">
       <div className="w-full max-w-[420px] space-y-8 animate-in fade-in zoom-in duration-500">
         <div className="text-center space-y-2">
-          <div className="h-24 w-full relative mb-4 flex items-center justify-center">
+          <div className="h-32 w-full relative mb-4 flex items-center justify-center">
              <img 
                src="https://i.ibb.co/SwJ1N5zm/image-search-1782116031060.png" 
                alt="WinRaja Logo" 
                className="h-full object-contain drop-shadow-2xl"
              />
-          </div>
-          <div className="flex flex-col items-center">
-            <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">
-              WinRaja <span className="text-blue-400">Exchange</span>
-            </h1>
-            <Badge 
-              variant={db ? "outline" : "destructive"} 
-              className={cn("mt-2 flex gap-1 items-center font-black uppercase transition-all", db ? "text-green-400 border-green-400/30" : "animate-pulse")}
-            >
-              {db ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
-              {db ? "Cloud Sync Active" : "Connecting to Database..."}
-            </Badge>
           </div>
           <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] mt-2">Precision Sports Betting Platform</p>
         </div>
