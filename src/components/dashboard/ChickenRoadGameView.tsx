@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, Car, Trophy, ChevronUp, Zap, Skull } from "lucide-react";
 import { cn } from "@/lib/utils";
