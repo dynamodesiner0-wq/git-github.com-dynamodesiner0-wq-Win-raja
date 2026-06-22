@@ -217,9 +217,9 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <Button onClick={fetchUsers} disabled={loading} variant="ghost" className="text-white/50 hover:text-white">
+          <button onClick={fetchUsers} disabled={loading} className="text-white/50 hover:text-white">
             <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
-          </Button>
+          </button>
           <Button onClick={onLogout} variant="destructive" className="h-10 rounded-xl gap-2 font-black uppercase text-xs">
             <LogOut className="h-4 w-4" />
             Logout
