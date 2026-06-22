@@ -43,10 +43,11 @@ export default function Home() {
   const [exposure, setExposure] = useState(0);
   const [myBets, setMyBets] = useState<any[]>([]);
 
-  // Persistent Session Management
+  // Robust Session Persistence
   useEffect(() => {
-    const savedUser = localStorage.getItem("winraja_user");
     const savedAdmin = localStorage.getItem("winraja_admin");
+    const savedUser = localStorage.getItem("winraja_user");
+
     if (savedAdmin === "true") {
       setIsAdmin(true);
     } else if (savedUser) {
@@ -55,6 +56,7 @@ export default function Home() {
     setIsInitializing(false);
   }, []);
 
+  // Sync state to localStorage
   useEffect(() => {
     if (isAdmin) {
       localStorage.setItem("winraja_admin", "true");
@@ -62,23 +64,21 @@ export default function Home() {
     } else if (currentUser) {
       localStorage.setItem("winraja_user", JSON.stringify(currentUser));
       localStorage.removeItem("winraja_admin");
-    } else {
-      localStorage.removeItem("winraja_user");
-      localStorage.removeItem("winraja_admin");
     }
   }, [isAdmin, currentUser]);
 
-  // Sync user data in real-time if logged in
+  // Real-time Firestore sync for user data
   useEffect(() => {
     if (!db || !currentUser) return;
     const userRef = doc(db, "users", currentUser.clientCode.toUpperCase());
-    return onSnapshot(userRef, (doc) => {
+    const unsub = onSnapshot(userRef, (doc) => {
       if (doc.exists()) {
         const data = doc.data();
         setBalance(data.balance || 0);
         setExposure(data.exposure || 0);
       }
     });
+    return () => unsub();
   }, [db, currentUser]);
 
   useEffect(() => {

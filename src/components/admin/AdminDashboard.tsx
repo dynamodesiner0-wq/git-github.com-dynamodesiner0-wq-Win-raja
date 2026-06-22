@@ -70,7 +70,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   const [newUserBalance, setNewUserBalance] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Real-time listener for users
+  // Robust real-time listener for users
   useEffect(() => {
     if (!db) return;
     const q = collection(db, "users");
@@ -83,7 +83,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
     return () => unsub();
   }, [db]);
 
-  // Real-time listener for bets
+  // Robust real-time listener for bets
   useEffect(() => {
     if (!db) return;
     const qBets = query(collection(db, "bets"), orderBy("timestamp", "desc"), limit(20));
@@ -121,7 +121,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
       await setDoc(userRef, userData);
       toast({ title: "ID CREATED!", description: `Client ${code} is now active.` });
       
-      // Reset fields
+      // Reset fields for unlimited creation
       setNewUserName(""); 
       setNewUserCode(""); 
       setNewUserPassword(""); 

@@ -53,7 +53,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
             setLoading(false);
             return;
           }
-          // Direct success call for speed
+          // Direct success call for instant dashboard load
           onLoginSuccess({ ...userData, clientCode: cleanCode });
         } else {
           toast({ variant: "destructive", title: "Invalid Password" });
