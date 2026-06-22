@@ -1,0 +1,23 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "stadium-1",
+      "description": "Modern football stadium night lights",
+      "imageUrl": "https://picsum.photos/seed/stadium1/1200/800",
+      "imageHint": "football stadium"
+    },
+    {
+      "id": "cricket-ground",
+      "description": "Cricket ground with players",
+      "imageUrl": "https://picsum.photos/seed/cricket/1200/800",
+      "imageHint": "cricket match"
+    },
+    {
+      "id": "tennis-court",
+      "description": "Professional tennis court",
+      "imageUrl": "https://picsum.photos/seed/tennis/1200/800",
+      "imageHint": "tennis court"
+    }
+  ]
+}
