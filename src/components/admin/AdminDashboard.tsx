@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -75,7 +76,6 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         ...doc.data()
       })) as UserRecord[];
       
-      // Deduplicate by clientCode to prevent React key errors
       const uniqueUsersMap = new Map();
       userList.forEach(u => {
         if (u.clientCode) {
@@ -88,7 +88,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       toast({
         variant: "destructive",
         title: "Sync Failed",
-        description: error.message || "Could not fetch user list."
+        description: error.message || "Could not fetch user list. Check connection."
       });
     } finally {
       setLoading(false);
@@ -118,7 +118,6 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     }
 
     setLoading(true);
-    // Use clientCode as the document ID for absolute reliability
     const userRef = doc(db, "users", cleanCode);
     
     const newUserDoc = {
@@ -305,7 +304,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   );
 }
 
-function StatCard({ label, value, icon: Icon, color }: any) {
+function StatCard({ label, value, icon: Icon, color }: { label: string; value: string; icon: any; color: string }) {
   return (
     <Card className="rounded-3xl border-none shadow-md">
       <CardContent className="p-6 flex justify-between">

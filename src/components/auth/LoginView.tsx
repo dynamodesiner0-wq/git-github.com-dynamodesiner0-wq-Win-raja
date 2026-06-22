@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -34,8 +35,8 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
     if (!db) {
       toast({
         variant: "destructive",
-        title: "Server Connecting",
-        description: "Firebase is initializing. Please try again in 2 seconds.",
+        title: "Connecting...",
+        description: "Firebase initializing. Please wait.",
       });
       return;
     }
@@ -46,15 +47,14 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
     if (!cleanCode || !cleanPass) {
       toast({
         variant: "destructive",
-        title: "Details Required",
-        description: "Enter both Client ID and Password.",
+        title: "Missing Info",
+        description: "ID and Password are required.",
       });
       return;
     }
 
     setLoading(true);
     try {
-      // Direct document lookup using cleanCode as the ID
       const userRef = doc(db, "users", cleanCode);
       const userSnap = await getDoc(userRef);
 
@@ -65,14 +65,14 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
           if (userData.status === "Suspended") {
             toast({
               variant: "destructive",
-              title: "Restricted",
-              description: "Account is suspended by Admin.",
+              title: "Blocked",
+              description: "Your account is suspended.",
             });
             return;
           }
           
           toast({
-            title: "Success",
+            title: "Access Granted",
             description: `Welcome, ${userData.name}.`,
           });
           
@@ -80,7 +80,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
         } else {
           toast({
             variant: "destructive",
-            title: "Failed",
+            title: "Error",
             description: "Incorrect password.",
           });
         }
@@ -92,15 +92,13 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
         });
       }
     } catch (error: any) {
-      console.error("Login Error:", error);
-      const errorMsg = error.message?.includes("offline") 
-        ? "Network error. Please check your internet connection and try again."
-        : "Failed to connect to server. Please refresh and try again.";
-        
+      console.error("Login error:", error);
       toast({
         variant: "destructive",
-        title: "Connection Error",
-        description: errorMsg,
+        title: "Offline Error",
+        description: error.message?.includes("offline") 
+          ? "You are currently offline. Please check your network." 
+          : "Failed to connect to server.",
       });
     } finally {
       setLoading(false);
@@ -124,7 +122,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
                 db ? "text-green-400 border-green-400/30" : "animate-pulse")}
             >
               {db ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
-              {db ? "Server Connected" : "Connecting..."}
+              {db ? "Cloud Connection Live" : "Connecting..."}
             </Badge>
           </div>
           <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] mt-2">Authorized Access Only</p>
@@ -141,7 +139,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
                 <Input 
                   value={clientCode}
                   onChange={(e) => setClientCode(e.target.value)}
-                  placeholder="e.g. C123051"
+                  placeholder="e.g. C101"
                   className="h-14 pl-12 rounded-2xl bg-[#f0f2f5] border-none text-lg font-black uppercase"
                 />
               </div>
@@ -174,7 +172,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
 
         <div className="text-center">
           <p className="text-white/20 text-[10px] font-black uppercase tracking-widest">
-            secure winraja portal v3.2
+            SECURE PORTAL V3.5 • 2026
           </p>
         </div>
       </div>
