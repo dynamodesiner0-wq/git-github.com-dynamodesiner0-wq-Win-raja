@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -38,12 +39,12 @@ export default function Home() {
     loadInitialData();
   }, []);
 
-  const handleSelectMarket = (team: string, type: 'Lagai' | 'Khai', price: string) => {
-    console.log("Selection made:", { team, type, price });
+  const handleSelectMarket = (team: string, market: string, type: 'Lagai' | 'Khai', price: string) => {
+    console.log("Selection made:", { team, market, type, price });
     const newSelection = {
-      id: `${team}-${type}-${Date.now()}`,
+      id: `${team}-${market}-${type}-${Date.now()}`,
       team,
-      market: "Match Winner",
+      market,
       type,
       price,
       sport: "CRICKET"
@@ -57,7 +58,7 @@ export default function Home() {
 
     toast({
       title: "Selection Added",
-      description: `${team} added to slip @ ${price}`,
+      description: `${team} - ${market} added @ ${price}`,
     });
   };
 
@@ -68,8 +69,6 @@ export default function Home() {
   const clearSelections = () => setSelections([]);
 
   const handlePlaceBets = (totalStake: number) => {
-    console.log("Placing bets for total stake:", totalStake);
-    
     if (totalStake <= 0) {
       toast({
         variant: "destructive",

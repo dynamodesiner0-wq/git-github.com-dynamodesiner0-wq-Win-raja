@@ -2,14 +2,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Monitor, Info, Minus, BrainCircuit, RefreshCw } from "lucide-react";
+import { Monitor, Info, Minus, BrainCircuit, RefreshCw, Zap, Target } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { type LiveMatchData } from "@/lib/api/sports";
+import { LiveCommentary } from "./LiveCommentary";
 
 interface LiveMatchHubProps {
   matches: LiveMatchData[];
-  onSelectMarket: (team: string, type: 'Lagai' | 'Khai', price: string) => void;
+  onSelectMarket: (team: string, market: string, type: 'Lagai' | 'Khai', price: string) => void;
   onOpenPredictor: () => void;
   onMatchChange: (match: LiveMatchData) => void;
 }
@@ -50,7 +51,7 @@ export function LiveMatchHub({ matches, onSelectMarket, onOpenPredictor, onMatch
         </button>
       </div>
 
-      <div className="p-3 space-y-4 max-w-[900px] mx-auto">
+      <div className="p-3 space-y-4 max-w-[900px] mx-auto pb-20">
         {/* Match Selector Tabs */}
         <div className="flex gap-1 overflow-x-auto pb-1 no-scrollbar sticky top-10 bg-[#f0f2f5] z-30 pt-1">
           {matches.map((m, i) => (
@@ -125,6 +126,39 @@ export function LiveMatchHub({ matches, onSelectMarket, onOpenPredictor, onMatch
           </div>
         </div>
 
+        {/* Live Commentary & Ball Betting */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2">
+            <LiveCommentary matchId={currentMatch?.id || ""} />
+          </div>
+          <div className="bg-white rounded-xl border border-border p-4 shadow-sm flex flex-col gap-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Target className="h-4 w-4 text-red-600" />
+              <h4 className="text-[10px] font-black uppercase tracking-[0.1em]">Next Ball Fancy</h4>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { label: "Dot Ball", price: "2.10", color: "bg-gray-100" },
+                { label: "1 Run", price: "1.85", color: "bg-blue-50" },
+                { label: "Boundary", price: "4.50", color: "bg-orange-50" },
+                { label: "Sixer", price: "9.00", color: "bg-purple-50" },
+                { label: "Wicket", price: "15.0", color: "bg-red-50" },
+                { label: "No Ball", price: "25.0", color: "bg-yellow-50" }
+              ].map((bet) => (
+                <button
+                  key={bet.label}
+                  onClick={() => onSelectMarket(currentMatch.homeTeam, `Next Ball: ${bet.label}`, 'Lagai', bet.price)}
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 border-transparent hover:border-accent transition-all active:scale-95 ${bet.color}`}
+                >
+                  <span className="text-[9px] font-black text-muted-foreground uppercase">{bet.label}</span>
+                  <span className="text-lg font-black text-[#0b2146]">{bet.price}</span>
+                </button>
+              ))}
+            </div>
+            <p className="text-[8px] text-center text-muted-foreground mt-2 uppercase font-bold italic">Max Exposure: ₹50,000 Per Ball</p>
+          </div>
+        </div>
+
         {/* Exchange Market Table */}
         <div className="bg-white rounded-2xl shadow-md border border-border overflow-hidden">
           <div className="bg-[#2c58a0] text-white px-5 py-3 flex items-center justify-between">
@@ -147,19 +181,19 @@ export function LiveMatchHub({ matches, onSelectMarket, onOpenPredictor, onMatch
               <tbody className="divide-y divide-border">
                 <MarketRow 
                   team={currentMatch?.homeTeam || "Team A"} 
-                  onSelect={onSelectMarket} 
+                  onSelect={(t: string, type: 'Lagai' | 'Khai', p: string) => onSelectMarket(t, "Match Winner", type, p)} 
                   backPrice="1.85" 
                   layPrice="1.87" 
                 />
                 <MarketRow 
                   team={currentMatch?.awayTeam || "Team B"} 
-                  onSelect={onSelectMarket} 
+                  onSelect={(t: string, type: 'Lagai' | 'Khai', p: string) => onSelectMarket(t, "Match Winner", type, p)} 
                   backPrice="2.10" 
                   layPrice="2.15" 
                 />
                 <MarketRow 
                   team="The Draw" 
-                  onSelect={onSelectMarket} 
+                  onSelect={(t: string, type: 'Lagai' | 'Khai', p: string) => onSelectMarket(t, "Match Winner", type, p)} 
                   backPrice="15.0" 
                   layPrice="15.5" 
                 />
