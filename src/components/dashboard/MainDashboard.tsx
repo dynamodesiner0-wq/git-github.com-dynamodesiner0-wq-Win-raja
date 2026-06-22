@@ -11,37 +11,55 @@ import {
   History, 
   Lock 
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface DashboardCardProps {
   title: string;
   icon: any;
   onClick: () => void;
+  isFeatured?: boolean;
 }
 
-function DashboardCard({ title, icon, onClick }: DashboardCardProps) {
+function DashboardCard({ title, icon, onClick, isFeatured }: DashboardCardProps) {
   const isImageUrl = typeof icon === 'string';
   
   return (
     <button 
       onClick={onClick}
-      className="bg-white rounded-[2rem] p-6 flex flex-col items-center justify-center gap-4 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-blue-50 hover:scale-[1.02] transition-transform aspect-square group overflow-hidden"
+      className={cn(
+        "bg-white rounded-[2rem] flex flex-col items-center justify-center shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-blue-50 hover:scale-[1.02] transition-transform group overflow-hidden relative",
+        isFeatured ? "col-span-2 h-40" : "aspect-square p-6 gap-4"
+      )}
     >
-      <div className="h-20 w-full flex items-center justify-center">
-        {isImageUrl ? (
+      {isImageUrl ? (
+        <>
           <img 
             src={icon} 
             alt={title} 
-            className="h-full w-full object-contain group-hover:scale-110 transition-transform duration-300"
+            className={cn(
+              "w-full h-full group-hover:scale-110 transition-transform duration-300",
+              isFeatured ? "object-cover" : "object-contain"
+            )}
             data-ai-hint="sports banner"
           />
-        ) : (
-          (() => {
-            const Icon = icon;
-            return <Icon className="h-16 w-16 text-[#1a4b8c] group-hover:scale-110 transition-transform duration-300" />;
-          })()
-        )}
-      </div>
-      <span className="text-sm font-black text-[#0b2146] uppercase tracking-tight">{title}</span>
+          {isFeatured && (
+            <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+              <span className="text-xl font-black text-white uppercase tracking-widest drop-shadow-lg">{title}</span>
+            </div>
+          )}
+          {!isFeatured && <span className="text-sm font-black text-[#0b2146] uppercase tracking-tight">{title}</span>}
+        </>
+      ) : (
+        <>
+          <div className="h-20 w-full flex items-center justify-center">
+            {(() => {
+              const Icon = icon;
+              return <Icon className="h-16 w-16 text-[#1a4b8c] group-hover:scale-110 transition-transform duration-300" />;
+            })()}
+          </div>
+          <span className="text-sm font-black text-[#0b2146] uppercase tracking-tight">{title}</span>
+        </>
+      )}
     </button>
   );
 }
@@ -55,7 +73,8 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
     { 
       title: "In Play", 
       icon: "https://i.ibb.co/mFBqVD8f/image-search-1782096841440.png", 
-      view: 'inplay' as const 
+      view: 'inplay' as const,
+      featured: true
     },
     { title: "Casino", icon: Gamepad2, view: 'casino' as const },
     { title: "Aviator", icon: Plane, view: 'aviator' as const },
@@ -85,6 +104,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
             key={i} 
             title={item.title} 
             icon={item.icon} 
+            isFeatured={item.featured}
             onClick={() => onViewChange(item.view)}
           />
         ))}
