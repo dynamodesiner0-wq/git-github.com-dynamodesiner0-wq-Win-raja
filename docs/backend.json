@@ -1,0 +1,47 @@
+
+{
+  "entities": {
+    "UserAccount": {
+      "title": "User Account",
+      "description": "Represents a betting client account in the system.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "clientCode": { "type": "string" },
+        "name": { "type": "string" },
+        "balance": { "type": "number" },
+        "exposure": { "type": "number" },
+        "status": { "type": "string", "enum": ["Active", "Suspended"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "role": { "type": "string", "enum": ["Admin", "User"] }
+      },
+      "required": ["clientCode", "name", "balance", "status"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Records balance additions or deductions.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "amount": { "type": "number" },
+        "type": { "type": "string", "enum": ["Credit", "Debit"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "description": { "type": "string" }
+      },
+      "required": ["userId", "amount", "type", "timestamp"]
+    }
+  },
+  "auth": {
+    "providers": ["password"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserAccount",
+      "description": "User profile and balance data."
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "History of financial moves."
+    }
+  }
+}
