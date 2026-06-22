@@ -55,7 +55,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
 
     setLoading(true);
     try {
-      // Direct document lookup for 100% accuracy
+      // Direct document lookup for 100% accuracy using cleanCode as the ID
       const userRef = doc(db, "users", cleanCode);
       const userSnap = await getDoc(userRef);
 
