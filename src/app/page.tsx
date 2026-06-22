@@ -13,7 +13,7 @@ import { SmartPredictorModal } from "@/components/predictor/SmartPredictorModal"
 import { fetchLiveMatches, type LiveMatchData } from "@/lib/api/sports";
 import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ReceiptText } from "lucide-react";
+import { ReceiptText, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
@@ -22,7 +22,7 @@ export default function Home() {
   const [isPredictorOpen, setIsPredictorOpen] = useState(false);
   const [liveMatches, setLiveMatches] = useState<LiveMatchData[]>([]);
   const [activeMatch, setActiveMatch] = useState<LiveMatchData | null>(null);
-  const [activeView, setActiveView] = useState<'main' | 'exchange' | 'profile' | 'inplay'>('main');
+  const [activeView, setActiveView] = useState<'main' | 'exchange' | 'profile' | 'inplay' | 'casino' | 'aviator' | 'chicken'>('main');
   const [isMobileSlipOpen, setIsMobileSlipOpen] = useState(false);
   
   // Real-time Betting State
@@ -115,7 +115,7 @@ export default function Home() {
         onLogoClick={() => setActiveView('main')} 
       />
       <div className="flex flex-1 overflow-hidden">
-        {activeView !== 'main' && activeView !== 'inplay' && (
+        {activeView !== 'main' && activeView !== 'inplay' && activeView !== 'casino' && activeView !== 'aviator' && activeView !== 'chicken' && (
           <SidebarNav activeView={activeView === 'exchange' ? 'exchange' : 'profile'} onViewChange={setActiveView} />
         )}
         
@@ -131,6 +131,22 @@ export default function Home() {
                 setActiveView('exchange');
               }}
             />
+          ) : (activeView === 'casino' || activeView === 'aviator' || activeView === 'chicken') ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-6">
+              <div className="h-24 w-24 rounded-full bg-blue-100 flex items-center justify-center">
+                <AlertCircle className="h-12 w-12 text-[#1a4b8c]" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-black text-[#0b2146] uppercase tracking-tighter">Games Coming Soon</h2>
+                <p className="text-muted-foreground text-sm max-w-md">We are currently integrating these professional games. Please check back in a few days!</p>
+              </div>
+              <Button 
+                onClick={() => setActiveView('main')}
+                className="bg-[#1a4b8c] text-white font-black px-8 h-12 rounded-xl"
+              >
+                GO BACK HOME
+              </Button>
+            </div>
           ) : activeView === 'exchange' ? (
             <LiveMatchHub 
               matches={liveMatches}

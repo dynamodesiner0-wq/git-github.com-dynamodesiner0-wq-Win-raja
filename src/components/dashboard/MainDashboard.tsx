@@ -15,7 +15,6 @@ import {
 interface DashboardCardProps {
   title: string;
   icon: any;
-  color?: string;
   onClick: () => void;
 }
 
@@ -34,15 +33,15 @@ function DashboardCard({ title, icon: Icon, onClick }: DashboardCardProps) {
 }
 
 interface MainDashboardProps {
-  onViewChange: (view: 'main' | 'exchange' | 'profile' | 'inplay') => void;
+  onViewChange: (view: 'main' | 'exchange' | 'profile' | 'inplay' | 'casino' | 'aviator' | 'chicken') => void;
 }
 
 export function MainDashboard({ onViewChange }: MainDashboardProps) {
   const menuItems = [
     { title: "In Play", icon: Trophy, view: 'inplay' as const },
-    { title: "Casino", icon: Gamepad2, view: 'exchange' as const },
-    { title: "Aviator", icon: Plane, view: 'exchange' as const },
-    { title: "Chicken Road", icon: Bird, view: 'exchange' as const },
+    { title: "Casino", icon: Gamepad2, view: 'casino' as const },
+    { title: "Aviator", icon: Plane, view: 'aviator' as const },
+    { title: "Chicken Road", icon: Bird, view: 'chicken' as const },
     { title: "Complete Games", icon: CheckCircle2, view: 'profile' as const },
     { title: "My Profile", icon: User, view: 'profile' as const },
     { title: "My Ledger", icon: History, view: 'profile' as const },
