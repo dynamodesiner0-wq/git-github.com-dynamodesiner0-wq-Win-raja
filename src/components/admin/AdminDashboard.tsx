@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { collection, getDocs, setDoc, doc, updateDoc, increment } from "firebase/firestore";
+import { collection, getDocs, setDoc, doc, updateDoc, increment, query, orderBy } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
 
 interface UserRecord {
@@ -72,7 +72,8 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     if (!db) return;
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "users"));
+      const q = query(collection(db, "users"), orderBy("createdAt", "desc"));
+      const querySnapshot = await getDocs(q);
       const userList = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -83,9 +84,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       toast({
         variant: "destructive",
         title: "Sync Failed",
-        description: error.message?.includes("offline") 
-          ? "Database is unreachable. Check connection." 
-          : "Could not retrieve user data from cloud."
+        description: "Could not retrieve user data. Check connection."
       });
     } finally {
       setLoading(false);
@@ -106,37 +105,31 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     const balanceNum = parseFloat(newUserBalance) || 0;
     
     if (!cleanName || !cleanCode || !cleanPass) {
-      toast({ variant: "destructive", title: "Error", description: "Name, ID, and Password are required." });
+      toast({ variant: "destructive", title: "Error", description: "All fields are required." });
       return;
     }
 
-    const newUser: UserRecord = {
-      id: cleanCode,
+    const newUserDoc = {
       name: cleanName,
       clientCode: cleanCode,
       password: cleanPass,
       balance: balanceNum,
-      status: "Active"
+      exposure: 0,
+      status: "Active" as const,
+      role: "User",
+      createdAt: new Date().toISOString()
     };
     
-    // Instant UI update (Optimistic)
-    setUsers(prev => [newUser, ...prev]);
+    // Optimistic UI Update
+    setUsers(prev => [{ id: cleanCode, ...newUserDoc }, ...prev]);
 
     try {
-      await setDoc(doc(db, "users", cleanCode), {
-        name: cleanName,
-        clientCode: cleanCode,
-        password: cleanPass,
-        balance: balanceNum,
-        exposure: 0,
-        status: "Active",
-        role: "User",
-        createdAt: new Date().toISOString()
-      });
-      toast({ title: "Success", description: `ID ${cleanCode} created in database.` });
+      await setDoc(doc(db, "users", cleanCode), newUserDoc);
+      toast({ title: "Success", description: `ID ${cleanCode} created successfully.` });
       setNewUserName(""); setNewUserCode(""); setNewUserPassword(""); setNewUserBalance("");
     } catch (error: any) {
       toast({ variant: "destructive", title: "Database Error", description: error.message });
+      // Rollback UI
       setUsers(prev => prev.filter(u => u.clientCode !== cleanCode));
     }
   };
@@ -146,18 +139,21 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     const amount = parseFloat(addAmount);
     if (isNaN(amount)) return;
     
+    const userRef = doc(db, "users", selectedUser.clientCode);
+
     // Optimistic Update
     setUsers(prev => prev.map(u => 
       u.clientCode === selectedUser.clientCode ? { ...u, balance: (u.balance || 0) + amount } : u
     ));
 
     try {
-      await updateDoc(doc(db, "users", selectedUser.clientCode), {
+      await updateDoc(userRef, {
         balance: increment(amount)
       });
       toast({ title: "Deposit Confirmed", description: `Added ₹${amount} to ${selectedUser.name}.` });
     } catch (error: any) {
       toast({ variant: "destructive", title: "Update Failed", description: error.message });
+      // Rollback UI
       setUsers(prev => prev.map(u => 
         u.clientCode === selectedUser.clientCode ? { ...u, balance: (u.balance || 0) - amount } : u
       ));
@@ -264,7 +260,9 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                               <span className="font-mono text-sm bg-blue-50 text-blue-700 px-2 py-1 rounded">
                                 {showPasswords[user.clientCode] ? user.password : "••••••••"}
                               </span>
-                              <button onClick={() => togglePasswordVisibility(user.clientCode)} className="text-muted-foreground hover:text-blue-600"><Eye className="h-3 w-3" /></button>
+                              <button onClick={() => togglePasswordVisibility(user.clientCode)} className="text-muted-foreground hover:text-blue-600">
+                                {showPasswords[user.clientCode] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                              </button>
                             </div>
                           </td>
                           <td className="p-4"><span className="font-black text-green-600">₹{(user.balance || 0).toLocaleString()}</span></td>

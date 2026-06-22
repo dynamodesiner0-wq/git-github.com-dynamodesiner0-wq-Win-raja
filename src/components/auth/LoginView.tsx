@@ -36,7 +36,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
       toast({
         variant: "destructive",
         title: "Database Not Ready",
-        description: "Firebase is still connecting. Please wait a second and try again.",
+        description: "Connecting to server...",
       });
       return;
     }
@@ -93,13 +93,10 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
       }
     } catch (error: any) {
       console.error("Critical Login Error:", error);
-      const isOffline = error.message?.includes("offline") || error.code === "unavailable";
       toast({
         variant: "destructive",
-        title: isOffline ? "Connection Error" : "Authentication Error",
-        description: isOffline 
-          ? "Failed to reach server. Check your internet or Firebase setup." 
-          : (error.message || "An unexpected error occurred."),
+        title: "Authentication Error",
+        description: error.message || "An unexpected error occurred. Please try again.",
       });
     } finally {
       setLoading(false);
