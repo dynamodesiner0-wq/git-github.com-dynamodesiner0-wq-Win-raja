@@ -86,6 +86,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     if (!db) return;
     setLoading(true);
     try {
+      // Removed orderBy to avoid missing field errors preventing data display
       const q = query(collection(db, "users"));
       const querySnapshot = await getDocs(q);
       const userList = querySnapshot.docs.map(doc => ({
@@ -138,7 +139,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       exposure: 0,
       status: "Active",
       role: "User",
-      createdAt: serverTimestamp()
+      createdAt: new Date().toISOString()
     };
     
     setDoc(userRef, newUserDoc)
