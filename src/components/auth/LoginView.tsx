@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -65,7 +64,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
       }
     } catch (error: any) {
       console.error("Login error:", error);
-      toast({ variant: "destructive", title: "Connection Error", description: "Server is unreachable." });
+      toast({ variant: "destructive", title: "Connection Error", description: "Server is unreachable. Check internet." });
     } finally {
       setLoading(false);
     }

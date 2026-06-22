@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -52,6 +51,8 @@ export default function Home() {
         setBalance(data.balance || 0);
         setExposure(data.exposure || 0);
       }
+    }, (err) => {
+      console.error("User sync error:", err);
     });
   }, [db, currentUser]);
 
@@ -159,8 +160,8 @@ export default function Home() {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="bottom" className="h-[85vh] p-0 bg-[#f0f2f5] border-t-4 border-accent rounded-t-3xl">
-                  <SheetHeader className="sr-only">
-                    <SheetTitle>Mobile Betting Slip</SheetTitle>
+                  <SheetHeader className="p-4 border-b">
+                    <SheetTitle className="text-sm font-black uppercase text-[#0b2146]">Mobile Betting Slip</SheetTitle>
                   </SheetHeader>
                   <BettingSlip selections={selections} myBets={myBets} onRemove={(id) => setSelections(s => s.filter(x => x.id !== id))} onClear={() => setSelections([])} onPlaceBets={handlePlaceBets} isMobile />
                 </SheetContent>
