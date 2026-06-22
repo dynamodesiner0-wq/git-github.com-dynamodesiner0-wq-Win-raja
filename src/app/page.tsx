@@ -159,6 +159,9 @@ export default function Home() {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="bottom" className="h-[85vh] p-0 bg-[#f0f2f5] border-t-4 border-accent rounded-t-3xl">
+                  <SheetHeader className="sr-only">
+                    <SheetTitle>Mobile Betting Slip</SheetTitle>
+                  </SheetHeader>
                   <BettingSlip selections={selections} myBets={myBets} onRemove={(id) => setSelections(s => s.filter(x => x.id !== id))} onClear={() => setSelections([])} onPlaceBets={handlePlaceBets} isMobile />
                 </SheetContent>
               </Sheet>
