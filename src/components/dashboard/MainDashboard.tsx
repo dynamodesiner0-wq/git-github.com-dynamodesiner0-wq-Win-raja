@@ -32,23 +32,17 @@ function DashboardCard({ title, icon, onClick, isFeatured }: DashboardCardProps)
       )}
     >
       {isImageUrl ? (
-        <>
+        <div className="absolute inset-0 w-full h-full">
           <img 
             src={icon} 
             alt={title} 
-            className={cn(
-              "w-full h-full group-hover:scale-110 transition-transform duration-300",
-              isFeatured ? "object-cover" : "object-contain"
-            )}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
             data-ai-hint="sports banner"
           />
-          {isFeatured && (
-            <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-              <span className="text-xl font-black text-white uppercase tracking-widest drop-shadow-lg">{title}</span>
-            </div>
-          )}
-          {!isFeatured && <span className="text-sm font-black text-[#0b2146] uppercase tracking-tight">{title}</span>}
-        </>
+          <div className="absolute inset-0 bg-black/10 flex items-end p-4">
+             {!isFeatured && <span className="text-sm font-black text-white uppercase tracking-tight drop-shadow-md">{title}</span>}
+          </div>
+        </div>
       ) : (
         <>
           <div className="h-20 w-full flex items-center justify-center">
