@@ -28,6 +28,7 @@ export default function Home() {
   // Real-time Betting State
   const [balance, setBalance] = useState(25000.00);
   const [exposure, setExposure] = useState(0);
+  const [profitAndLoss, setProfitAndLoss] = useState(0);
   const [myBets, setMyBets] = useState<any[]>([]);
 
   useEffect(() => {
@@ -111,11 +112,12 @@ export default function Home() {
       <Navbar 
         balance={balance} 
         exposure={exposure} 
+        profitAndLoss={profitAndLoss}
         onProfileClick={() => setActiveView('profile')} 
         onLogoClick={() => setActiveView('main')} 
       />
       <div className="flex flex-1 overflow-hidden">
-        {activeView !== 'main' && activeView !== 'inplay' && activeView !== 'casino' && activeView !== 'aviator' && activeView !== 'chicken' && (
+        {activeView !== 'main' && activeView !== 'inplay' && activeView !== 'casino' && activeView !== 'aviator' && activeView !== 'chicken' && activeView !== 'profile' && (
           <SidebarNav activeView={activeView === 'exchange' ? 'exchange' : 'profile'} onViewChange={setActiveView} />
         )}
         
@@ -155,7 +157,12 @@ export default function Home() {
               onMatchChange={(match) => setActiveMatch(match)}
             />
           ) : (
-            <ProfileView balance={balance} exposure={exposure} myBets={myBets} />
+            <ProfileView 
+              balance={balance} 
+              exposure={exposure} 
+              myBets={myBets} 
+              onBackToMenu={() => setActiveView('main')}
+            />
           )}
 
           {activeView === 'exchange' && selections.length > 0 && (
