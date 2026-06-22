@@ -36,7 +36,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
       toast({
         variant: "destructive",
         title: "Server Offline",
-        description: "Trying to reconnect...",
+        description: "Checking connection...",
       });
       return;
     }
@@ -95,7 +95,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
       toast({
         variant: "destructive",
         title: "Connection Error",
-        description: "Make sure you are online.",
+        description: error.message || "Failed to reach server.",
       });
     } finally {
       setLoading(false);
@@ -119,7 +119,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
                 db ? "text-green-400 border-green-400/30" : "animate-pulse")}
             >
               {db ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
-              {db ? "Server Online" : "Connecting..."}
+              {db ? "Server Connected" : "Connecting..."}
             </Badge>
           </div>
           <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] mt-2">Authorized Access Only</p>

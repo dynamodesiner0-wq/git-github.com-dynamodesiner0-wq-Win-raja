@@ -112,46 +112,33 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     setLoading(true);
     const userRef = doc(db, "users", cleanCode);
     
-    // Check if exists first
-    getDoc(userRef).then((userSnap) => {
-      if (userSnap.exists()) {
-        toast({ variant: "destructive", title: "Duplicate ID", description: `ID ${cleanCode} already exists.` });
+    const newUserDoc = {
+      name: cleanName,
+      clientCode: cleanCode,
+      password: cleanPass,
+      balance: balanceNum,
+      exposure: 0,
+      status: "Active",
+      role: "User",
+      createdAt: new Date().toISOString()
+    };
+    
+    // Non-blocking setDoc for instant UI feel
+    setDoc(userRef, newUserDoc)
+      .then(() => {
+        toast({ title: "Success", description: `ID ${cleanCode} created successfully.` });
+        setNewUserName(""); 
+        setNewUserCode(""); 
+        setNewUserPassword(""); 
+        setNewUserBalance("");
+        fetchUsers();
+      })
+      .catch((err) => {
+        toast({ variant: "destructive", title: "Creation Failed", description: err.message });
+      })
+      .finally(() => {
         setLoading(false);
-        return;
-      }
-
-      const newUserDoc = {
-        name: cleanName,
-        clientCode: cleanCode,
-        password: cleanPass,
-        balance: balanceNum,
-        exposure: 0,
-        status: "Active",
-        role: "User",
-        createdAt: new Date().toISOString()
-      };
-      
-      // OPTIMISTIC UPDATE: Add to list immediately
-      setUsers(prev => [newUserDoc as any, ...prev]);
-
-      setDoc(userRef, newUserDoc)
-        .then(() => {
-          toast({ title: "Success", description: `ID ${cleanCode} created successfully.` });
-          setNewUserName(""); 
-          setNewUserCode(""); 
-          setNewUserPassword(""); 
-          setNewUserBalance("");
-          setLoading(false);
-        })
-        .catch((err) => {
-          toast({ variant: "destructive", title: "Database Error", description: err.message });
-          setLoading(false);
-          fetchUsers(); // Rollback list if error
-        });
-    }).catch(() => {
-      toast({ variant: "destructive", title: "Connection Error", description: "Failed to reach server." });
-      setLoading(false);
-    });
+      });
   };
 
   const handleAddBalance = () => {
@@ -162,22 +149,20 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     setLoading(true);
     const userRef = doc(db, "users", selectedUser.clientCode);
     
-    // Optimistic Update
-    setUsers(prev => prev.map(u => u.clientCode === selectedUser.clientCode ? { ...u, balance: (u.balance || 0) + amount } : u));
-
     updateDoc(userRef, {
       balance: increment(amount)
     })
     .then(() => {
       toast({ title: "Deposit Confirmed", description: `Added ₹${amount} to ${selectedUser.name}.` });
-      setLoading(false);
       setAddAmount(""); 
       setSelectedUser(null);
+      fetchUsers();
     })
     .catch((err) => {
       toast({ variant: "destructive", title: "Update Failed", description: err.message });
+    })
+    .finally(() => {
       setLoading(false);
-      fetchUsers(); // Rollback
     });
   };
 
