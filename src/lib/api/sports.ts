@@ -1,9 +1,12 @@
-
 /**
  * @fileOverview Service for fetching live sports data and ball-by-ball updates.
+ * Now supports multiple API keys for high availability.
  */
 
-const API_KEY = "ff4e95c9fafb9fbde03e02893640f019f248f62c9fadf49550e94b151175cfa8";
+const API_KEYS = [
+  "ff4e95c9fafb9fbde03e02893640f019f248f62c9fadf49550e94b151175cfa8",
+  "41dfbcf5f7b7905848ab1a1cf7130ced"
+];
 const BASE_URL = "https://api.cricapi.com/v1";
 
 export interface BallUpdate {
@@ -21,35 +24,44 @@ export interface LiveMatchData {
   score: string;
 }
 
-export async function fetchLiveMatches(): Promise<LiveMatchData[]> {
-  try {
-    const response = await fetch(`${BASE_URL}/currentMatches?apikey=${API_KEY}`);
-    const data = await response.json();
-    
-    if (data.status !== "success" || !data.data) {
-      return [];
+/**
+ * Helper to fetch with API key fallback
+ */
+async function fetchWithFallback(endpoint: string) {
+  for (const key of API_KEYS) {
+    try {
+      const response = await fetch(`${BASE_URL}/${endpoint}&apikey=${key}`);
+      const data = await response.json();
+      if (data.status === "success") {
+        return data;
+      }
+      console.warn(`API Key ${key.substring(0, 5)}... failed with status: ${data.status}`);
+    } catch (error) {
+      console.error(`Error with API Key ${key.substring(0, 5)}...:`, error);
     }
+  }
+  return null;
+}
 
-    return data.data.map((m: any) => ({
-      id: m.id,
-      name: m.name,
-      status: m.status,
-      score: m.score?.[0]?.r ? `${m.score[0].r}/${m.score[0].w} (${m.score[0].o})` : "Match starting soon",
-    }));
-  } catch (error) {
-    console.error("Failed to fetch live matches:", error);
+export async function fetchLiveMatches(): Promise<LiveMatchData[]> {
+  const data = await fetchWithFallback("currentMatches?dummy=1");
+  
+  if (!data || !data.data) {
     return [];
   }
+
+  return data.data.map((m: any) => ({
+    id: m.id,
+    name: m.name,
+    status: m.status,
+    score: m.score?.[0]?.r ? `${m.score[0].r}/${m.score[0].w} (${m.score[0].o})` : "Match starting soon",
+  }));
 }
 
 export async function fetchBallByBall(matchId: string): Promise<BallUpdate[]> {
-  try {
-    // CricAPI provides commentary in specific plan. 
-    // This is a robust mock if the specific endpoint isn't available on the free tier.
-    const response = await fetch(`${BASE_URL}/match_info?apikey=${API_KEY}&id=${matchId}`);
-    const data = await response.json();
-    
-    // Fallback simulation for "ball-by-ball" if the commentary endpoint is limited
+  const data = await fetchWithFallback(`match_info?id=${matchId}`);
+  
+  if (!data) {
     return [
       {
         ball: "16.2",
@@ -66,8 +78,16 @@ export async function fetchBallByBall(matchId: string): Promise<BallUpdate[]> {
         isBoundary: false
       }
     ];
-  } catch (error) {
-    console.error("Failed to fetch commentary:", error);
-    return [];
   }
+
+  // Simulated commentary for MVP if the plan doesn't include it
+  return [
+    {
+      ball: "In-Play",
+      runs: 0,
+      description: "Live data updated via CricAPI...",
+      isWicket: false,
+      isBoundary: false
+    }
+  ];
 }
