@@ -96,7 +96,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     }
   }, [db, fetchUsers]);
 
-  const handleCreateUser = () => {
+  const handleCreateUser = async () => {
     if (!db) {
       toast({ variant: "destructive", title: "Error", description: "Database not connected." });
       return;
@@ -112,7 +112,13 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       return;
     }
     
-    // Optimistic Update: Update local state immediately for instant feedback
+    // Check if ID already exists locally to avoid UI confusion
+    if (users.some(u => u.clientCode === cleanCode)) {
+      toast({ variant: "destructive", title: "ID Exists", description: "This client code is already taken." });
+      return;
+    }
+
+    // Optimistic Update
     const newUser: UserRecord = {
       id: cleanCode,
       name: cleanName,
@@ -124,60 +130,64 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     
     setUsers(prev => [newUser, ...prev]);
 
-    // Non-blocking write: No await here
-    const userDocRef = doc(db, "users", cleanCode);
-    setDoc(userDocRef, {
-      name: cleanName,
-      clientCode: cleanCode,
-      password: cleanPass,
-      balance: balanceNum,
-      exposure: 0,
-      status: "Active",
-      role: "User",
-      createdAt: new Date().toISOString()
-    }).catch((error) => {
-      console.error("Creation Error:", error);
-      toast({ variant: "destructive", title: "Creation Failed", description: error.message });
-      // Rollback optimistic update if failed
-      setUsers(prev => prev.filter(u => u.clientCode !== cleanCode));
-    });
+    try {
+      const userDocRef = doc(db, "users", cleanCode);
+      await setDoc(userDocRef, {
+        name: cleanName,
+        clientCode: cleanCode,
+        password: cleanPass,
+        balance: balanceNum,
+        exposure: 0,
+        status: "Active",
+        role: "User",
+        createdAt: new Date().toISOString()
+      });
 
-    setNewUserName("");
-    setNewUserCode("");
-    setNewUserPassword("");
-    setNewUserBalance("");
-    
-    toast({ title: "ID Created Successfully", description: `ID ${cleanCode} has been added.` });
+      toast({ title: "ID Created Successfully", description: `ID ${cleanCode} is now active.` });
+      
+      // Clear fields
+      setNewUserName("");
+      setNewUserCode("");
+      setNewUserPassword("");
+      setNewUserBalance("");
+    } catch (error: any) {
+      console.error("Creation Error:", error);
+      toast({ variant: "destructive", title: "Database Error", description: error.message });
+      // Rollback
+      setUsers(prev => prev.filter(u => u.clientCode !== cleanCode));
+    }
   };
 
-  const handleAddBalance = () => {
+  const handleAddBalance = async () => {
     if (!db || !selectedUser || !addAmount) return;
     const amount = parseFloat(addAmount);
+    if (isNaN(amount) || amount <= 0) return;
     
-    // Optimistic Update: Update balance in local state immediately
+    // Optimistic Update
     setUsers(prev => prev.map(u => 
       u.clientCode === selectedUser.clientCode 
         ? { ...u, balance: (u.balance || 0) + amount } 
         : u
     ));
 
-    // Non-blocking write: No await here
-    const userRef = doc(db, "users", selectedUser.clientCode);
-    updateDoc(userRef, {
-      balance: increment(amount)
-    }).catch((error) => {
+    try {
+      const userRef = doc(db, "users", selectedUser.clientCode);
+      await updateDoc(userRef, {
+        balance: increment(amount)
+      });
+      toast({ title: "Balance Added", description: `₹${amount} added to ${selectedUser.name}.` });
+    } catch (error: any) {
       toast({ variant: "destructive", title: "Update Failed", description: error.message });
-      // Rollback optimistic update if failed
+      // Rollback
       setUsers(prev => prev.map(u => 
         u.clientCode === selectedUser.clientCode 
           ? { ...u, balance: (u.balance || 0) - amount } 
           : u
       ));
-    });
-
-    setAddAmount("");
-    setSelectedUser(null);
-    toast({ title: "Balance Added", description: `₹${amount} added to ${selectedUser.name}'s account.` });
+    } finally {
+      setAddAmount("");
+      setSelectedUser(null);
+    }
   };
 
   const togglePasswordVisibility = (clientCode: string) => {
@@ -210,7 +220,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
             <h1 className="text-lg font-black uppercase tracking-tighter">WinRaja Admin</h1>
             <div className="flex items-center gap-2">
               <Badge className="bg-green-500 text-[10px] font-black h-4">SUPER ADMIN</Badge>
-              {!db && <Badge variant="destructive" className="text-[10px] h-4 flex gap-1"><Database className="h-2 w-2" /> OFFLINE</Badge>}
+              {!db && <Badge variant="destructive" className="text-[10px] h-4 flex gap-1 animate-pulse"><Database className="h-2 w-2" /> OFFLINE</Badge>}
             </div>
           </div>
         </div>
@@ -225,7 +235,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
           </Button>
           <div className="hidden md:flex flex-col items-end mr-2 text-right">
             <span className="text-sm font-black uppercase">Prakash Verma</span>
-            <span className="text-[10px] opacity-60">ACCESS LEVEL: FULL CONTROL</span>
+            <span className="text-[10px] opacity-60 uppercase">Full Access</span>
           </div>
           <Button 
             onClick={onLogout}
@@ -243,13 +253,13 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
           onClick={() => setActiveTab('stats')}
           className={cn("px-6 py-4 text-xs font-black uppercase border-b-2 transition-all", activeTab === 'stats' ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground")}
         >
-          Dashboard Stats
+          Stats
         </button>
         <button 
           onClick={() => setActiveTab('users')}
           className={cn("px-6 py-4 text-xs font-black uppercase border-b-2 transition-all", activeTab === 'users' ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground")}
         >
-          User Management
+          User List
         </button>
       </div>
 
@@ -279,40 +289,33 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 <CardHeader className="bg-white border-b border-gray-100 flex flex-row items-center justify-between p-6">
                   <CardTitle className="text-base font-black uppercase text-[#0b2146] flex items-center gap-2">
                     <UserCheck className="h-5 w-5 text-blue-600" />
-                    Quick Overview
+                    Overview
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
-                  {loading && users.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-10 gap-4">
-                      <RefreshCw className="h-10 w-10 animate-spin text-blue-600" />
-                      <p className="text-xs font-black uppercase text-muted-foreground">Syncing Database...</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <p className="text-sm text-muted-foreground font-medium">Currently managing <span className="text-[#0b2146] font-black">{users.length} active IDs</span>. Database connection is active.</p>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-blue-50 p-4 rounded-2xl">
-                          <p className="text-[10px] font-black text-blue-600 uppercase mb-1">New Registrations</p>
-                          <p className="text-xl font-black">+12 Today</p>
-                        </div>
-                        <div className="bg-green-50 p-4 rounded-2xl">
-                          <p className="text-[10px] font-black text-green-600 uppercase mb-1">Total Deposits</p>
-                          <p className="text-xl font-black">₹4.2 Lakh</p>
-                        </div>
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground font-medium">Managing <span className="text-[#0b2146] font-black">{users.length} IDs</span> in total. Security rules are active.</p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-blue-50 p-4 rounded-2xl">
+                        <p className="text-[10px] font-black text-blue-600 uppercase mb-1">Status</p>
+                        <p className="text-xl font-black">{db ? "Database Live" : "Offline"}</p>
+                      </div>
+                      <div className="bg-green-50 p-4 rounded-2xl">
+                        <p className="text-[10px] font-black text-green-600 uppercase mb-1">Today's Flow</p>
+                        <p className="text-xl font-black">Stable</p>
                       </div>
                     </div>
-                  )}
+                  </div>
                 </CardContent>
               </Card>
 
               <Card className="rounded-3xl border-none shadow-md overflow-hidden">
                 <CardHeader className="bg-white border-b border-gray-100 p-6">
-                  <CardTitle className="text-base font-black uppercase text-[#0b2146]">Quick Controls</CardTitle>
+                  <CardTitle className="text-base font-black uppercase text-[#0b2146]">Shortcuts</CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 space-y-4">
-                  <Button className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-xs shadow-md">Manage Odds</Button>
-                  <Button className="w-full h-12 rounded-xl bg-red-600 hover:bg-red-700 text-white font-black uppercase text-xs shadow-md">Global Suspend</Button>
+                  <Button onClick={() => setActiveTab('users')} className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-xs">Manage Users</Button>
+                  <Button variant="outline" className="w-full h-12 rounded-xl font-black uppercase text-xs">Download Ledger</Button>
                 </CardContent>
               </Card>
             </div>
@@ -323,7 +326,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
               <div className="relative w-full md:w-96">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
-                  placeholder="Search by Name or Client Code..." 
+                  placeholder="Search Name or ID..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 h-12 rounded-xl border-none shadow-md"
@@ -339,7 +342,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 </DialogTrigger>
                 <DialogContent className="rounded-3xl sm:max-w-md bg-white border-none">
                   <DialogHeader>
-                    <DialogTitle className="text-xl font-black uppercase text-[#0b2146]">Create New User Account</DialogTitle>
+                    <DialogTitle className="text-xl font-black uppercase text-[#0b2146]">Add User ID</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">
@@ -347,12 +350,12 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <Input value={newUserName} onChange={(e) => setNewUserName(e.target.value)} placeholder="Full Name" className="h-12 rounded-xl bg-gray-50 border-none" />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black text-muted-foreground uppercase">Client Code</label>
-                      <Input value={newUserCode} onChange={(e) => setNewUserCode(e.target.value)} placeholder="e.g. C123456" className="h-12 rounded-xl bg-gray-50 border-none" />
+                      <label className="text-[10px] font-black text-muted-foreground uppercase">Client Code (ID)</label>
+                      <Input value={newUserCode} onChange={(e) => setNewUserCode(e.target.value)} placeholder="e.g. C101" className="h-12 rounded-xl bg-gray-50 border-none uppercase" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-muted-foreground uppercase">Set Password</label>
-                      <Input value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} placeholder="Enter ID Password" type="text" className="h-12 rounded-xl bg-gray-50 border-none" />
+                      <Input value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} placeholder="Secure Password" type="text" className="h-12 rounded-xl bg-gray-50 border-none" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-muted-foreground uppercase">Initial Balance (₹)</label>
@@ -361,7 +364,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   </div>
                   <DialogFooter>
                     <Button onClick={handleCreateUser} className="w-full h-12 bg-blue-600 hover:bg-blue-700 font-black uppercase rounded-xl">
-                      Confirm & Create ID
+                      Save ID to Cloud
                     </Button>
                   </DialogFooter>
                 </DialogContent>
@@ -374,33 +377,19 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   <table className="w-full text-left">
                     <thead className="bg-[#f8f9fb] border-b text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                       <tr>
-                        <th className="p-4">User Details</th>
-                        <th className="p-4">Client Code</th>
+                        <th className="p-4">User</th>
+                        <th className="p-4">ID</th>
                         <th className="p-4">Password</th>
-                        <th className="p-4">Current Balance</th>
+                        <th className="p-4">Balance</th>
                         <th className="p-4">Status</th>
                         <th className="p-4 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">
                       {loading && users.length === 0 ? (
-                        <tr>
-                          <td colSpan={6} className="p-20 text-center">
-                            <div className="flex flex-col items-center gap-4">
-                              <RefreshCw className="h-10 w-10 animate-spin text-blue-600 opacity-20" />
-                              <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">Syncing IDs...</span>
-                            </div>
-                          </td>
-                        </tr>
+                        <tr><td colSpan={6} className="p-20 text-center uppercase font-black text-muted-foreground opacity-30 tracking-widest">Syncing Cloud Data...</td></tr>
                       ) : filteredUsers.length === 0 ? (
-                        <tr>
-                          <td colSpan={6} className="p-20 text-center">
-                            <div className="flex flex-col items-center gap-2">
-                              <Users className="h-10 w-10 text-muted-foreground opacity-20" />
-                              <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">No Users Found</span>
-                            </div>
-                          </td>
-                        </tr>
+                        <tr><td colSpan={6} className="p-20 text-center uppercase font-black text-muted-foreground opacity-30 tracking-widest">No IDs Found</td></tr>
                       ) : (
                         filteredUsers.map((user) => (
                           <tr key={user.clientCode} className="hover:bg-gray-50 transition-colors">
@@ -413,16 +402,13 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                               </div>
                             </td>
                             <td className="p-4">
-                              <code className="bg-gray-100 px-2 py-1 rounded text-xs font-bold text-gray-600">{user.clientCode}</code>
+                              <code className="bg-gray-100 px-2 py-1 rounded text-xs font-bold text-gray-600 uppercase">{user.clientCode}</code>
                             </td>
                             <td className="p-4">
                               <div className="flex items-center gap-2">
                                 <span className="font-mono text-sm bg-blue-50 text-blue-700 px-2 py-1 rounded-md border border-blue-100 flex items-center gap-2">
                                   {showPasswords[user.clientCode] ? user.password : "••••••••"}
-                                  <button 
-                                    onClick={() => togglePasswordVisibility(user.clientCode)}
-                                    className="hover:text-blue-900 transition-colors"
-                                  >
+                                  <button onClick={() => togglePasswordVisibility(user.clientCode)} className="hover:text-blue-900 transition-colors">
                                     {showPasswords[user.clientCode] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                                   </button>
                                 </span>
@@ -440,30 +426,19 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                               <div className="flex justify-end gap-2">
                                 <Dialog>
                                   <DialogTrigger asChild>
-                                    <Button 
-                                      onClick={() => setSelectedUser(user)}
-                                      size="sm" 
-                                      className="bg-blue-600 hover:bg-blue-700 text-[10px] font-black h-8 px-4 rounded-lg uppercase gap-1 shadow-md"
-                                    >
+                                    <Button onClick={() => setSelectedUser(user)} size="sm" className="bg-blue-600 hover:bg-blue-700 text-[10px] font-black h-8 px-4 rounded-lg uppercase gap-1 shadow-md">
                                       <IndianRupee className="h-3 w-3" />
-                                      Add Balance
+                                      Deposit
                                     </Button>
                                   </DialogTrigger>
                                   <DialogContent className="rounded-3xl bg-white border-none">
                                     <DialogHeader>
-                                      <DialogTitle className="font-black uppercase text-[#0b2146]">Add Funds to {selectedUser?.name}</DialogTitle>
+                                      <DialogTitle className="font-black uppercase text-[#0b2146]">Deposit to {selectedUser?.name}</DialogTitle>
                                     </DialogHeader>
                                     <div className="py-6 space-y-4 text-center">
-                                      <p className="text-sm text-muted-foreground">Adding money to client code: <code className="bg-blue-50 text-blue-600 px-2 rounded">{selectedUser?.clientCode}</code></p>
                                       <div className="relative">
                                         <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
-                                        <Input 
-                                          type="number" 
-                                          placeholder="Enter amount to add" 
-                                          value={addAmount}
-                                          onChange={(e) => setAddAmount(e.target.value)}
-                                          className="h-14 pl-12 text-2xl font-black rounded-2xl bg-gray-50 border-none"
-                                        />
+                                        <Input type="number" placeholder="Enter amount" value={addAmount} onChange={(e) => setAddAmount(e.target.value)} className="h-14 pl-12 text-2xl font-black rounded-2xl bg-gray-50 border-none" />
                                       </div>
                                     </div>
                                     <DialogFooter>
@@ -488,7 +463,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         )}
       </div>
       <footer className="bg-white p-4 text-center border-t border-gray-100">
-        <p className="text-[10px] font-bold text-[#0b2146]/40 uppercase tracking-widest">copyright winraja 2026 • Prakash Verma Confidential • secure portal v3.0</p>
+        <p className="text-[10px] font-bold text-[#0b2146]/40 uppercase tracking-widest">winraja 2026 • Secure Super Admin Portal</p>
       </footer>
     </div>
   );
