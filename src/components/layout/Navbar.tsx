@@ -17,15 +17,16 @@ export function Navbar({ onProfileClick, onLogoClick, balance, exposure, profitA
   return (
     <header className="w-full bg-[#1a4b8c] text-white p-2 sticky top-0 z-50 shadow-md h-16 flex items-center">
       <div className="container mx-auto flex items-center justify-between gap-2 max-w-[1200px] px-2">
-        {/* User Avatar Left */}
+        {/* Logo Left */}
         <div 
-          onClick={onProfileClick}
-          className="cursor-pointer hover:opacity-80 transition-opacity shrink-0"
+          onClick={onLogoClick}
+          className="cursor-pointer hover:opacity-80 transition-opacity shrink-0 flex items-center h-12"
         >
-          <Avatar className="h-11 w-11 border-2 border-white/20">
-            <AvatarImage src={`https://picsum.photos/seed/${clientCode}/100`} />
-            <AvatarFallback className="bg-[#2c58a0]">{clientCode?.[0] || 'U'}</AvatarFallback>
-          </Avatar>
+          <img 
+            src="https://i.ibb.co/SwJ1N5zm/image-search-1782116031060.png" 
+            alt="WinRaja" 
+            className="h-full w-auto object-contain"
+          />
         </div>
 
         {/* Center Space */}
@@ -45,14 +46,18 @@ export function Navbar({ onProfileClick, onLogoClick, balance, exposure, profitA
             <span className="text-sm font-black text-[#1a4b8c]">{exposure.toFixed(0)}</span>
           </div>
 
-          {/* User ID Button (Blue) */}
-          <button 
+          {/* User Profile */}
+          <div 
             onClick={onProfileClick}
-            className="bg-[#4a90e2] hover:bg-[#357abd] text-white px-4 py-2 rounded-lg font-black text-sm flex items-center gap-1.5 h-12 shadow-lg shrink-0"
+            className="bg-[#4a90e2] hover:bg-[#357abd] text-white px-3 py-2 rounded-lg font-black text-sm flex items-center gap-2 h-12 shadow-lg shrink-0 cursor-pointer"
           >
-            {clientCode || "GUEST"}
-            <Check className="h-4 w-4" />
-          </button>
+            <Avatar className="h-8 w-8 border border-white/20">
+              <AvatarImage src={`https://picsum.photos/seed/${clientCode}/100`} />
+              <AvatarFallback className="bg-[#0b2146] text-[10px]">{clientCode?.[0] || 'U'}</AvatarFallback>
+            </Avatar>
+            <span className="hidden sm:inline">{clientCode || "GUEST"}</span>
+            <Check className="h-4 w-4 hidden sm:block" />
+          </div>
         </div>
       </div>
     </header>

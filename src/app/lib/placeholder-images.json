@@ -2,6 +2,12 @@
 {
   "placeholderImages": [
     {
+      "id": "winraja-logo",
+      "description": "WinRaja Main Logo",
+      "imageUrl": "https://i.ibb.co/SwJ1N5zm/image-search-1782116031060.png",
+      "imageHint": "winraja logo"
+    },
+    {
       "id": "stadium-1",
       "description": "Modern football stadium night lights",
       "imageUrl": "https://picsum.photos/seed/stadium1/1200/800",
@@ -12,12 +18,6 @@
       "description": "Cricket ground with players",
       "imageUrl": "https://picsum.photos/seed/cricket/1200/800",
       "imageHint": "cricket match"
-    },
-    {
-      "id": "tennis-court",
-      "description": "Professional tennis court",
-      "imageUrl": "https://picsum.photos/seed/tennis/1200/800",
-      "imageHint": "tennis court"
     },
     {
       "id": "inplay-banner",

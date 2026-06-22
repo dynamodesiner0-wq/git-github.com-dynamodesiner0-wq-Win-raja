@@ -77,8 +77,12 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
     <div className="min-h-screen bg-[#0b2146] flex items-center justify-center p-4 font-body">
       <div className="w-full max-w-[420px] space-y-8 animate-in fade-in zoom-in duration-500">
         <div className="text-center space-y-2">
-          <div className="h-20 w-20 bg-gradient-to-br from-blue-500 to-[#1a4b8c] rounded-3xl mx-auto flex items-center justify-center shadow-2xl mb-4 transform -rotate-6">
-            <ShieldCheck className="h-12 w-12 text-white" />
+          <div className="h-24 w-full relative mb-4 flex items-center justify-center">
+             <img 
+               src="https://i.ibb.co/SwJ1N5zm/image-search-1782116031060.png" 
+               alt="WinRaja Logo" 
+               className="h-full object-contain drop-shadow-2xl"
+             />
           </div>
           <div className="flex flex-col items-center">
             <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">

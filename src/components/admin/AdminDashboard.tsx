@@ -101,10 +101,13 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   }, [db, fetchUsers]);
 
   const handleCreateUser = async () => {
-    if (!db) return;
+    if (!db) {
+      toast({ variant: "destructive", title: "Wait", description: "Cloud not ready." });
+      return;
+    }
     const code = newUserCode.trim().toUpperCase();
     if (!newUserName || !code || !newUserPassword) {
-      toast({ variant: "destructive", title: "Error", description: "Fill all fields!" });
+      toast({ variant: "destructive", title: "Error", description: "Sari details bharo!" });
       return;
     }
 
@@ -123,7 +126,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
 
     setDoc(userRef, userData)
       .then(() => {
-        toast({ title: "ID Created!", description: `Client ${code} is now live.` });
+        toast({ title: "ID BANN GAYI!", description: `Client ${code} ab live hai.` });
         setNewUserName(""); 
         setNewUserCode(""); 
         setNewUserPassword(""); 
@@ -132,7 +135,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
       })
       .catch((e) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({ path: userRef.path, operation: 'write', requestResourceData: userData }));
-        toast({ variant: "destructive", title: "Cloud Error", description: "Failed to save ID." });
+        toast({ variant: "destructive", title: "Error", description: "ID nahi bani. Try again." });
       })
       .finally(() => setLoading(false));
   };
@@ -154,7 +157,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
     };
     setDoc(userRef, seedData)
       .then(() => {
-        toast({ title: "Seed Successful", description: "Praveen ID (C885929) created." });
+        toast({ title: "Seed Successful", description: "Praveen ID (C885929) ready hai." });
         fetchUsers();
       })
       .catch((e) => {
@@ -170,14 +173,14 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
           <div className="h-10 w-10 bg-yellow-500 rounded-xl flex items-center justify-center text-black shadow-lg">
             <Settings className="h-6 w-6" />
           </div>
-          <h1 className="text-lg font-black uppercase tracking-tighter italic">WinRaja Admin Portal</h1>
+          <h1 className="text-lg font-black uppercase tracking-tighter italic">WinRaja Admin Panel</h1>
         </div>
         <Button onClick={onLogout} variant="destructive" className="font-black uppercase text-xs h-10 px-6 rounded-xl">Logout</Button>
       </header>
 
       <div className="bg-white border-b flex px-6 shrink-0">
         <button onClick={() => setActiveTab('stats')} className={cn("px-6 py-4 text-xs font-black uppercase border-b-2 transition-all", activeTab === 'stats' ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground")}>Dashboard</button>
-        <button onClick={() => setActiveTab('users')} className={cn("px-6 py-4 text-xs font-black uppercase border-b-2 transition-all", activeTab === 'users' ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground")}>User Management</button>
+        <button onClick={() => setActiveTab('users')} className={cn("px-6 py-4 text-xs font-black uppercase border-b-2 transition-all", activeTab === 'users' ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground")}>ID Management</button>
         <button onClick={() => setActiveTab('activity')} className={cn("px-6 py-4 text-xs font-black uppercase border-b-2 transition-all", activeTab === 'activity' ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground")}>Live Activity</button>
       </div>
 
@@ -194,7 +197,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                 <Activity className="h-10 w-10 text-orange-600 opacity-20" />
               </Card>
               <Card className="rounded-3xl border-none shadow-md bg-white p-6 flex justify-between items-center transition-transform hover:scale-[1.02]">
-                <div><p className="text-[10px] font-black opacity-50 uppercase">DB Status</p><h3 className="text-3xl font-black text-green-600 uppercase">Online</h3></div>
+                <div><p className="text-[10px] font-black opacity-50 uppercase">Cloud Status</p><h3 className="text-3xl font-black text-green-600 uppercase">Online</h3></div>
                 <Database className="h-10 w-10 text-green-600 opacity-20" />
               </Card>
             </div>
@@ -209,27 +212,27 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
             <div className="flex gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by name or code..." className="pl-12 h-14 rounded-2xl bg-white shadow-sm border-none text-[#0b2146] font-bold" />
+                <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search ID..." className="pl-12 h-14 rounded-2xl bg-white shadow-sm border-none text-[#0b2146] font-bold" />
               </div>
               <Dialog>
-                <DialogTrigger asChild><Button className="h-14 px-8 bg-blue-600 hover:bg-blue-700 rounded-2xl font-black uppercase text-xs gap-2 shadow-xl"><UserPlus className="h-4 w-4" /> Add User</Button></DialogTrigger>
+                <DialogTrigger asChild><Button className="h-14 px-8 bg-blue-600 hover:bg-blue-700 rounded-2xl font-black uppercase text-xs gap-2 shadow-xl"><UserPlus className="h-4 w-4" /> Nayi ID Banao</Button></DialogTrigger>
                 <DialogContent className="rounded-3xl bg-white border-none p-8 max-w-md">
-                  <DialogHeader><DialogTitle className="font-black uppercase text-xl text-[#0b2146]">Create New Client</DialogTitle></DialogHeader>
+                  <DialogHeader><DialogTitle className="font-black uppercase text-xl text-[#0b2146]">Create New Client ID</DialogTitle></DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-1">
                       <label className="text-[10px] font-black uppercase opacity-40 ml-1">Client Name</label>
                       <Input value={newUserName} onChange={(e) => setNewUserName(e.target.value)} placeholder="Full Name" className="h-14 rounded-xl text-[#0b2146] font-bold" />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase opacity-40 ml-1">Client ID</label>
+                      <label className="text-[10px] font-black uppercase opacity-40 ml-1">Client ID (Login ID)</label>
                       <Input value={newUserCode} onChange={(e) => setNewUserCode(e.target.value)} placeholder="e.g. C101" className="h-14 rounded-xl text-[#0b2146] font-bold uppercase" />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase opacity-40 ml-1">Password</label>
+                      <label className="text-[10px] font-black uppercase opacity-40 ml-1">Login Password</label>
                       <Input value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} placeholder="Set Password" type="text" className="h-14 rounded-xl text-[#0b2146] font-bold" />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase opacity-40 ml-1">Initial Balance</label>
+                      <label className="text-[10px] font-black uppercase opacity-40 ml-1">Deposit Balance</label>
                       <Input value={newUserBalance} onChange={(e) => setNewUserBalance(e.target.value)} type="number" placeholder="0.00" className="h-14 rounded-xl text-[#0b2146] font-bold" />
                     </div>
                   </div>
