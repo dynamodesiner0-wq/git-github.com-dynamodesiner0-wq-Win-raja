@@ -92,7 +92,6 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
         });
       }
     } catch (error: any) {
-      console.error("Login Error:", error);
       toast({
         variant: "destructive",
         title: "Authentication Error",

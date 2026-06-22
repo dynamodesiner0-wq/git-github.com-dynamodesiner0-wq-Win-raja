@@ -77,7 +77,6 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       
       setUsers(userList);
     } catch (error: any) {
-      console.error("Fetch Error:", error);
       toast({
         variant: "destructive",
         title: "Sync Failed",
@@ -94,7 +93,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     }
   }, [db, fetchUsers]);
 
-  const handleCreateUser = async () => {
+  const handleCreateUser = () => {
     if (!db) {
       toast({ variant: "destructive", title: "Error", description: "Database not connected." });
       return;
@@ -111,10 +110,9 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     }
 
     setLoading(true);
-    try {
-      const userRef = doc(db, "users", cleanCode);
-      const userSnap = await getDoc(userRef);
-      
+    const userRef = doc(db, "users", cleanCode);
+    
+    getDoc(userRef).then((userSnap) => {
       if (userSnap.exists()) {
         toast({ variant: "destructive", title: "Duplicate ID", description: `ID ${cleanCode} already exists.` });
         setLoading(false);
@@ -132,43 +130,45 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         createdAt: new Date().toISOString()
       };
       
-      await setDoc(userRef, newUserDoc);
-      
-      toast({ title: "Success", description: `ID ${cleanCode} created successfully.` });
-      
-      setNewUserName(""); 
-      setNewUserCode(""); 
-      setNewUserPassword(""); 
-      setNewUserBalance("");
-      
-      fetchUsers();
-    } catch (error: any) {
-      toast({ variant: "destructive", title: "Database Error", description: error.message });
-    } finally {
-      setLoading(false);
-    }
+      setDoc(userRef, newUserDoc)
+        .then(() => {
+          toast({ title: "Success", description: `ID ${cleanCode} created successfully.` });
+          setNewUserName(""); 
+          setNewUserCode(""); 
+          setNewUserPassword(""); 
+          setNewUserBalance("");
+          fetchUsers();
+          setLoading(false);
+        })
+        .catch((err) => {
+          toast({ variant: "destructive", title: "Database Error", description: err.message });
+          setLoading(false);
+        });
+    });
   };
 
-  const handleAddBalance = async () => {
+  const handleAddBalance = () => {
     if (!db || !selectedUser || !addAmount) return;
     const amount = parseFloat(addAmount);
     if (isNaN(amount)) return;
     
     setLoading(true);
-    try {
-      const userRef = doc(db, "users", selectedUser.clientCode);
-      await updateDoc(userRef, {
-        balance: increment(amount)
-      });
+    const userRef = doc(db, "users", selectedUser.clientCode);
+    
+    updateDoc(userRef, {
+      balance: increment(amount)
+    })
+    .then(() => {
       toast({ title: "Deposit Confirmed", description: `Added ₹${amount} to ${selectedUser.name}.` });
       fetchUsers();
-    } catch (error: any) {
-      toast({ variant: "destructive", title: "Update Failed", description: error.message });
-    } finally {
       setLoading(false);
       setAddAmount(""); 
       setSelectedUser(null);
-    }
+    })
+    .catch((err) => {
+      toast({ variant: "destructive", title: "Update Failed", description: err.message });
+      setLoading(false);
+    });
   };
 
   const togglePasswordVisibility = (clientCode: string) => {
@@ -261,7 +261,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <tr><td colSpan={6} className="p-20 text-center uppercase font-black opacity-30">No Data Found</td></tr>
                     ) : (
                       filteredUsers.map((user) => (
-                        <tr key={user.clientCode} className="hover:bg-gray-50">
+                        <tr key={`${user.clientCode}-${user.id}`} className="hover:bg-gray-50">
                           <td className="p-4"><span className="font-black text-[#0b2146] text-sm uppercase">{user.name}</span></td>
                           <td className="p-4"><code className="bg-gray-100 px-2 py-1 rounded text-xs font-bold uppercase">{user.clientCode}</code></td>
                           <td className="p-4">
