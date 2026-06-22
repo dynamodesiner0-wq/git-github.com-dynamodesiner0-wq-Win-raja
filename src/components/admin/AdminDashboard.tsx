@@ -80,7 +80,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       toast({
         variant: "destructive",
         title: "Sync Failed",
-        description: "Could not retrieve user data."
+        description: "Check your internet connection."
       });
     } finally {
       setLoading(false);
@@ -112,6 +112,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     setLoading(true);
     const userRef = doc(db, "users", cleanCode);
     
+    // Check if exists first
     getDoc(userRef).then((userSnap) => {
       if (userSnap.exists()) {
         toast({ variant: "destructive", title: "Duplicate ID", description: `ID ${cleanCode} already exists.` });
@@ -130,6 +131,9 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         createdAt: new Date().toISOString()
       };
       
+      // OPTIMISTIC UPDATE: Add to list immediately
+      setUsers(prev => [newUserDoc as any, ...prev]);
+
       setDoc(userRef, newUserDoc)
         .then(() => {
           toast({ title: "Success", description: `ID ${cleanCode} created successfully.` });
@@ -137,13 +141,16 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
           setNewUserCode(""); 
           setNewUserPassword(""); 
           setNewUserBalance("");
-          fetchUsers();
           setLoading(false);
         })
         .catch((err) => {
           toast({ variant: "destructive", title: "Database Error", description: err.message });
           setLoading(false);
+          fetchUsers(); // Rollback list if error
         });
+    }).catch(() => {
+      toast({ variant: "destructive", title: "Connection Error", description: "Failed to reach server." });
+      setLoading(false);
     });
   };
 
@@ -155,12 +162,14 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     setLoading(true);
     const userRef = doc(db, "users", selectedUser.clientCode);
     
+    // Optimistic Update
+    setUsers(prev => prev.map(u => u.clientCode === selectedUser.clientCode ? { ...u, balance: (u.balance || 0) + amount } : u));
+
     updateDoc(userRef, {
       balance: increment(amount)
     })
     .then(() => {
       toast({ title: "Deposit Confirmed", description: `Added ₹${amount} to ${selectedUser.name}.` });
-      fetchUsers();
       setLoading(false);
       setAddAmount(""); 
       setSelectedUser(null);
@@ -168,6 +177,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     .catch((err) => {
       toast({ variant: "destructive", title: "Update Failed", description: err.message });
       setLoading(false);
+      fetchUsers(); // Rollback
     });
   };
 
@@ -261,7 +271,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <tr><td colSpan={6} className="p-20 text-center uppercase font-black opacity-30">No Data Found</td></tr>
                     ) : (
                       filteredUsers.map((user) => (
-                        <tr key={`${user.clientCode}-${user.id}`} className="hover:bg-gray-50">
+                        <tr key={`${user.clientCode}-${user.id || Math.random()}`} className="hover:bg-gray-50">
                           <td className="p-4"><span className="font-black text-[#0b2146] text-sm uppercase">{user.name}</span></td>
                           <td className="p-4"><code className="bg-gray-100 px-2 py-1 rounded text-xs font-bold uppercase">{user.clientCode}</code></td>
                           <td className="p-4">

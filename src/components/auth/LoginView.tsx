@@ -35,8 +35,8 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
     if (!db) {
       toast({
         variant: "destructive",
-        title: "Database Not Ready",
-        description: "Connecting to server...",
+        title: "Server Offline",
+        description: "Trying to reconnect...",
       });
       return;
     }
@@ -47,7 +47,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
     if (!cleanCode || !cleanPass) {
       toast({
         variant: "destructive",
-        title: "Missing Details",
+        title: "Details Required",
         description: "Enter both Client ID and Password.",
       });
       return;
@@ -65,37 +65,37 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
           if (userData.status === "Suspended") {
             toast({
               variant: "destructive",
-              title: "Account Suspended",
-              description: "Contact admin.",
+              title: "Restricted",
+              description: "Account is suspended by Admin.",
             });
             return;
           }
           
           toast({
-            title: "Access Granted",
-            description: `Welcome back, ${userData.name}.`,
+            title: "Success",
+            description: `Welcome, ${userData.name}.`,
           });
           
           onLoginSuccess({ ...userData, clientCode: cleanCode });
         } else {
           toast({
             variant: "destructive",
-            title: "Access Denied",
-            description: "Invalid password.",
+            title: "Failed",
+            description: "Incorrect password.",
           });
         }
       } else {
         toast({
           variant: "destructive",
-          title: "User Not Found",
-          description: `No record for ID: ${cleanCode}`,
+          title: "Not Found",
+          description: `ID ${cleanCode} does not exist.`,
         });
       }
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Authentication Error",
-        description: "Server is unreachable. Check internet.",
+        title: "Connection Error",
+        description: "Make sure you are online.",
       });
     } finally {
       setLoading(false);
@@ -119,7 +119,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
                 db ? "text-green-400 border-green-400/30" : "animate-pulse")}
             >
               {db ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
-              {db ? "Server Connected" : "Server Disconnected"}
+              {db ? "Server Online" : "Connecting..."}
             </Badge>
           </div>
           <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] mt-2">Authorized Access Only</p>
@@ -143,7 +143,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-[#0b2146]/40 uppercase tracking-widest ml-1">Secret Password</label>
+              <label className="text-[10px] font-black text-[#0b2146]/40 uppercase tracking-widest ml-1">Password</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#1a4b8c]/30" />
                 <Input 
@@ -169,7 +169,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
 
         <div className="text-center">
           <p className="text-white/20 text-[10px] font-black uppercase tracking-widest">
-            copyright winraja 2026 • secure portal v3.1
+            secure winraja portal v3.2
           </p>
         </div>
       </div>
