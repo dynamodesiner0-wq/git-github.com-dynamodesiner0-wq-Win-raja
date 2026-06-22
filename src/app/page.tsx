@@ -43,7 +43,7 @@ export default function Home() {
   const [exposure, setExposure] = useState(0);
   const [myBets, setMyBets] = useState<any[]>([]);
 
-  // Robust Session Persistence - Reads from localStorage on mount
+  // Robust Session Persistence
   useEffect(() => {
     const savedAdmin = localStorage.getItem("winraja_admin");
     const savedUser = localStorage.getItem("winraja_user");
@@ -60,7 +60,7 @@ export default function Home() {
     setIsInitializing(false);
   }, []);
 
-  // Sync state to localStorage whenever it changes
+  // Sync state to localStorage
   useEffect(() => {
     if (isAdmin) {
       localStorage.setItem("winraja_admin", "true");
