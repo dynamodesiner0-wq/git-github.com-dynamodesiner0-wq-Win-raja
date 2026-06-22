@@ -1,4 +1,3 @@
-
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
@@ -15,17 +14,14 @@ export function initializeFirebase(): {
   firestore: Firestore;
   auth: Auth;
 } {
-  try {
-    firebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-    firestore = getFirestore(firebaseApp);
-    auth = getAuth(firebaseApp);
-  } catch (error) {
-    console.error("Firebase Initialization Error:", error);
-    // Attempt to recover existing instances if possible
-    firebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-    firestore = getFirestore(firebaseApp);
-    auth = getAuth(firebaseApp);
+  if (getApps().length > 0) {
+    firebaseApp = getApp();
+  } else {
+    firebaseApp = initializeApp(firebaseConfig);
   }
+
+  firestore = getFirestore(firebaseApp);
+  auth = getAuth(firebaseApp);
 
   return { firebaseApp, firestore, auth };
 }

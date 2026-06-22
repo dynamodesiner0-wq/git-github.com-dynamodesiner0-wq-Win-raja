@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -35,8 +34,8 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
     if (!db) {
       toast({
         variant: "destructive",
-        title: "Server Offline",
-        description: "Firestore is not available. Please wait a moment.",
+        title: "Server Connecting",
+        description: "Firebase is initializing. Please try again in 2 seconds.",
       });
       return;
     }
@@ -55,7 +54,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
 
     setLoading(true);
     try {
-      // Direct document lookup for 100% accuracy using cleanCode as the ID
+      // Direct document lookup using cleanCode as the ID
       const userRef = doc(db, "users", cleanCode);
       const userSnap = await getDoc(userRef);
 
@@ -94,10 +93,14 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
       }
     } catch (error: any) {
       console.error("Login Error:", error);
+      const errorMsg = error.message?.includes("offline") 
+        ? "Network error. Please check your internet connection and try again."
+        : "Failed to connect to server. Please refresh and try again.";
+        
       toast({
         variant: "destructive",
         title: "Connection Error",
-        description: "Failed to reach server.",
+        description: errorMsg,
       });
     } finally {
       setLoading(false);

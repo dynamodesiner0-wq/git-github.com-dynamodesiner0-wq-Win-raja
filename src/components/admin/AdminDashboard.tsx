@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -89,7 +88,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       toast({
         variant: "destructive",
         title: "Sync Failed",
-        description: "Could not fetch user list."
+        description: error.message || "Could not fetch user list."
       });
     } finally {
       setLoading(false);
