@@ -2,7 +2,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Trophy, Gamepad2, Plane, Bird, CheckCircle2, User, History, Lock } from "lucide-react";
+import { Trophy } from "lucide-react";
 
 interface DashboardCardProps {
   title: string;
@@ -20,7 +20,7 @@ function DashboardCard({ title, imageUrl, onClick, isLarge }: DashboardCardProps
         isLarge && "col-span-2 aspect-auto h-32"
       )}
     >
-      <div className="flex-1 flex items-center justify-center w-full">
+      <div className="flex-1 flex items-center justify-center w-full overflow-hidden">
         {imageUrl ? (
           <img 
             src={imageUrl} 
@@ -56,7 +56,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
     { 
       title: "Casino", 
       view: 'casino' as const,
-      imageUrl: "https://picsum.photos/seed/casino-icon/200/200" 
+      imageUrl: "https://i.ibb.co/spQhXY5V/image-search-1782097782566.jpg" 
     },
     { 
       title: "Aviator", 
@@ -110,6 +110,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
             title={item.title} 
             imageUrl={item.imageUrl}
             onClick={() => onViewChange(item.view)}
+            // In Play remains as is per your request for banner visibility
           />
         ))}
       </div>

@@ -36,6 +36,12 @@
       "description": "Aviator game professional icon",
       "imageUrl": "https://i.ibb.co/4nggD2C0/image-search-1782097596224.png",
       "imageHint": "aviator game"
+    },
+    {
+      "id": "casino-icon-img",
+      "description": "Casino games professional icon",
+      "imageUrl": "https://i.ibb.co/spQhXY5V/image-search-1782097782566.jpg",
+      "imageHint": "casino games"
     }
   ]
 }
