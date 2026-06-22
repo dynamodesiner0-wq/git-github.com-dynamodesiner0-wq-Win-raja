@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -78,14 +79,21 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       setUsers(userList);
     } catch (error) {
       console.error("Error fetching users:", error);
+      toast({
+        variant: "destructive",
+        title: "Fetch Failed",
+        description: "Could not retrieve users from database."
+      });
     } finally {
       setLoading(false);
     }
-  }, [db]);
+  }, [db, toast]);
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    if (db) {
+      fetchUsers();
+    }
+  }, [db, fetchUsers]);
 
   const handleCreateUser = async () => {
     if (!db) return;
@@ -115,6 +123,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       setNewUserBalance("");
       
       toast({ title: "User Created", description: `Account for ${newUserName} is now active.` });
+      // Fetch users immediately after creation to ensure list is updated
       fetchUsers();
     } catch (error) {
       toast({ variant: "destructive", title: "Creation Failed", description: "Database error occurred." });
@@ -173,10 +182,15 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <Button onClick={fetchUsers} variant="ghost" className="h-10 w-10 p-0 rounded-xl text-white/50 hover:text-white hover:bg-white/10">
+          <Button 
+            onClick={fetchUsers} 
+            disabled={loading}
+            variant="ghost" 
+            className="h-10 w-10 p-0 rounded-xl text-white/50 hover:text-white hover:bg-white/10"
+          >
             <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
           </Button>
-          <div className="flex flex-col items-end mr-2">
+          <div className="hidden md:flex flex-col items-end mr-2">
             <span className="text-sm font-black">Prakash Verma</span>
             <span className="text-[10px] opacity-60">Last login: Today 10:45 AM</span>
           </div>
@@ -238,7 +252,13 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
-                  <p className="text-sm text-muted-foreground italic">Switch to User Management tab to manage balances and create new accounts.</p>
+                  {loading ? (
+                    <div className="flex items-center justify-center py-10">
+                      <RefreshCw className="h-8 w-8 animate-spin text-blue-600" />
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic">Switch to User Management tab to manage balances and create new accounts. Currently managing {users.length} active IDs.</p>
+                  )}
                 </CardContent>
               </Card>
 
@@ -318,82 +338,102 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       </tr>
                     </thead>
                     <tbody className="divide-y">
-                      {filteredUsers.map((user) => (
-                        <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                          <td className="p-4">
-                            <div className="flex items-center gap-3">
-                              <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-black">
-                                {user.name[0]}
-                              </div>
-                              <span className="font-black text-[#0b2146] text-sm">{user.name}</span>
-                            </div>
-                          </td>
-                          <td className="p-4">
-                            <code className="bg-gray-100 px-2 py-1 rounded text-xs font-bold text-gray-600">{user.clientCode}</code>
-                          </td>
-                          <td className="p-4">
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono text-sm bg-blue-50 text-blue-700 px-2 py-1 rounded-md border border-blue-100 flex items-center gap-2">
-                                {showPasswords[user.clientCode] ? user.password : "••••••••"}
-                                <button 
-                                  onClick={() => togglePasswordVisibility(user.clientCode)}
-                                  className="hover:text-blue-900 transition-colors"
-                                >
-                                  {showPasswords[user.clientCode] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                                </button>
-                              </span>
-                            </div>
-                          </td>
-                          <td className="p-4">
-                            <span className="font-black text-green-600">₹{(user.balance || 0).toLocaleString()}</span>
-                          </td>
-                          <td className="p-4">
-                            <Badge className={user.status === 'Active' ? 'bg-green-100 text-green-700 hover:bg-green-100' : 'bg-red-100 text-red-700 hover:bg-red-100'}>
-                              {user.status}
-                            </Badge>
-                          </td>
-                          <td className="p-4 text-right">
-                            <div className="flex justify-end gap-2">
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button 
-                                    onClick={() => setSelectedUser(user)}
-                                    size="sm" 
-                                    className="bg-blue-600 hover:bg-blue-700 text-[10px] font-black h-8 px-4 rounded-lg uppercase gap-1"
-                                  >
-                                    <IndianRupee className="h-3 w-3" />
-                                    Add Balance
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent className="rounded-3xl">
-                                  <DialogHeader>
-                                    <DialogTitle className="font-black uppercase text-[#0b2146]">Add Funds to {selectedUser?.name}</DialogTitle>
-                                  </DialogHeader>
-                                  <div className="py-6 space-y-4 text-center">
-                                    <p className="text-sm text-muted-foreground">Adding money to client code: <code className="bg-blue-50 text-blue-600 px-2 rounded">{selectedUser?.clientCode}</code></p>
-                                    <div className="relative">
-                                      <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
-                                      <Input 
-                                        type="number" 
-                                        placeholder="Enter amount to add" 
-                                        value={addAmount}
-                                        onChange={(e) => setAddAmount(e.target.value)}
-                                        className="h-14 pl-12 text-2xl font-black rounded-2xl"
-                                      />
-                                    </div>
-                                  </div>
-                                  <DialogFooter>
-                                    <Button onClick={handleAddBalance} className="w-full h-12 bg-green-600 hover:bg-green-700 font-black uppercase">Confirm Deposit</Button>
-                                  </DialogFooter>
-                                </DialogContent>
-                              </Dialog>
-                              <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-lg">
-                                <ChevronRight className="h-4 w-4" />
-                              </Button>
+                      {loading ? (
+                        <tr>
+                          <td colSpan={6} className="p-20 text-center">
+                            <div className="flex flex-col items-center gap-4">
+                              <RefreshCw className="h-10 w-10 animate-spin text-blue-600 opacity-20" />
+                              <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">Syncing IDs...</span>
                             </div>
                           </td>
                         </tr>
-                      ))}
+                      ) : filteredUsers.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="p-20 text-center">
+                            <div className="flex flex-col items-center gap-2">
+                              <Users className="h-10 w-10 text-muted-foreground opacity-20" />
+                              <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">No Users Found</span>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredUsers.map((user) => (
+                          <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                            <td className="p-4">
+                              <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-black uppercase">
+                                  {user.name?.[0] || 'U'}
+                                </div>
+                                <span className="font-black text-[#0b2146] text-sm uppercase">{user.name}</span>
+                              </div>
+                            </td>
+                            <td className="p-4">
+                              <code className="bg-gray-100 px-2 py-1 rounded text-xs font-bold text-gray-600">{user.clientCode}</code>
+                            </td>
+                            <td className="p-4">
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-sm bg-blue-50 text-blue-700 px-2 py-1 rounded-md border border-blue-100 flex items-center gap-2">
+                                  {showPasswords[user.clientCode] ? user.password : "••••••••"}
+                                  <button 
+                                    onClick={() => togglePasswordVisibility(user.clientCode)}
+                                    className="hover:text-blue-900 transition-colors"
+                                  >
+                                    {showPasswords[user.clientCode] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                                  </button>
+                                </span>
+                              </div>
+                            </td>
+                            <td className="p-4">
+                              <span className="font-black text-green-600">₹{(user.balance || 0).toLocaleString()}</span>
+                            </td>
+                            <td className="p-4">
+                              <Badge className={user.status === 'Active' ? 'bg-green-100 text-green-700 hover:bg-green-100 border-none' : 'bg-red-100 text-red-700 hover:bg-red-100 border-none'}>
+                                {user.status}
+                              </Badge>
+                            </td>
+                            <td className="p-4 text-right">
+                              <div className="flex justify-end gap-2">
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button 
+                                      onClick={() => setSelectedUser(user)}
+                                      size="sm" 
+                                      className="bg-blue-600 hover:bg-blue-700 text-[10px] font-black h-8 px-4 rounded-lg uppercase gap-1"
+                                    >
+                                      <IndianRupee className="h-3 w-3" />
+                                      Add Balance
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="rounded-3xl">
+                                    <DialogHeader>
+                                      <DialogTitle className="font-black uppercase text-[#0b2146]">Add Funds to {selectedUser?.name}</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="py-6 space-y-4 text-center">
+                                      <p className="text-sm text-muted-foreground">Adding money to client code: <code className="bg-blue-50 text-blue-600 px-2 rounded">{selectedUser?.clientCode}</code></p>
+                                      <div className="relative">
+                                        <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
+                                        <Input 
+                                          type="number" 
+                                          placeholder="Enter amount to add" 
+                                          value={addAmount}
+                                          onChange={(e) => setAddAmount(e.target.value)}
+                                          className="h-14 pl-12 text-2xl font-black rounded-2xl"
+                                        />
+                                      </div>
+                                    </div>
+                                    <DialogFooter>
+                                      <Button onClick={handleAddBalance} className="w-full h-12 bg-green-600 hover:bg-green-700 font-black uppercase">Confirm Deposit</Button>
+                                    </DialogFooter>
+                                  </DialogContent>
+                                </Dialog>
+                                <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-lg">
+                                  <ChevronRight className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
