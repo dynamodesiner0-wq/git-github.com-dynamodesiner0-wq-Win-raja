@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { collection, getDocs, setDoc, doc, updateDoc, increment, query, orderBy, limit, onSnapshot } from "firebase/firestore";
+import { collection, getDocs, setDoc, doc, updateDoc, increment, query, orderBy, limit, onSnapshot, serverTimestamp } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
@@ -44,7 +44,7 @@ interface UserRecord {
   password?: string;
   balance: number;
   status: 'Active' | 'Suspended';
-  createdAt?: string;
+  createdAt?: any;
 }
 
 interface BetRecord {
@@ -142,7 +142,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       exposure: 0,
       status: "Active",
       role: "User",
-      createdAt: new Date().toISOString()
+      createdAt: serverTimestamp()
     };
     
     setDoc(userRef, newUserDoc, { merge: true })
@@ -289,7 +289,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     <UserPlus className="h-4 w-4" /> Create New ID
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="rounded-3xl sm:max-w-md bg-white p-6">
+                <DialogContent className="rounded-3xl sm:max-w-md bg-white p-6 border-none">
                   <DialogHeader>
                     <DialogTitle className="text-xl font-black uppercase text-[#0b2146]">Add User ID</DialogTitle>
                   </DialogHeader>
@@ -370,7 +370,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                               <DialogTrigger asChild>
                                 <Button onClick={() => setSelectedUser(user)} size="sm" className="bg-blue-600 text-[10px] font-black h-8 px-4 rounded-lg uppercase shadow-md">Deposit</Button>
                               </DialogTrigger>
-                              <DialogContent className="rounded-3xl bg-white p-6">
+                              <DialogContent className="rounded-3xl bg-white p-6 border-none">
                                 <DialogHeader><DialogTitle className="font-black uppercase text-[#0b2146]">Deposit to {selectedUser?.name}</DialogTitle></DialogHeader>
                                 <div className="py-6">
                                    <label className="text-[10px] font-black text-muted-foreground uppercase px-1 mb-2 block">Enter Amount</label>

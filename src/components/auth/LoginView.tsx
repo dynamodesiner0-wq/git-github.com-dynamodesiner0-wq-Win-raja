@@ -54,6 +54,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
 
     setLoading(true);
     try {
+      // Look up directly by the document ID which is the client code
       const userRef = doc(db, "users", cleanCode);
       const userSnap = await getDoc(userRef);
 

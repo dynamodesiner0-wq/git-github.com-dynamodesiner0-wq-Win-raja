@@ -1,4 +1,3 @@
-
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
@@ -21,7 +20,7 @@ export function initializeFirebase(): {
     firebaseApp = initializeApp(firebaseConfig);
   }
 
-  // Use getFirestore without any emulator settings to avoid offline errors in production
+  // Standard initialization for production use
   firestore = getFirestore(firebaseApp);
   auth = getAuth(firebaseApp);
 
