@@ -2,7 +2,7 @@
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getFirestore, Firestore, enableIndexedDbPersistence, terminate } from 'firebase/firestore';
+import { getFirestore, Firestore } from 'firebase/firestore';
 import { getAuth, Auth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
@@ -21,7 +21,7 @@ export function initializeFirebase(): {
     firebaseApp = initializeApp(firebaseConfig);
   }
 
-  // Ensure fresh initialization to avoid common connectivity issues
+  // Use getFirestore without any emulator settings to avoid offline errors in production
   firestore = getFirestore(firebaseApp);
   auth = getAuth(firebaseApp);
 

@@ -76,6 +76,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         ...doc.data()
       })) as UserRecord[];
       
+      // Filter out potential duplicates by clientCode just in case
       const uniqueUsersMap = new Map();
       userList.forEach(u => {
         if (u.clientCode) {
