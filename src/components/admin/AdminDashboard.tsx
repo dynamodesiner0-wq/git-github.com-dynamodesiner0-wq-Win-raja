@@ -10,13 +10,9 @@ import {
   Users, 
   Wallet, 
   TrendingUp, 
-  ShieldAlert, 
   Settings, 
   LogOut,
-  ChevronRight,
-  UserCheck,
   Search,
-  IndianRupee,
   UserPlus,
   RefreshCw,
   Eye,
@@ -99,7 +95,11 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   }, [db, fetchUsers]);
 
   const handleCreateUser = async () => {
-    if (!db) return;
+    if (!db) {
+      toast({ variant: "destructive", title: "Error", description: "Database not connected." });
+      return;
+    }
+
     const cleanName = newUserName.trim();
     const cleanCode = newUserCode.trim().toUpperCase();
     const cleanPass = newUserPassword.trim();
@@ -132,10 +132,18 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         createdAt: new Date().toISOString()
       };
       
+      // Write to Firestore
       await setDoc(userRef, newUserDoc);
       
       toast({ title: "Success", description: `ID ${cleanCode} created successfully.` });
-      setNewUserName(""); setNewUserCode(""); setNewUserPassword(""); setNewUserBalance("");
+      
+      // Reset fields
+      setNewUserName(""); 
+      setNewUserCode(""); 
+      setNewUserPassword(""); 
+      setNewUserBalance("");
+      
+      // Refresh list
       fetchUsers();
     } catch (error: any) {
       toast({ variant: "destructive", title: "Database Error", description: error.message });
@@ -161,7 +169,8 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       toast({ variant: "destructive", title: "Update Failed", description: error.message });
     } finally {
       setLoading(false);
-      setAddAmount(""); setSelectedUser(null);
+      setAddAmount(""); 
+      setSelectedUser(null);
     }
   };
 
