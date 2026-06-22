@@ -96,7 +96,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     }
   }, [db, fetchUsers]);
 
-  const handleCreateUser = async () => {
+  const handleCreateUser = () => {
     if (!db) {
       toast({ variant: "destructive", title: "Error", description: "Database not connected." });
       return;
@@ -105,61 +105,79 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     const cleanName = newUserName.trim();
     const cleanCode = newUserCode.trim().toUpperCase();
     const cleanPass = newUserPassword.trim();
+    const balanceNum = parseFloat(newUserBalance) || 0;
     
     if (!cleanName || !cleanCode || !cleanPass || !newUserBalance) {
       toast({ variant: "destructive", title: "Missing Details", description: "All fields are required." });
       return;
     }
     
-    setLoading(true);
-    try {
-      const userDocRef = doc(db, "users", cleanCode);
-      await setDoc(userDocRef, {
-        name: cleanName,
-        clientCode: cleanCode,
-        password: cleanPass,
-        balance: parseFloat(newUserBalance),
-        exposure: 0,
-        status: "Active",
-        role: "User",
-        createdAt: new Date().toISOString()
-      });
+    // Optimistic Update: Update local state immediately for instant feedback
+    const newUser: UserRecord = {
+      id: cleanCode,
+      name: cleanName,
+      clientCode: cleanCode,
+      password: cleanPass,
+      balance: balanceNum,
+      status: "Active"
+    };
+    
+    setUsers(prev => [newUser, ...prev]);
 
-      setNewUserName("");
-      setNewUserCode("");
-      setNewUserPassword("");
-      setNewUserBalance("");
-      
-      toast({ title: "ID Created Successfully", description: `ID ${cleanCode} has been added.` });
-      fetchUsers();
-    } catch (error: any) {
+    // Non-blocking write: No await here
+    const userDocRef = doc(db, "users", cleanCode);
+    setDoc(userDocRef, {
+      name: cleanName,
+      clientCode: cleanCode,
+      password: cleanPass,
+      balance: balanceNum,
+      exposure: 0,
+      status: "Active",
+      role: "User",
+      createdAt: new Date().toISOString()
+    }).catch((error) => {
       console.error("Creation Error:", error);
-      toast({ variant: "destructive", title: "Creation Failed", description: error.message || "Database write error." });
-    } finally {
-      setLoading(false);
-    }
+      toast({ variant: "destructive", title: "Creation Failed", description: error.message });
+      // Rollback optimistic update if failed
+      setUsers(prev => prev.filter(u => u.clientCode !== cleanCode));
+    });
+
+    setNewUserName("");
+    setNewUserCode("");
+    setNewUserPassword("");
+    setNewUserBalance("");
+    
+    toast({ title: "ID Created Successfully", description: `ID ${cleanCode} has been added.` });
   };
 
-  const handleAddBalance = async () => {
+  const handleAddBalance = () => {
     if (!db || !selectedUser || !addAmount) return;
     const amount = parseFloat(addAmount);
     
-    setLoading(true);
-    try {
-      const userRef = doc(db, "users", selectedUser.clientCode);
-      await updateDoc(userRef, {
-        balance: increment(amount)
-      });
+    // Optimistic Update: Update balance in local state immediately
+    setUsers(prev => prev.map(u => 
+      u.clientCode === selectedUser.clientCode 
+        ? { ...u, balance: (u.balance || 0) + amount } 
+        : u
+    ));
 
-      setAddAmount("");
-      setSelectedUser(null);
-      toast({ title: "Balance Added", description: `₹${amount} added to ${selectedUser.name}'s account.` });
-      fetchUsers();
-    } catch (error: any) {
-      toast({ variant: "destructive", title: "Update Failed", description: error.message || "Could not add balance." });
-    } finally {
-      setLoading(false);
-    }
+    // Non-blocking write: No await here
+    const userRef = doc(db, "users", selectedUser.clientCode);
+    updateDoc(userRef, {
+      balance: increment(amount)
+    }).catch((error) => {
+      toast({ variant: "destructive", title: "Update Failed", description: error.message });
+      // Rollback optimistic update if failed
+      setUsers(prev => prev.map(u => 
+        u.clientCode === selectedUser.clientCode 
+          ? { ...u, balance: (u.balance || 0) - amount } 
+          : u
+      ));
+    });
+
+    setAddAmount("");
+    setSelectedUser(null);
+    toast({ title: "Balance Added", description: `₹${amount} added to ${selectedUser.name}'s account.` });
   };
 
   const togglePasswordVisibility = (clientCode: string) => {
@@ -265,7 +283,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
-                  {loading ? (
+                  {loading && users.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-10 gap-4">
                       <RefreshCw className="h-10 w-10 animate-spin text-blue-600" />
                       <p className="text-xs font-black uppercase text-muted-foreground">Syncing Database...</p>
@@ -342,8 +360,8 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button onClick={handleCreateUser} disabled={loading} className="w-full h-12 bg-blue-600 hover:bg-blue-700 font-black uppercase rounded-xl">
-                      {loading ? "Creating..." : "Confirm & Create ID"}
+                    <Button onClick={handleCreateUser} className="w-full h-12 bg-blue-600 hover:bg-blue-700 font-black uppercase rounded-xl">
+                      Confirm & Create ID
                     </Button>
                   </DialogFooter>
                 </DialogContent>
@@ -385,7 +403,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                         </tr>
                       ) : (
                         filteredUsers.map((user) => (
-                          <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                          <tr key={user.clientCode} className="hover:bg-gray-50 transition-colors">
                             <td className="p-4">
                               <div className="flex items-center gap-3">
                                 <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-black uppercase">
