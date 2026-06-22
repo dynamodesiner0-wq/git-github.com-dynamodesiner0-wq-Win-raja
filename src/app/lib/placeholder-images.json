@@ -42,6 +42,12 @@
       "description": "Casino games professional icon",
       "imageUrl": "https://i.ibb.co/spQhXY5V/image-search-1782097782566.jpg",
       "imageHint": "casino games"
+    },
+    {
+      "id": "ledger-icon-img",
+      "description": "My Ledger professional icon",
+      "imageUrl": "https://i.ibb.co/vCzgZBjk/CG1.jpg",
+      "imageHint": "ledger icon"
     }
   ]
 }

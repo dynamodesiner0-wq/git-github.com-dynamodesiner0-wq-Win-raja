@@ -81,7 +81,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
     { 
       title: "My Ledger", 
       view: 'profile' as const,
-      imageUrl: "https://picsum.photos/seed/ledger-icon/200/200" 
+      imageUrl: "https://i.ibb.co/vCzgZBjk/CG1.jpg" 
     },
     { 
       title: "Change Password", 
@@ -110,7 +110,6 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
             title={item.title} 
             imageUrl={item.imageUrl}
             onClick={() => onViewChange(item.view)}
-            // In Play remains as is per your request for banner visibility
           />
         ))}
       </div>
