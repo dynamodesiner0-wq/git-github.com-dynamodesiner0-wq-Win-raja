@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -54,6 +55,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
 
     setLoading(true);
     try {
+      // Direct document lookup for 100% accuracy
       const userRef = doc(db, "users", cleanCode);
       const userSnap = await getDoc(userRef);
 
