@@ -77,8 +77,13 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       })) as UserRecord[];
       
       // Deduplicate by clientCode to prevent React key errors
-      const uniqueUsers = Array.from(new Map(userList.map(u => [u.clientCode.toUpperCase(), u])).values());
-      setUsers(uniqueUsers);
+      const uniqueUsersMap = new Map();
+      userList.forEach(u => {
+        if (u.clientCode) {
+          uniqueUsersMap.set(u.clientCode.toUpperCase(), u);
+        }
+      });
+      setUsers(Array.from(uniqueUsersMap.values()));
     } catch (error: any) {
       console.error("Fetch error:", error);
       toast({
@@ -128,6 +133,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       createdAt: new Date().toISOString()
     };
     
+    // Mutation: Non-blocking write
     setDoc(userRef, newUserDoc, { merge: true })
       .then(() => {
         toast({ title: "Success", description: `ID ${cleanCode} created successfully.` });
@@ -135,9 +141,6 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         setNewUserCode(""); 
         setNewUserPassword(""); 
         setNewUserBalance("");
-        // Optimistic update to UI list
-        setUsers(prev => [{ ...newUserDoc, id: cleanCode } as any, ...prev]);
-        // Then re-fetch for absolute sync
         fetchUsers();
       })
       .catch((err) => {
@@ -154,7 +157,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     if (isNaN(amount)) return;
     
     setLoading(true);
-    const userRef = doc(db, "users", selectedUser.clientCode);
+    const userRef = doc(db, "users", selectedUser.clientCode.toUpperCase());
     
     updateDoc(userRef, {
       balance: increment(amount)
@@ -263,7 +266,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <tr><td colSpan={6} className="p-20 text-center uppercase font-black opacity-30">No Data Found</td></tr>
                     ) : (
                       filteredUsers.map((user) => (
-                        <tr key={`${user.clientCode}-${user.id}`} className="hover:bg-gray-50">
+                        <tr key={user.clientCode} className="hover:bg-gray-50">
                           <td className="p-4"><span className="font-black text-[#0b2146] text-sm uppercase">{user.name}</span></td>
                           <td className="p-4"><code className="bg-gray-100 px-2 py-1 rounded text-xs font-bold uppercase">{user.clientCode}</code></td>
                           <td className="p-4">

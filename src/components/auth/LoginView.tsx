@@ -36,7 +36,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
       toast({
         variant: "destructive",
         title: "Server Offline",
-        description: "Firestore is not available. Check your internet connection.",
+        description: "Firestore is not available. Please wait a moment.",
       });
       return;
     }
@@ -97,7 +97,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
       toast({
         variant: "destructive",
         title: "Connection Error",
-        description: "Failed to reach server. Please try again or check your network.",
+        description: "Failed to reach server. Please try again.",
       });
     } finally {
       setLoading(false);
