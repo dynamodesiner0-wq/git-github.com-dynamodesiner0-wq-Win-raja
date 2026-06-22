@@ -81,7 +81,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       toast({
         variant: "destructive",
         title: "Sync Failed",
-        description: "Could not retrieve user data. Check connection."
+        description: "Could not retrieve user data."
       });
     } finally {
       setLoading(false);
@@ -132,18 +132,15 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         createdAt: new Date().toISOString()
       };
       
-      // Write to Firestore
       await setDoc(userRef, newUserDoc);
       
       toast({ title: "Success", description: `ID ${cleanCode} created successfully.` });
       
-      // Reset fields
       setNewUserName(""); 
       setNewUserCode(""); 
       setNewUserPassword(""); 
       setNewUserBalance("");
       
-      // Refresh list
       fetchUsers();
     } catch (error: any) {
       toast({ variant: "destructive", title: "Database Error", description: error.message });

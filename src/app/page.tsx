@@ -33,12 +33,10 @@ export default function Home() {
   const [activeView, setActiveView] = useState<'main' | 'exchange' | 'profile' | 'inplay' | 'casino' | 'aviator' | 'chicken' | 'password' | 'ledger' | 'complete' | 'admin' | 'admin-login'>('main');
   const [isMobileSlipOpen, setIsMobileSlipOpen] = useState(false);
   
-  // Real-time Betting State
   const [balance, setBalance] = useState(0);
   const [exposure, setExposure] = useState(0);
   const [myBets, setMyBets] = useState<any[]>([]);
 
-  // Admin Login State
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
 
@@ -148,7 +146,6 @@ export default function Home() {
     setActiveView('admin-login');
   }, []);
 
-  // View Switcher logic
   if (!currentUser && activeView !== 'admin' && activeView !== 'admin-login') {
     return <LoginView 
       onLoginSuccess={(user) => setCurrentUser(user)} 
@@ -243,7 +240,7 @@ export default function Home() {
               </div>
               <div className="space-y-2">
                 <h2 className="text-2xl font-black text-[#0b2146] uppercase tracking-tighter">Games Coming Soon</h2>
-                <p className="text-muted-foreground text-sm max-w-md">We are currently integrating these professional games. Please check back in a few days!</p>
+                <p className="text-muted-foreground text-sm max-w-md">We are currently integrating these professional games.</p>
               </div>
               <Button 
                 onClick={() => setActiveView('main')}

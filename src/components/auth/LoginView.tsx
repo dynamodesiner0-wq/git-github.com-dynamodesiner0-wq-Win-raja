@@ -36,7 +36,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
       toast({
         variant: "destructive",
         title: "Database Not Ready",
-        description: "Trying to reconnect to server...",
+        description: "Connecting to server...",
       });
       return;
     }
@@ -48,7 +48,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
       toast({
         variant: "destructive",
         title: "Missing Details",
-        description: "Please enter both Client ID and Password.",
+        description: "Enter both Client ID and Password.",
       });
       return;
     }
@@ -66,7 +66,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
             toast({
               variant: "destructive",
               title: "Account Suspended",
-              description: "Your account is inactive. Please contact admin.",
+              description: "Contact admin.",
             });
             return;
           }
@@ -81,22 +81,22 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
           toast({
             variant: "destructive",
             title: "Access Denied",
-            description: "Invalid password for this ID.",
+            description: "Invalid password.",
           });
         }
       } else {
         toast({
           variant: "destructive",
           title: "User Not Found",
-          description: `No record found for ID: ${cleanCode}`,
+          description: `No record for ID: ${cleanCode}`,
         });
       }
     } catch (error: any) {
-      console.error("Critical Login Error:", error);
+      console.error("Login Error:", error);
       toast({
         variant: "destructive",
         title: "Authentication Error",
-        description: error.message || "An unexpected error occurred. Please try again.",
+        description: "Server is unreachable. Check internet.",
       });
     } finally {
       setLoading(false);
