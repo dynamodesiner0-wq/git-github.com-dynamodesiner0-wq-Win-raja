@@ -1,10 +1,11 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, User, Lock, ArrowRight, Wifi, WifiOff } from "lucide-react";
+import { ShieldCheck, User, Lock, ArrowRight, Wifi, WifiOff, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { doc, getDoc } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
@@ -24,7 +25,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
 
   useEffect(() => {
     const trigger = clientCode.trim().toLowerCase();
-    if (trigger === "winraja@main" || trigger === "admin") {
+    if (trigger === "winraja@main" || trigger === "admin@raja") {
       onAdminPortal();
       setClientCode(""); 
     }
@@ -32,7 +33,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
 
   const handleLogin = async () => {
     if (!db) {
-      toast({ variant: "destructive", title: "Connecting...", description: "Firebase initializing. Please wait." });
+      toast({ variant: "destructive", title: "Wait!", description: "Cloud connection initializing." });
       return;
     }
 
@@ -40,7 +41,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
     const cleanPass = password.trim();
 
     if (!cleanCode || !cleanPass) {
-      toast({ variant: "destructive", title: "Missing Info", description: "ID and Password are required." });
+      toast({ variant: "destructive", title: "Required", description: "ID and Password are required." });
       return;
     }
 
@@ -53,19 +54,20 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
         const userData = userSnap.data();
         if (userData.password === cleanPass) {
           if (userData.status === "Suspended") {
-            toast({ variant: "destructive", title: "Blocked", description: "Your account is suspended." });
+            toast({ variant: "destructive", title: "Account Blocked", description: "Please contact administrator." });
             return;
           }
-          toast({ title: "Access Granted", description: `Welcome, ${userData.name}.` });
+          toast({ title: "Welcome back!", description: `Logged in as ${userData.name}` });
           onLoginSuccess({ ...userData, clientCode: cleanCode });
         } else {
-          toast({ variant: "destructive", title: "Error", description: "Incorrect password." });
+          toast({ variant: "destructive", title: "Error", description: "Invalid password provided." });
         }
       } else {
-        toast({ variant: "destructive", title: "Not Found", description: `ID ${cleanCode} does not exist.` });
+        toast({ variant: "destructive", title: "User Not Found", description: `ID ${cleanCode} is not registered.` });
       }
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Connection Error", description: "Failed to connect to server." });
+      console.error("Login error:", error);
+      toast({ variant: "destructive", title: "Connection Error", description: "Server is unreachable." });
     } finally {
       setLoading(false);
     }
@@ -73,7 +75,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
 
   return (
     <div className="min-h-screen bg-[#0b2146] flex items-center justify-center p-4 font-body">
-      <div className="w-full max-w-[420px] space-y-8">
+      <div className="w-full max-w-[420px] space-y-8 animate-in fade-in zoom-in duration-500">
         <div className="text-center space-y-2">
           <div className="h-20 w-20 bg-gradient-to-br from-blue-500 to-[#1a4b8c] rounded-3xl mx-auto flex items-center justify-center shadow-2xl mb-4 transform -rotate-6">
             <ShieldCheck className="h-12 w-12 text-white" />
@@ -84,13 +86,13 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
             </h1>
             <Badge 
               variant={db ? "outline" : "destructive"} 
-              className={cn("mt-2 flex gap-1 items-center font-black uppercase", db ? "text-green-400 border-green-400/30" : "animate-pulse")}
+              className={cn("mt-2 flex gap-1 items-center font-black uppercase transition-all", db ? "text-green-400 border-green-400/30" : "animate-pulse")}
             >
               {db ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
-              {db ? "Cloud Connection Live" : "Connecting..."}
+              {db ? "Cloud Sync Active" : "Connecting to Database..."}
             </Badge>
           </div>
-          <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] mt-2">Authorized Access Only</p>
+          <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] mt-2">Precision Sports Betting Platform</p>
         </div>
 
         <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl space-y-6 relative overflow-hidden">
@@ -104,7 +106,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
                   value={clientCode}
                   onChange={(e) => setClientCode(e.target.value)}
                   placeholder="e.g. C101"
-                  className="h-14 pl-12 rounded-2xl bg-[#f0f2f5] border-none text-lg font-black uppercase text-[#0b2146] placeholder:text-[#0b2146]/20"
+                  className="h-14 pl-12 rounded-2xl bg-[#f0f2f5] border-none text-lg font-black uppercase text-[#0b2146] placeholder:text-[#0b2146]/20 focus:ring-2 ring-blue-500/20"
                 />
               </div>
             </div>
@@ -117,19 +119,30 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="h-14 pl-12 rounded-2xl bg-[#f0f2f5] border-none text-lg font-black text-[#0b2146] placeholder:text-[#0b2146]/20"
+                  className="h-14 pl-12 rounded-2xl bg-[#f0f2f5] border-none text-lg font-black text-[#0b2146] placeholder:text-[#0b2146]/20 focus:ring-2 ring-blue-500/20"
                 />
               </div>
             </div>
             <Button 
               onClick={handleLogin}
               disabled={loading}
-              className="w-full h-16 rounded-2xl bg-gradient-to-r from-[#1a4b8c] to-[#2c58a0] text-white font-black text-lg uppercase shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+              className="w-full h-16 rounded-2xl bg-gradient-to-r from-[#1a4b8c] to-[#2c58a0] text-white font-black text-lg uppercase shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70"
             >
-              {loading ? "Verifying..." : "Login to Account"}
-              {!loading && <ArrowRight className="ml-2 h-5 w-5" />}
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-5 w-5 animate-spin" /> Verifying...
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  Login to Account <ArrowRight className="h-5 w-5" />
+                </div>
+              )}
             </Button>
           </div>
+        </div>
+        
+        <div className="text-center">
+          <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Copyright WinRaja © 2026</p>
         </div>
       </div>
     </div>
