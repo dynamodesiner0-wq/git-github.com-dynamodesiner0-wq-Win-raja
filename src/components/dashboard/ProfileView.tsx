@@ -97,7 +97,7 @@ export function ProfileView({ balance, exposure, myBets, onBackToMenu }: Profile
         {/* Footer */}
         <div className="flex justify-center mt-6">
           <div className="bg-white px-8 py-2 rounded-full shadow-md border border-blue-50">
-            <span className="text-[10px] font-bold text-[#1a4b8c]/60">Copy Right @ 1x247 2026</span>
+            <span className="text-[10px] font-bold text-[#1a4b8c]/60 uppercase">copyright winraja 2026</span>
           </div>
         </div>
       </div>

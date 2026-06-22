@@ -52,7 +52,7 @@ export function CompleteGamesView({ onBackToMenu }: CompleteGamesViewProps) {
         {/* Footer */}
         <div className="mt-4">
           <div className="bg-white px-10 py-2.5 rounded-full shadow-md border border-blue-50">
-            <span className="text-[12px] font-black text-[#1a4b8c] uppercase tracking-tight">Copy Right @ 1x247 2026</span>
+            <span className="text-[12px] font-black text-[#1a4b8c] uppercase tracking-tight">copyright winraja 2026</span>
           </div>
         </div>
       </div>

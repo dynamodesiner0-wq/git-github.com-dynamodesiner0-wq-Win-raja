@@ -69,7 +69,7 @@ export function ChangePasswordView({ onBackToMenu }: ChangePasswordViewProps) {
         {/* Footer */}
         <div className="mt-4">
           <div className="bg-white px-8 py-2 rounded-full shadow-md border border-blue-50">
-            <span className="text-[11px] font-bold text-[#1a4b8c]/60">Copy Right @ 1x247 2026</span>
+            <span className="text-[11px] font-bold text-[#1a4b8c]/60">copyright winraja 2026</span>
           </div>
         </div>
       </div>

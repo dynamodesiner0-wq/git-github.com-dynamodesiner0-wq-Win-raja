@@ -77,7 +77,7 @@ export function LedgerView({ onBackToMenu }: LedgerViewProps) {
         {/* Footer */}
         <div className="mt-2">
           <div className="bg-white px-8 py-2 rounded-full shadow-md border border-blue-50">
-            <span className="text-[11px] font-bold text-[#1a4b8c]/60 uppercase tracking-tight">Copy Right @ 1x247 2026</span>
+            <span className="text-[11px] font-bold text-[#1a4b8c]/60 uppercase tracking-tight">copyright winraja 2026</span>
           </div>
         </div>
       </div>
