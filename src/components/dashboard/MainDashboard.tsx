@@ -8,13 +8,17 @@ interface DashboardCardProps {
   title: string;
   imageUrl?: string;
   onClick: () => void;
+  isLarge?: boolean;
 }
 
-function DashboardCard({ title, imageUrl, onClick }: DashboardCardProps) {
+function DashboardCard({ title, imageUrl, onClick, isLarge }: DashboardCardProps) {
   return (
     <button 
       onClick={onClick}
-      className="bg-white rounded-[1.5rem] flex flex-col items-center justify-between p-4 aspect-square shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-blue-50/50 hover:bg-blue-50/30 transition-all group overflow-hidden"
+      className={cn(
+        "bg-white rounded-[1.5rem] flex flex-col items-center justify-between p-4 aspect-square shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-blue-50/50 hover:bg-blue-50/30 transition-all group overflow-hidden",
+        isLarge && "col-span-1"
+      )}
     >
       <div className="flex-1 flex items-center justify-center w-full">
         {imageUrl ? (
@@ -44,7 +48,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
     { 
       title: "In Play", 
       view: 'inplay' as const,
-      imageUrl: "https://picsum.photos/seed/cricket-icon/200/200" // Should be a cricket player icon
+      imageUrl: "https://i.ibb.co/mFBqVD8f/image-search-1782096841440.png" 
     },
     { 
       title: "Casino", 
@@ -90,7 +94,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
         <div className="bg-yellow-500 text-black text-[10px] font-black px-2 py-0.5 rounded-md shrink-0">NEW</div>
         <div className="flex-1 overflow-hidden ml-4">
           <marquee className="text-[11px] font-bold text-center block">
-             व करें। नए गेमिंग एक्सपीरिएंस का आनंद उठाएं। Chicken Road और 32 Cards का मज़ा लें। 
+             हमारे एक्सचेंज पर अब नए रोमांचक गेम्स लाइव हो गए हैं। Chicken Road और 32 Cards का मज़ा लें। 
           </marquee>
         </div>
       </div>
