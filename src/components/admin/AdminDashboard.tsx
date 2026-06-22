@@ -76,15 +76,15 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         ...doc.data()
       })) as UserRecord[];
       
-      // Deduplicate by clientCode just in case
-      const uniqueUsers = Array.from(new Map(userList.map(u => [u.clientCode, u])).values());
+      // Deduplicate by clientCode to prevent React key errors
+      const uniqueUsers = Array.from(new Map(userList.map(u => [u.clientCode.toUpperCase(), u])).values());
       setUsers(uniqueUsers);
     } catch (error: any) {
       console.error("Fetch error:", error);
       toast({
         variant: "destructive",
         title: "Sync Failed",
-        description: "Could not fetch user list."
+        description: "Could not fetch user list. Check network."
       });
     } finally {
       setLoading(false);
@@ -114,6 +114,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     }
 
     setLoading(true);
+    // Use clientCode as the document ID for absolute reliability
     const userRef = doc(db, "users", cleanCode);
     
     const newUserDoc = {
@@ -127,13 +128,16 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       createdAt: new Date().toISOString()
     };
     
-    setDoc(userRef, newUserDoc)
+    setDoc(userRef, newUserDoc, { merge: true })
       .then(() => {
         toast({ title: "Success", description: `ID ${cleanCode} created successfully.` });
         setNewUserName(""); 
         setNewUserCode(""); 
         setNewUserPassword(""); 
         setNewUserBalance("");
+        // Optimistic update to UI list
+        setUsers(prev => [{ ...newUserDoc, id: cleanCode } as any, ...prev]);
+        // Then re-fetch for absolute sync
         fetchUsers();
       })
       .catch((err) => {
@@ -259,7 +263,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <tr><td colSpan={6} className="p-20 text-center uppercase font-black opacity-30">No Data Found</td></tr>
                     ) : (
                       filteredUsers.map((user) => (
-                        <tr key={`${user.clientCode}-${user.createdAt || 'initial'}`} className="hover:bg-gray-50">
+                        <tr key={`${user.clientCode}-${user.id}`} className="hover:bg-gray-50">
                           <td className="p-4"><span className="font-black text-[#0b2146] text-sm uppercase">{user.name}</span></td>
                           <td className="p-4"><code className="bg-gray-100 px-2 py-1 rounded text-xs font-bold uppercase">{user.clientCode}</code></td>
                           <td className="p-4">

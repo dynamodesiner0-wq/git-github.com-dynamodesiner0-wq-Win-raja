@@ -36,7 +36,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
       toast({
         variant: "destructive",
         title: "Server Offline",
-        description: "Firebase not initialized.",
+        description: "Firestore is not available. Check your internet connection.",
       });
       return;
     }
@@ -55,6 +55,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
 
     setLoading(true);
     try {
+      // Explicitly target the users collection with the clientCode as the ID
       const userRef = doc(db, "users", cleanCode);
       const userSnap = await getDoc(userRef);
 
@@ -88,7 +89,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
         toast({
           variant: "destructive",
           title: "Not Found",
-          description: `ID ${cleanCode} does not exist.`,
+          description: `ID ${cleanCode} does not exist in our database.`,
         });
       }
     } catch (error: any) {
@@ -96,7 +97,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
       toast({
         variant: "destructive",
         title: "Connection Error",
-        description: "Failed to reach server. Please check your network.",
+        description: "Failed to reach server. Please try again or check your network.",
       });
     } finally {
       setLoading(false);
