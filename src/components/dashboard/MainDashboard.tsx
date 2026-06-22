@@ -43,7 +43,7 @@ function DashboardCard({ title, imageUrl, onClick, isLarge }: DashboardCardProps
 }
 
 interface MainDashboardProps {
-  onViewChange: (view: 'main' | 'exchange' | 'profile' | 'inplay' | 'casino' | 'aviator' | 'chicken' | 'password' | 'ledger') => void;
+  onViewChange: (view: 'main' | 'exchange' | 'profile' | 'inplay' | 'casino' | 'aviator' | 'chicken' | 'password' | 'ledger' | 'complete') => void;
 }
 
 export function MainDashboard({ onViewChange }: MainDashboardProps) {
@@ -70,7 +70,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
     },
     { 
       title: "Complete Games", 
-      view: 'profile' as const,
+      view: 'complete' as const,
       imageUrl: "https://i.ibb.co/vCzgZBjk/CG1.jpg" 
     },
     { 
