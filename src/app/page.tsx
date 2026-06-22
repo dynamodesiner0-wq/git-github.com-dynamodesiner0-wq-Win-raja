@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -14,6 +15,7 @@ import { CompleteGamesView } from "@/components/dashboard/CompleteGamesView";
 import { AviatorGameView } from "@/components/dashboard/AviatorGameView";
 import { SmartPredictorModal } from "@/components/predictor/SmartPredictorModal";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { LoginView } from "@/components/auth/LoginView";
 import { fetchLiveMatches, type LiveMatchData } from "@/lib/api/sports";
 import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -23,6 +25,7 @@ import { Input } from "@/components/ui/input";
 
 export default function Home() {
   const { toast } = useToast();
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [selections, setSelections] = useState<any[]>([]);
   const [isPredictorOpen, setIsPredictorOpen] = useState(false);
   const [liveMatches, setLiveMatches] = useState<LiveMatchData[]>([]);
@@ -30,8 +33,8 @@ export default function Home() {
   const [activeView, setActiveView] = useState<'main' | 'exchange' | 'profile' | 'inplay' | 'casino' | 'aviator' | 'chicken' | 'password' | 'ledger' | 'complete' | 'admin' | 'admin-login'>('main');
   const [isMobileSlipOpen, setIsMobileSlipOpen] = useState(false);
   
-  // Real-time Betting State
-  const [balance, setBalance] = useState(25000.00);
+  // Real-time Betting State (connected to currentUser)
+  const [balance, setBalance] = useState(0);
   const [exposure, setExposure] = useState(0);
   const [profitAndLoss, setProfitAndLoss] = useState(0);
   const [myBets, setMyBets] = useState<any[]>([]);
@@ -50,6 +53,13 @@ export default function Home() {
     }
     loadInitialData();
   }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      setBalance(currentUser.balance || 0);
+      setExposure(currentUser.exposure || 0);
+    }
+  }, [currentUser]);
 
   const handleSelectMarket = (team: string, market: string, type: 'Lagai' | 'Khai', price: string) => {
     const newSelection = {
@@ -132,6 +142,11 @@ export default function Home() {
     }
   };
 
+  // If not logged in, show login view
+  if (!currentUser) {
+    return <LoginView onLoginSuccess={(user) => setCurrentUser(user)} />;
+  }
+
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[#f4f7fa]">
       {activeView !== 'admin' && (
@@ -139,6 +154,7 @@ export default function Home() {
           balance={balance} 
           exposure={exposure} 
           profitAndLoss={profitAndLoss}
+          clientCode={currentUser?.clientCode}
           onProfileClick={() => setActiveView('profile')} 
           onLogoClick={() => setActiveView('main')} 
         />
@@ -239,11 +255,13 @@ export default function Home() {
             <CompleteGamesView onBackToMenu={() => setActiveView('main')} />
           ) : (
             <ProfileView 
+              user={currentUser}
               balance={balance} 
               exposure={exposure} 
               myBets={myBets} 
               onBackToMenu={() => setActiveView('main')}
               onAdminClick={() => setActiveView('admin-login')}
+              onLogout={() => setCurrentUser(null)}
             />
           )}
 
@@ -297,3 +315,4 @@ export default function Home() {
     </div>
   );
 }
+

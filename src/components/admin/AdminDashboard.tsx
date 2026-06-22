@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,10 +15,10 @@ import {
   LogOut,
   ChevronRight,
   UserCheck,
-  PlusCircle,
   Search,
   IndianRupee,
-  UserPlus
+  UserPlus,
+  RefreshCw
 } from "lucide-react";
 import { 
   Dialog, 
@@ -30,11 +30,13 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { getFirestore, collection, getDocs, setDoc, doc, updateDoc, increment } from "firebase/firestore";
 
 interface UserRecord {
   id: string;
   name: string;
-  code: string;
+  clientCode: string;
+  password?: string;
   balance: number;
   status: 'Active' | 'Suspended';
 }
@@ -47,60 +49,102 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'stats' | 'users'>('stats');
   const [searchQuery, setSearchQuery] = useState("");
+  const [users, setUsers] = useState<UserRecord[]>([]);
+  const [loading, setLoading] = useState(false);
   
-  // Mock users for UI demonstration (In real app, this would be useCollection)
-  const [users, setUsers] = useState<UserRecord[]>([
-    { id: "1", name: "Rahul Sharma", code: "C123045", balance: 4500, status: "Active" },
-    { id: "2", name: "Priya Patel", code: "C123089", balance: 12200, status: "Active" },
-    { id: "3", name: "Amit Kumar", code: "C123112", balance: 1200, status: "Suspended" },
-    { id: "4", name: "Suresh Singh", code: "C123156", balance: 8900, status: "Active" },
-  ]);
-
   // Create User State
   const [newUserName, setNewUserName] = useState("");
   const [newUserCode, setNewUserCode] = useState("");
+  const [newUserPassword, setNewUserPassword] = useState("");
   const [newUserBalance, setNewUserBalance] = useState("");
 
   // Add Balance State
   const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
   const [addAmount, setAddAmount] = useState("");
 
-  const handleCreateUser = () => {
-    if (!newUserName || !newUserCode || !newUserBalance) {
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const db = getFirestore();
+      const querySnapshot = await getDocs(collection(db, "users"));
+      const userList = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as UserRecord[];
+      setUsers(userList);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const handleCreateUser = async () => {
+    if (!newUserName || !newUserCode || !newUserPassword || !newUserBalance) {
       toast({ variant: "destructive", title: "Missing Details", description: "All fields are required." });
       return;
     }
-    const newUser: UserRecord = {
-      id: Date.now().toString(),
-      name: newUserName,
-      code: newUserCode,
-      balance: parseFloat(newUserBalance),
-      status: "Active"
-    };
-    setUsers([...users, newUser]);
-    setNewUserName("");
-    setNewUserCode("");
-    setNewUserBalance("");
-    toast({ title: "User Created", description: `Account for ${newUserName} is now active.` });
+    
+    const db = getFirestore();
+    const clientCodeUpper = newUserCode.toUpperCase();
+    const userDocRef = doc(db, "users", clientCodeUpper);
+
+    try {
+      await setDoc(userDocRef, {
+        name: newUserName,
+        clientCode: clientCodeUpper,
+        password: newUserPassword,
+        balance: parseFloat(newUserBalance),
+        exposure: 0,
+        status: "Active",
+        role: "User",
+        createdAt: new Date().toISOString()
+      });
+
+      setNewUserName("");
+      setNewUserCode("");
+      setNewUserPassword("");
+      setNewUserBalance("");
+      
+      toast({ title: "User Created", description: `Account for ${newUserName} is now active.` });
+      fetchUsers();
+    } catch (error) {
+      toast({ variant: "destructive", title: "Creation Failed", description: "Database error occurred." });
+    }
   };
 
-  const handleAddBalance = () => {
+  const handleAddBalance = async () => {
     if (!selectedUser || !addAmount) return;
     const amount = parseFloat(addAmount);
-    setUsers(users.map(u => u.id === selectedUser.id ? { ...u, balance: u.balance + amount } : u));
-    setAddAmount("");
-    setSelectedUser(null);
-    toast({ title: "Balance Added", description: `₹${amount} added to ${selectedUser.name}'s account.` });
+    
+    try {
+      const db = getFirestore();
+      const userRef = doc(db, "users", selectedUser.clientCode);
+      await updateDoc(userRef, {
+        balance: increment(amount)
+      });
+
+      setAddAmount("");
+      setSelectedUser(null);
+      toast({ title: "Balance Added", description: `₹${amount} added to ${selectedUser.name}'s account.` });
+      fetchUsers();
+    } catch (error) {
+      toast({ variant: "destructive", title: "Update Failed", description: "Could not add balance." });
+    }
   };
 
   const filteredUsers = users.filter(u => 
     u.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    u.code.toLowerCase().includes(searchQuery.toLowerCase())
+    u.clientCode.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const stats = [
     { label: "Total Users", value: users.length.toString(), icon: Users, color: "text-blue-600" },
-    { label: "Total Balance", value: `₹${users.reduce((acc, u) => acc + u.balance, 0).toLocaleString()}`, icon: Wallet, color: "text-green-600" },
+    { label: "Total Balance", value: `₹${users.reduce((acc, u) => acc + (u.balance || 0), 0).toLocaleString()}`, icon: Wallet, color: "text-green-600" },
     { label: "Net Revenue", value: "₹12,20,000", icon: TrendingUp, color: "text-purple-600" },
     { label: "Active Bets", value: "892", icon: ShieldAlert, color: "text-red-600" },
   ];
@@ -119,6 +163,9 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
           </div>
         </div>
         <div className="flex items-center gap-4">
+          <Button onClick={fetchUsers} variant="ghost" className="h-10 w-10 p-0 rounded-xl text-white/50 hover:text-white hover:bg-white/10">
+            <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+          </Button>
           <div className="flex flex-col items-end mr-2">
             <span className="text-sm font-black">Prakash Verma</span>
             <span className="text-[10px] opacity-60">Last login: Today 10:45 AM</span>
@@ -231,6 +278,10 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <Input value={newUserCode} onChange={(e) => setNewUserCode(e.target.value)} placeholder="e.g. C123456" className="h-12 rounded-xl" />
                     </div>
                     <div className="space-y-2">
+                      <label className="text-[10px] font-black text-muted-foreground uppercase">Password</label>
+                      <Input value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} placeholder="Assign a password" type="text" className="h-12 rounded-xl" />
+                    </div>
+                    <div className="space-y-2">
                       <label className="text-[10px] font-black text-muted-foreground uppercase">Initial Balance (₹)</label>
                       <Input type="number" value={newUserBalance} onChange={(e) => setNewUserBalance(e.target.value)} placeholder="0.00" className="h-12 rounded-xl" />
                     </div>
@@ -267,10 +318,10 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                             </div>
                           </td>
                           <td className="p-4">
-                            <code className="bg-gray-100 px-2 py-1 rounded text-xs font-bold text-gray-600">{user.code}</code>
+                            <code className="bg-gray-100 px-2 py-1 rounded text-xs font-bold text-gray-600">{user.clientCode}</code>
                           </td>
                           <td className="p-4">
-                            <span className="font-black text-green-600">₹{user.balance.toLocaleString()}</span>
+                            <span className="font-black text-green-600">₹{(user.balance || 0).toLocaleString()}</span>
                           </td>
                           <td className="p-4">
                             <Badge className={user.status === 'Active' ? 'bg-green-100 text-green-700 hover:bg-green-100' : 'bg-red-100 text-red-700 hover:bg-red-100'}>
@@ -295,7 +346,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                                     <DialogTitle className="font-black uppercase text-[#0b2146]">Add Funds to {selectedUser?.name}</DialogTitle>
                                   </DialogHeader>
                                   <div className="py-6 space-y-4 text-center">
-                                    <p className="text-sm text-muted-foreground">Adding money to client code: <code className="bg-blue-50 text-blue-600 px-2 rounded">{selectedUser?.code}</code></p>
+                                    <p className="text-sm text-muted-foreground">Adding money to client code: <code className="bg-blue-50 text-blue-600 px-2 rounded">{selectedUser?.clientCode}</code></p>
                                     <div className="relative">
                                       <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
                                       <Input 

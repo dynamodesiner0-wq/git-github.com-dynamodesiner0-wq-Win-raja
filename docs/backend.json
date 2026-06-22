@@ -9,13 +9,14 @@
         "uid": { "type": "string" },
         "clientCode": { "type": "string" },
         "name": { "type": "string" },
+        "password": { "type": "string" },
         "balance": { "type": "number" },
         "exposure": { "type": "number" },
         "status": { "type": "string", "enum": ["Active", "Suspended"] },
         "createdAt": { "type": "string", "format": "date-time" },
         "role": { "type": "string", "enum": ["Admin", "User"] }
       },
-      "required": ["clientCode", "name", "balance", "status"]
+      "required": ["clientCode", "name", "password", "balance", "status"]
     },
     "Transaction": {
       "title": "Transaction",
@@ -35,9 +36,9 @@
     "providers": ["password"]
   },
   "firestore": {
-    "/users/{userId}": {
+    "/users/{clientCode}": {
       "schema": "UserAccount",
-      "description": "User profile and balance data."
+      "description": "User profile and balance data, keyed by client code."
     },
     "/transactions/{transactionId}": {
       "schema": "Transaction",

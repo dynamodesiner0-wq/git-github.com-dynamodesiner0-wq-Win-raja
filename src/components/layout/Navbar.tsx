@@ -10,9 +10,10 @@ interface NavbarProps {
   balance: number;
   exposure: number;
   profitAndLoss: number;
+  clientCode?: string;
 }
 
-export function Navbar({ onProfileClick, onLogoClick, balance, exposure, profitAndLoss }: NavbarProps) {
+export function Navbar({ onProfileClick, onLogoClick, balance, exposure, profitAndLoss, clientCode }: NavbarProps) {
   return (
     <header className="w-full bg-[#1a4b8c] text-white p-2 sticky top-0 z-50 shadow-md h-16 flex items-center">
       <div className="container mx-auto flex items-center justify-between gap-2 max-w-[1200px] px-2">
@@ -22,8 +23,8 @@ export function Navbar({ onProfileClick, onLogoClick, balance, exposure, profitA
           className="cursor-pointer hover:opacity-80 transition-opacity shrink-0"
         >
           <Avatar className="h-11 w-11 border-2 border-white/20">
-            <AvatarImage src="https://picsum.photos/seed/user-rinku/100" />
-            <AvatarFallback className="bg-[#2c58a0]">R</AvatarFallback>
+            <AvatarImage src={`https://picsum.photos/seed/${clientCode}/100`} />
+            <AvatarFallback className="bg-[#2c58a0]">{clientCode?.[0] || 'U'}</AvatarFallback>
           </Avatar>
         </div>
 
@@ -49,7 +50,7 @@ export function Navbar({ onProfileClick, onLogoClick, balance, exposure, profitA
             onClick={onProfileClick}
             className="bg-[#4a90e2] hover:bg-[#357abd] text-white px-4 py-2 rounded-lg font-black text-sm flex items-center gap-1.5 h-12 shadow-lg shrink-0"
           >
-            C123051
+            {clientCode || "GUEST"}
             <Check className="h-4 w-4" />
           </button>
         </div>

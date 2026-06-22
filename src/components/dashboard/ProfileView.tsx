@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -10,18 +11,20 @@ import {
   DialogTitle, 
   DialogTrigger 
 } from "@/components/ui/dialog";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ProfileViewProps {
+  user: any;
   balance: number;
   exposure: number;
   myBets: any[];
   onBackToMenu: () => void;
   onAdminClick?: () => void;
+  onLogout: () => void;
 }
 
-export function ProfileView({ balance, exposure, myBets, onBackToMenu, onAdminClick }: ProfileViewProps) {
+export function ProfileView({ user, balance, exposure, myBets, onBackToMenu, onAdminClick, onLogout }: ProfileViewProps) {
   const [rateDiff, setRateDiff] = useState("0.05");
   const [isRateModalOpen, setIsRateModalOpen] = useState(false);
 
@@ -48,12 +51,20 @@ export function ProfileView({ balance, exposure, myBets, onBackToMenu, onAdminCl
           >
             BACK TO MAIN MENU
           </Button>
-          <button 
-            onClick={onAdminClick}
-            className="h-10 w-10 rounded-full bg-white/50 border border-border flex items-center justify-center text-muted-foreground hover:text-[#1a4b8c] hover:bg-white transition-all shadow-sm"
-          >
-            <ShieldCheck className="h-5 w-5" />
-          </button>
+          <div className="flex gap-2">
+            <button 
+              onClick={onAdminClick}
+              className="h-10 w-10 rounded-full bg-white/50 border border-border flex items-center justify-center text-muted-foreground hover:text-[#1a4b8c] hover:bg-white transition-all shadow-sm"
+            >
+              <ShieldCheck className="h-5 w-5" />
+            </button>
+            <button 
+              onClick={onLogout}
+              className="h-10 w-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm"
+            >
+              <LogOut className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* Rate Information Section */}
@@ -115,10 +126,10 @@ export function ProfileView({ balance, exposure, myBets, onBackToMenu, onAdminCl
             <h3 className="text-sm font-black uppercase tracking-widest">Personal Information</h3>
           </div>
           <div className="p-0">
-            <InfoRow label="Client Code" value="C123051" />
-            <InfoRow label="Client Name" value="RINKU" />
+            <InfoRow label="Client Code" value={user?.clientCode || "N/A"} />
+            <InfoRow label="Client Name" value={user?.name || "N/A"} />
             <InfoRow label="Contact No" value="0" />
-            <InfoRow label="Date Of Joining" value="June 21, 2026" />
+            <InfoRow label="Date Of Joining" value={user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : "June 21, 2026"} />
             <InfoRow label="Address" value="India" />
           </div>
         </div>
