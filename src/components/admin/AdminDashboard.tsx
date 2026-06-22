@@ -97,19 +97,22 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   const handleCreateUser = async () => {
     if (!db) return;
-    if (!newUserName || !newUserCode || !newUserPassword || !newUserBalance) {
+    const cleanName = newUserName.trim();
+    const cleanCode = newUserCode.trim().toUpperCase();
+    const cleanPass = newUserPassword.trim();
+    
+    if (!cleanName || !cleanCode || !cleanPass || !newUserBalance) {
       toast({ variant: "destructive", title: "Missing Details", description: "All fields are required." });
       return;
     }
     
-    const clientCodeUpper = newUserCode.toUpperCase();
-    const userDocRef = doc(db, "users", clientCodeUpper);
+    const userDocRef = doc(db, "users", cleanCode);
 
     try {
       await setDoc(userDocRef, {
-        name: newUserName,
-        clientCode: clientCodeUpper,
-        password: newUserPassword,
+        name: cleanName,
+        clientCode: cleanCode,
+        password: cleanPass,
         balance: parseFloat(newUserBalance),
         exposure: 0,
         status: "Active",
@@ -122,8 +125,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       setNewUserPassword("");
       setNewUserBalance("");
       
-      toast({ title: "User Created", description: `Account for ${newUserName} is now active.` });
-      // Fetch users immediately after creation to ensure list is updated
+      toast({ title: "User Created", description: `Account for ${cleanName} is now active.` });
       fetchUsers();
     } catch (error) {
       toast({ variant: "destructive", title: "Creation Failed", description: "Database error occurred." });
@@ -170,7 +172,6 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   return (
     <div className="flex-1 bg-[#f0f2f5] flex flex-col overflow-hidden font-body">
-      {/* Admin Header */}
       <header className="bg-[#0b2146] text-white p-4 flex items-center justify-between shadow-lg">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 bg-yellow-500 rounded-xl flex items-center justify-center text-black">
@@ -205,7 +206,6 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         </div>
       </header>
 
-      {/* Navigation Tabs */}
       <div className="bg-white border-b flex px-6">
         <button 
           onClick={() => setActiveTab('stats')}
@@ -224,7 +224,6 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       <div className="flex-1 overflow-y-auto p-6">
         {activeTab === 'stats' ? (
           <div className="space-y-6">
-            {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {stats.map((stat, i) => (
                 <Card key={i} className="rounded-3xl border-none shadow-md overflow-hidden">
@@ -275,7 +274,6 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* User Management View */}
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
               <div className="relative w-full md:w-96">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

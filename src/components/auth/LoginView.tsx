@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -30,8 +31,19 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
   }, [clientCode, onAdminPortal]);
 
   const handleLogin = async () => {
-    if (!db) return;
-    if (!clientCode || !password) {
+    if (!db) {
+      toast({
+        variant: "destructive",
+        title: "Database Error",
+        description: "Firebase is not initialized. Please refresh.",
+      });
+      return;
+    }
+
+    const cleanCode = clientCode.trim().toUpperCase();
+    const cleanPass = password.trim();
+
+    if (!cleanCode || !cleanPass) {
       toast({
         variant: "destructive",
         title: "Details Required",
@@ -42,12 +54,12 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
 
     setLoading(true);
     try {
-      const userRef = doc(db, "users", clientCode.toUpperCase());
+      const userRef = doc(db, "users", cleanCode);
       const userSnap = await getDoc(userRef);
 
       if (userSnap.exists()) {
         const userData = userSnap.data();
-        if (userData.password === password) {
+        if (userData.password === cleanPass) {
           if (userData.status === "Suspended") {
             toast({
               variant: "destructive",
@@ -72,7 +84,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
         toast({
           variant: "destructive",
           title: "Account Not Found",
-          description: "This Client Code does not exist.",
+          description: "This Client Code does not exist in our database.",
         });
       }
     } catch (error) {
@@ -80,7 +92,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
       toast({
         variant: "destructive",
         title: "Connection Error",
-        description: "Could not connect to the authentication server.",
+        description: "Could not connect to the server. Check your internet.",
       });
     } finally {
       setLoading(false);
@@ -90,7 +102,6 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
   return (
     <div className="min-h-screen bg-[#0b2146] flex items-center justify-center p-4 font-body">
       <div className="w-full max-w-[420px] space-y-8 animate-in fade-in zoom-in duration-500">
-        {/* Branding */}
         <div className="text-center space-y-2">
           <div className="h-20 w-20 bg-gradient-to-br from-blue-500 to-[#1a4b8c] rounded-3xl mx-auto flex items-center justify-center shadow-2xl shadow-blue-500/20 mb-4 transform -rotate-6">
             <ShieldCheck className="h-12 w-12 text-white" />
@@ -101,7 +112,6 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
           <p className="text-white/40 text-xs font-black uppercase tracking-[0.3em]">Authorized Access Only</p>
         </div>
 
-        {/* Login Card */}
         <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl space-y-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 h-24 w-24 bg-blue-50 rounded-bl-[5rem] -mr-8 -mt-8" />
           
@@ -144,7 +154,6 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="text-center">
           <p className="text-white/20 text-[10px] font-black uppercase tracking-widest">
             copyright winraja 2026 • secure portal v3.0
