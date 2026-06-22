@@ -8,9 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { 
   Users, 
-  Wallet, 
   TrendingUp, 
-  Settings, 
   LogOut,
   Search,
   UserPlus,
@@ -104,6 +102,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
       toast({ variant: "destructive", title: "Wait", description: "Cloud not ready." });
       return;
     }
+    
     const code = newUserCode.trim().toUpperCase();
     if (!newUserName || !code || !newUserPassword) {
       toast({ variant: "destructive", title: "Required", description: "Please fill all details." });
