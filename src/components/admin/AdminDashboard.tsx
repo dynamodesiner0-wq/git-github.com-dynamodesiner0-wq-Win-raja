@@ -104,7 +104,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
     if (!db) return;
     const code = newUserCode.trim().toUpperCase();
     if (!newUserName || !code || !newUserPassword) {
-      toast({ variant: "destructive", title: "Required", description: "All fields are required." });
+      toast({ variant: "destructive", title: "Error", description: "Fill all fields!" });
       return;
     }
 
@@ -123,13 +123,16 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
 
     setDoc(userRef, userData)
       .then(() => {
-        toast({ title: "Success", description: `User ${code} created successfully.` });
-        setNewUserName(""); setNewUserCode(""); setNewUserPassword(""); setNewUserBalance("");
+        toast({ title: "ID Created!", description: `Client ${code} is now live.` });
+        setNewUserName(""); 
+        setNewUserCode(""); 
+        setNewUserPassword(""); 
+        setNewUserBalance("");
         fetchUsers();
       })
       .catch((e) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({ path: userRef.path, operation: 'write', requestResourceData: userData }));
-        toast({ variant: "destructive", title: "Cloud Error", description: "Failed to save user." });
+        toast({ variant: "destructive", title: "Cloud Error", description: "Failed to save ID." });
       })
       .finally(() => setLoading(false));
   };
@@ -149,10 +152,15 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
       createdAt: new Date().toISOString(),
       role: "User"
     };
-    await setDoc(userRef, seedData);
-    toast({ title: "Seed Done", description: "Praveen ID created." });
-    fetchUsers();
-    setLoading(false);
+    setDoc(userRef, seedData)
+      .then(() => {
+        toast({ title: "Seed Successful", description: "Praveen ID (C885929) created." });
+        fetchUsers();
+      })
+      .catch((e) => {
+        toast({ variant: "destructive", title: "Seed Failed" });
+      })
+      .finally(() => setLoading(false));
   };
 
   return (
@@ -245,7 +253,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                         <td className="p-6 font-mono text-blue-600 font-black">{user.clientCode}</td>
                         <td className="p-6">
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-sm">{showPasswords[user.clientCode] ? user.password : "••••••"}</span>
+                            <span className="font-mono text-sm text-[#0b2146]">{showPasswords[user.clientCode] ? user.password : "••••••"}</span>
                             <button onClick={() => setShowPasswords(p => ({...p, [user.clientCode]: !p[user.clientCode]}))} className="text-muted-foreground hover:text-blue-600">
                               {showPasswords[user.clientCode] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </button>
@@ -274,10 +282,10 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                     ) : (
                       liveBets.map(bet => (
                         <tr key={bet.id}>
-                          <td className="p-6 font-black text-xs uppercase">{bet.userName} <span className="opacity-40 font-mono ml-2">({bet.userId})</span></td>
+                          <td className="p-6 font-black text-xs uppercase text-[#0b2146]">{bet.userName} <span className="opacity-40 font-mono ml-2">({bet.userId})</span></td>
                           <td className="p-6 text-xs flex flex-col">
                             <span className="font-black text-[#0b2146] uppercase">{bet.sport} • {bet.team}</span>
-                            <span className="opacity-50 uppercase text-[9px]">{bet.market}</span>
+                            <span className="opacity-50 uppercase text-[9px] text-[#0b2146]">{bet.market}</span>
                           </td>
                           <td className="p-6 font-black text-blue-600">₹{bet.stake?.toLocaleString()}</td>
                           <td className="p-6"><Badge className={cn("uppercase text-[9px] font-black", bet.type === 'Lagai' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600')}>{bet.type}</Badge></td>
