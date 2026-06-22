@@ -78,7 +78,10 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         id: doc.id,
         ...doc.data()
       })) as UserRecord[];
-      setUsers(userList);
+      
+      // Filter out any potential duplicates from DB just in case
+      const uniqueUsers = Array.from(new Map(userList.map(item => [item.clientCode, item])).values());
+      setUsers(uniqueUsers);
     } catch (error: any) {
       console.error("Fetch Error:", error);
       toast({
@@ -109,6 +112,12 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       return;
     }
 
+    // Check for duplicate in current state before optimistic update
+    if (users.some(u => u.clientCode === cleanCode)) {
+      toast({ variant: "destructive", title: "Duplicate ID", description: `ID ${cleanCode} already exists.` });
+      return;
+    }
+
     const newUserDoc = {
       name: cleanName,
       clientCode: cleanCode,
@@ -120,8 +129,11 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       createdAt: new Date().toISOString()
     };
     
-    // Optimistic UI Update
-    setUsers(prev => [{ id: cleanCode, ...newUserDoc }, ...prev]);
+    // Optimistic UI Update - Ensure we don't add duplicates
+    setUsers(prev => {
+      if (prev.some(u => u.clientCode === cleanCode)) return prev;
+      return [{ id: cleanCode, ...newUserDoc }, ...prev];
+    });
 
     try {
       await setDoc(doc(db, "users", cleanCode), newUserDoc);
