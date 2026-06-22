@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -5,6 +6,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { SidebarNav } from "@/components/dashboard/SidebarNav";
 import { LiveMatchHub } from "@/components/dashboard/LiveMatchHub";
 import { BettingSlip } from "@/components/dashboard/BettingSlip";
+import { ProfileView } from "@/components/dashboard/ProfileView";
 import { SmartPredictorModal } from "@/components/predictor/SmartPredictorModal";
 import { fetchLiveMatches, type LiveMatchData } from "@/lib/api/sports";
 
@@ -13,6 +15,7 @@ export default function Home() {
   const [isPredictorOpen, setIsPredictorOpen] = useState(false);
   const [liveMatches, setLiveMatches] = useState<LiveMatchData[]>([]);
   const [activeMatch, setActiveMatch] = useState<LiveMatchData | null>(null);
+  const [activeView, setActiveView] = useState<'exchange' | 'profile'>('exchange');
 
   useEffect(() => {
     async function loadInitialData() {
@@ -45,22 +48,28 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[#f0f2f5]">
-      <Navbar />
+      <Navbar onProfileClick={() => setActiveView('profile')} onLogoClick={() => setActiveView('exchange')} />
       <div className="flex flex-1 overflow-hidden">
-        <SidebarNav />
+        <SidebarNav activeView={activeView} onViewChange={setActiveView} />
         <main className="flex-1 flex flex-col min-w-0 relative">
-          <LiveMatchHub 
-            matches={liveMatches}
-            onSelectMarket={handleSelectMarket} 
-            onOpenPredictor={() => setIsPredictorOpen(true)}
-            onMatchChange={(match) => setActiveMatch(match)}
-          />
+          {activeView === 'exchange' ? (
+            <LiveMatchHub 
+              matches={liveMatches}
+              onSelectMarket={handleSelectMarket} 
+              onOpenPredictor={() => setIsPredictorOpen(true)}
+              onMatchChange={(match) => setActiveMatch(match)}
+            />
+          ) : (
+            <ProfileView />
+          )}
         </main>
-        <BettingSlip 
-          selections={selections} 
-          onRemove={removeSelection} 
-          onClear={clearSelections}
-        />
+        {activeView === 'exchange' && (
+          <BettingSlip 
+            selections={selections} 
+            onRemove={removeSelection} 
+            onClear={clearSelections}
+          />
+        )}
       </div>
 
       <SmartPredictorModal 
