@@ -95,10 +95,10 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
       console.error("Login error:", error);
       toast({
         variant: "destructive",
-        title: "Offline Error",
+        title: "Connection Error",
         description: error.message?.includes("offline") 
-          ? "You are currently offline. Please check your network." 
-          : "Failed to connect to server.",
+          ? "You are currently offline. Check your network." 
+          : "Failed to connect to server. Try again.",
       });
     } finally {
       setLoading(false);
@@ -140,7 +140,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
                   value={clientCode}
                   onChange={(e) => setClientCode(e.target.value)}
                   placeholder="e.g. C101"
-                  className="h-14 pl-12 rounded-2xl bg-[#f0f2f5] border-none text-lg font-black uppercase"
+                  className="h-14 pl-12 rounded-2xl bg-[#f0f2f5] border-none text-lg font-black uppercase text-[#0b2146]"
                 />
               </div>
             </div>
@@ -154,7 +154,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="h-14 pl-12 rounded-2xl bg-[#f0f2f5] border-none text-lg font-black"
+                  className="h-14 pl-12 rounded-2xl bg-[#f0f2f5] border-none text-lg font-black text-[#0b2146]"
                 />
               </div>
             </div>

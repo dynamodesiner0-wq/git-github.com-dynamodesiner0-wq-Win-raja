@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -33,12 +34,10 @@ export function AviatorGameView({ balance, setBalance, onBackToMenu }: AviatorGa
     setStatus('FLYING');
     
     const rand = Math.random();
-    // Realistic crash distribution: 50% chance to crash below 2x
     crashAt.current = Math.max(1.00, 1 / (1 - rand * 0.99)); 
 
     intervalRef.current = setInterval(() => {
       setMultiplier(prev => {
-        // More realistic growth: slow at start, faster as it goes
         const growth = 0.01 * (1 + (prev - 1) * 0.5);
         const next = prev + growth;
         
@@ -85,7 +84,6 @@ export function AviatorGameView({ balance, setBalance, onBackToMenu }: AviatorGa
 
   return (
     <div className="flex-1 bg-[#1a1a1a] flex flex-col overflow-hidden text-white font-body">
-      {/* Top Header */}
       <div className="bg-[#121212] p-4 flex items-center justify-between border-b border-white/5">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 bg-red-600 rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(220,38,38,0.3)]">
@@ -108,7 +106,6 @@ export function AviatorGameView({ balance, setBalance, onBackToMenu }: AviatorGa
         </div>
       </div>
 
-      {/* History Bar */}
       <div className="bg-[#121212] px-4 py-2 flex gap-2 overflow-x-auto no-scrollbar border-b border-white/5 shadow-lg relative z-20">
         <History className="h-4 w-4 text-white/20 shrink-0 self-center mr-2" />
         {history.map((h, i) => (
@@ -126,9 +123,7 @@ export function AviatorGameView({ balance, setBalance, onBackToMenu }: AviatorGa
         ))}
       </div>
 
-      {/* Game Stage */}
       <div className="flex-1 relative flex items-center justify-center overflow-hidden bg-[#0d0d0d]">
-        {/* Animated Radar Grid */}
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <div className="w-full h-full" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
           <div className="absolute inset-0 bg-gradient-to-t from-red-600/10 to-transparent"></div>
@@ -169,7 +164,6 @@ export function AviatorGameView({ balance, setBalance, onBackToMenu }: AviatorGa
           )}
         </div>
 
-        {/* The Plane Image/Icon flying across */}
         {status === 'FLYING' && (
           <div 
             className="absolute bottom-1/4 left-1/4 text-red-600 transition-all duration-100 ease-linear"
@@ -179,13 +173,11 @@ export function AviatorGameView({ balance, setBalance, onBackToMenu }: AviatorGa
           >
             <div className="relative">
               <Plane className="h-20 w-20 fill-red-600 drop-shadow-[0_0_30px_rgba(220,38,38,0.8)]" />
-              {/* Exhaust Smoke Trail */}
               <div className="absolute top-1/2 right-full w-64 h-2 bg-gradient-to-l from-red-600/40 to-transparent blur-md origin-right"></div>
             </div>
           </div>
         )}
 
-        {/* Win Message Popup */}
         {hasCashedOut && (
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 animate-in zoom-in duration-500">
             <div className="bg-green-600 text-white px-10 py-6 rounded-[2.5rem] shadow-[0_0_60px_rgba(22,163,74,0.6)] border-4 border-white/20 text-center">
@@ -200,9 +192,7 @@ export function AviatorGameView({ balance, setBalance, onBackToMenu }: AviatorGa
         )}
       </div>
 
-      {/* Bottom Control Panel */}
       <div className="bg-[#121212] p-4 md:p-8 border-t border-white/5 grid grid-cols-1 md:grid-cols-2 gap-6 relative z-30">
-        {/* Bet Box */}
         <div className="bg-[#1f1f1f] p-5 rounded-[2.5rem] border border-white/10 flex flex-col gap-6 shadow-2xl">
           <div className="flex items-center justify-between bg-black/40 p-2 rounded-2xl">
              <div className="flex items-center gap-1">
@@ -210,7 +200,7 @@ export function AviatorGameView({ balance, setBalance, onBackToMenu }: AviatorGa
                <Input 
                   value={betAmount}
                   onChange={(e) => setBetAmount(parseInt(e.target.value) || 0)}
-                  className="w-24 h-10 bg-transparent border-none text-center font-black text-lg focus-visible:ring-0"
+                  className="w-24 h-10 bg-transparent border-none text-center font-black text-lg focus-visible:ring-0 text-white"
                 />
                <button onClick={() => setBetAmount(betAmount + 50)} className="h-10 w-10 flex items-center justify-center bg-white/5 rounded-xl hover:bg-white/10 transition-colors font-black text-xl">+</button>
              </div>
@@ -254,7 +244,6 @@ export function AviatorGameView({ balance, setBalance, onBackToMenu }: AviatorGa
           )}
         </div>
 
-        {/* Stats Section */}
         <div className="hidden md:flex flex-col gap-4">
           <div className="bg-[#1f1f1f] p-6 rounded-[2.5rem] border border-white/10 flex-1 flex flex-col justify-between shadow-2xl">
             <div className="flex items-center justify-between">

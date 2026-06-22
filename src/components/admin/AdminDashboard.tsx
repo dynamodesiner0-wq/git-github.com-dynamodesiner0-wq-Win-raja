@@ -76,7 +76,6 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         ...doc.data()
       })) as UserRecord[];
       
-      // Filter out potential duplicates by clientCode just in case
       const uniqueUsersMap = new Map();
       userList.forEach(u => {
         if (u.clientCode) {
@@ -89,7 +88,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       toast({
         variant: "destructive",
         title: "Sync Failed",
-        description: error.message || "Could not fetch user list. Check connection."
+        description: error.message || "Could not fetch user list."
       });
     } finally {
       setLoading(false);
@@ -230,7 +229,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
               <div className="relative w-full md:w-96">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search ID or Name..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 h-12 rounded-xl border-none shadow-md" />
+                <Input placeholder="Search ID or Name..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 h-12 rounded-xl border-none shadow-md text-[#0b2146]" />
               </div>
               <Dialog>
                 <DialogTrigger asChild>
@@ -239,12 +238,12 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="rounded-3xl sm:max-w-md bg-white">
-                  <DialogHeader><DialogTitle className="text-xl font-black uppercase">Add User ID</DialogTitle></DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <Input value={newUserName} onChange={(e) => setNewUserName(e.target.value)} placeholder="Full Name" className="h-12 rounded-xl bg-gray-50 border-none" />
-                    <Input value={newUserCode} onChange={(e) => setNewUserCode(e.target.value)} placeholder="Client ID (e.g. C101)" className="h-12 rounded-xl bg-gray-50 border-none uppercase" />
-                    <Input value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} placeholder="Password" className="h-12 rounded-xl bg-gray-50 border-none" />
-                    <Input type="number" value={newUserBalance} onChange={(e) => setNewUserBalance(e.target.value)} placeholder="Initial Balance" className="h-12 rounded-xl bg-gray-50 border-none" />
+                  <DialogHeader><DialogTitle className="text-xl font-black uppercase text-[#0b2146]">Add User ID</DialogTitle></DialogHeader>
+                  <div className="space-y-4 py-4 text-[#0b2146]">
+                    <Input value={newUserName} onChange={(e) => setNewUserName(e.target.value)} placeholder="Full Name" className="h-12 rounded-xl bg-gray-50 border-none text-[#0b2146]" />
+                    <Input value={newUserCode} onChange={(e) => setNewUserCode(e.target.value)} placeholder="Client ID (e.g. C101)" className="h-12 rounded-xl bg-gray-50 border-none uppercase text-[#0b2146]" />
+                    <Input value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} placeholder="Password" className="h-12 rounded-xl bg-gray-50 border-none text-[#0b2146]" />
+                    <Input type="number" value={newUserBalance} onChange={(e) => setNewUserBalance(e.target.value)} placeholder="Initial Balance" className="h-12 rounded-xl bg-gray-50 border-none text-[#0b2146]" />
                   </div>
                   <DialogFooter>
                     <Button onClick={handleCreateUser} disabled={loading} className="w-full h-12 bg-blue-600 font-black uppercase rounded-xl">Save to Cloud</Button>
@@ -259,7 +258,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   <thead className="bg-[#f8f9fb] border-b text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                     <tr><th className="p-4">User</th><th className="p-4">ID</th><th className="p-4">Password</th><th className="p-4">Balance</th><th className="p-4">Status</th><th className="p-4 text-right">Actions</th></tr>
                   </thead>
-                  <tbody className="divide-y">
+                  <tbody className="divide-y text-[#0b2146]">
                     {filteredUsers.length === 0 ? (
                       <tr><td colSpan={6} className="p-20 text-center uppercase font-black opacity-30">No Data Found</td></tr>
                     ) : (
@@ -285,8 +284,8 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                                 <Button onClick={() => setSelectedUser(user)} size="sm" className="bg-blue-600 text-[10px] font-black h-8 px-4 rounded-lg uppercase shadow-md">Deposit</Button>
                               </DialogTrigger>
                               <DialogContent className="rounded-3xl bg-white">
-                                <DialogHeader><DialogTitle className="font-black uppercase">Deposit to {selectedUser?.name}</DialogTitle></DialogHeader>
-                                <div className="py-6"><Input type="number" placeholder="Amount" value={addAmount} onChange={(e) => setAddAmount(e.target.value)} className="h-14 text-2xl font-black rounded-2xl bg-gray-50 border-none" /></div>
+                                <DialogHeader><DialogTitle className="font-black uppercase text-[#0b2146]">Deposit to {selectedUser?.name}</DialogTitle></DialogHeader>
+                                <div className="py-6"><Input type="number" placeholder="Amount" value={addAmount} onChange={(e) => setAddAmount(e.target.value)} className="h-14 text-2xl font-black rounded-2xl bg-gray-50 border-none text-[#0b2146]" /></div>
                                 <DialogFooter><Button onClick={handleAddBalance} disabled={loading} className="w-full h-12 bg-green-600 font-black uppercase rounded-xl">Confirm</Button></DialogFooter>
                               </DialogContent>
                             </Dialog>
@@ -309,7 +308,7 @@ function StatCard({ label, value, icon: Icon, color }: { label: string; value: s
   return (
     <Card className="rounded-3xl border-none shadow-md">
       <CardContent className="p-6 flex justify-between">
-        <div><p className="text-[10px] font-black text-muted-foreground uppercase">{label}</p><h3 className="text-2xl font-black">{value}</h3></div>
+        <div><p className="text-[10px] font-black text-muted-foreground uppercase">{label}</p><h3 className="text-2xl font-black text-[#0b2146]">{value}</h3></div>
         <div className={cn("p-3 rounded-2xl bg-gray-50", color)}><Icon className="h-6 w-6" /></div>
       </CardContent>
     </Card>

@@ -29,7 +29,6 @@ export function BettingSlip({ selections, myBets, onRemove, onClear, onPlaceBets
     return acc + (stakeNum * p);
   }, 0);
 
-  // Auto-switch to "Slip" tab when a new selection arrives
   const [activeTab, setActiveTab] = useState("slip");
   useEffect(() => {
     if (selections.length > 0) {
@@ -97,7 +96,7 @@ export function BettingSlip({ selections, myBets, onRemove, onClear, onPlaceBets
                   type="number"
                   value={stake}
                   onChange={(e) => setStake(e.target.value)}
-                  className="pl-8 bg-[#f0f2f5] border-none text-xl font-black font-mono h-14 rounded-2xl focus-visible:ring-accent"
+                  className="pl-8 bg-[#f0f2f5] border-none text-xl font-black font-mono h-14 rounded-2xl focus-visible:ring-accent text-[#0b2146]"
                 />
               </div>
             </div>
@@ -161,7 +160,7 @@ export function BettingSlip({ selections, myBets, onRemove, onClear, onPlaceBets
           ) : (
             <div className="space-y-3 pb-20">
               {myBets.map((bet, i) => (
-                <div key={i} className="bg-white p-4 rounded-xl border border-border shadow-sm">
+                <div key={i} className="bg-white p-4 rounded-xl border border-border shadow-sm text-[#0b2146]">
                   <div className="flex justify-between items-start mb-2">
                     <Badge variant="outline" className="text-[9px] h-5 border-accent/30 text-accent font-black uppercase">{bet.market}</Badge>
                     <span className="text-[10px] text-muted-foreground font-black flex items-center gap-1">
