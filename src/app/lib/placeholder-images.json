@@ -60,6 +60,12 @@
       "description": "My Ledger professional icon",
       "imageUrl": "https://i.ibb.co/GvH3WBRz/CL.png",
       "imageHint": "my ledger"
+    },
+    {
+      "id": "change-password-img",
+      "description": "Change Password professional icon",
+      "imageUrl": "https://i.ibb.co/RkxtDXJp/CP.png",
+      "imageHint": "change password"
     }
   ]
 }

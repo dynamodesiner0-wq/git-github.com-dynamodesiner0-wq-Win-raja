@@ -86,7 +86,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
     { 
       title: "Change Password", 
       view: 'profile' as const,
-      imageUrl: "https://picsum.photos/seed/password-icon/200/200" 
+      imageUrl: "https://i.ibb.co/RkxtDXJp/CP.png" 
     },
   ];
 
@@ -109,7 +109,6 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
             key={i} 
             title={item.title} 
             imageUrl={item.imageUrl}
-            isLarge={item.isLarge}
             onClick={() => onViewChange(item.view)}
           />
         ))}
