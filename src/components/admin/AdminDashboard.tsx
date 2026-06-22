@@ -20,7 +20,8 @@ import {
   Wifi,
   WifiOff,
   Activity,
-  ArrowUpRight
+  ArrowUpRight,
+  DatabaseZap
 } from "lucide-react";
 import { 
   Dialog, 
@@ -86,6 +87,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     if (!db) return;
     setLoading(true);
     try {
+      // Removed orderBy to ensure simple query works even if createdAt is missing
       const q = query(collection(db, "users"));
       const querySnapshot = await getDocs(q);
       const userList = querySnapshot.docs.map(doc => ({
@@ -159,6 +161,36 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         errorEmitter.emit('permission-error', permissionError);
       })
       .finally(() => setLoading(false));
+  };
+
+  const handleSeedDummyData = async () => {
+    if (!db) return;
+    setLoading(true);
+    const dummies = [
+      { name: "Praveen Kumar", clientCode: "C885929", password: "885929", balance: 50000 },
+      { name: "Demo User 1", clientCode: "DEMO1", password: "123", balance: 10000 },
+      { name: "Demo User 2", clientCode: "DEMO2", password: "123", balance: 25000 },
+    ];
+
+    try {
+      for (const d of dummies) {
+        const userRef = doc(db, "users", d.clientCode);
+        await setDoc(userRef, {
+          ...d,
+          exposure: 0,
+          status: "Active",
+          role: "User",
+          createdAt: new Date().toISOString()
+        });
+      }
+      toast({ title: "Seed Successful", description: "3 Dummy IDs created in Firebase." });
+      fetchUsers();
+    } catch (e) {
+      console.error(e);
+      toast({ variant: "destructive", title: "Seed Failed" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAddBalance = () => {
@@ -240,6 +272,17 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
               <StatCard label="Total Balance" value={`₹${users.reduce((acc, u) => acc + (u.balance || 0), 0).toLocaleString()}`} icon={Wallet} color="text-green-600" />
               <StatCard label="Live Activity" value={liveBets.length.toString()} icon={Activity} color="text-orange-600" />
               <StatCard label="DB Status" value={db ? "ONLINE" : "OFFLINE"} icon={Database} color={db ? "text-green-600" : "text-red-600"} />
+            </div>
+
+            <div className="flex gap-4">
+               <Button 
+                onClick={handleSeedDummyData} 
+                disabled={loading}
+                className="bg-purple-600 hover:bg-purple-700 text-white font-black uppercase text-xs rounded-xl h-12 px-6 gap-2"
+               >
+                 <DatabaseZap className="h-4 w-4" />
+                 Seed Dummy IDs (Praveen + Demo)
+               </Button>
             </div>
 
             <Card className="rounded-3xl border-none shadow-md bg-white p-6">
