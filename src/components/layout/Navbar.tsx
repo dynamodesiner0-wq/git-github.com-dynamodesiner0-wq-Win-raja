@@ -1,8 +1,8 @@
 
 "use client";
 
-import { User, ChevronDown, Wallet } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { User } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface NavbarProps {
   onProfileClick: () => void;
@@ -13,50 +13,41 @@ interface NavbarProps {
 
 export function Navbar({ onProfileClick, onLogoClick, balance, exposure }: NavbarProps) {
   return (
-    <header className="w-full bg-[#2c58a0] text-white p-2 sticky top-0 z-50 shadow-md">
+    <header className="w-full bg-[#1a4b8c] text-white p-2 sticky top-0 z-50">
       <div className="container mx-auto flex items-center justify-between gap-2 max-w-[1200px]">
-        {/* Brand/Logo Area */}
+        {/* User Avatar Left */}
         <div 
-          onClick={onLogoClick}
-          className="flex items-center gap-2 cursor-pointer group"
+          onClick={onProfileClick}
+          className="cursor-pointer hover:opacity-80 transition-opacity"
         >
-          <div className="bg-yellow-500 text-black p-1.5 rounded-lg font-black text-xs group-hover:scale-110 transition-transform">SS</div>
-          <span className="font-black tracking-tighter text-xl hidden sm:block">STAKESYNC</span>
+          <Avatar className="h-10 w-10 border-2 border-white/20">
+            <AvatarImage src="https://picsum.photos/seed/user123/100" />
+            <AvatarFallback className="bg-[#2c58a0]"><User className="h-5 w-5" /></AvatarFallback>
+          </Avatar>
         </div>
 
-        {/* User Stats & Wallet */}
-        <div className="flex items-center gap-3">
-          <div className="flex gap-2 text-[10px] font-bold">
-            <div className="bg-black/20 rounded px-3 py-1 flex flex-col items-center min-w-[70px] border border-white/5">
-              <span className="opacity-60 uppercase text-[8px]">BALANCE</span>
-              <span className="text-sm font-black text-yellow-500">₹{balance.toLocaleString()}</span>
-            </div>
-            <div className="bg-black/20 rounded px-3 py-1 flex flex-col items-center min-w-[70px] border border-white/5">
-              <span className="opacity-60 uppercase text-[8px]">EXPOSURE</span>
-              <span className="text-sm font-black text-red-400">₹{exposure.toLocaleString()}</span>
-            </div>
+        {/* Stats Center-Right */}
+        <div className="flex-1 flex justify-end items-center gap-2">
+          <div className="bg-[#a5d9fe] rounded-lg px-4 py-1 flex flex-col items-start min-w-[100px] h-12 justify-center">
+            <span className="text-[9px] font-bold text-[#1a4b8c]/60 leading-none">BAL</span>
+            <span className="text-sm font-black text-[#1a4b8c]">{balance.toFixed(0)}</span>
           </div>
-
-          <button className="bg-yellow-500 hover:bg-yellow-400 text-black px-4 py-2 rounded font-black text-xs transition-all active:scale-95 flex items-center gap-2 shadow-lg">
-            <Wallet className="h-3.5 w-3.5" />
-            DEPOSIT
-          </button>
-
-          {/* User Profile Trigger */}
-          <div 
-            onClick={onProfileClick}
-            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 transition-all rounded-full pr-3 pl-1 py-1 cursor-pointer group border border-white/10"
-          >
-            <Avatar className="h-8 w-8 border border-white/50 group-hover:border-yellow-500 transition-colors">
-              <AvatarImage src="https://picsum.photos/seed/user123/100" />
-              <AvatarFallback><User /></AvatarFallback>
-            </Avatar>
-            <div className="hidden md:flex items-center gap-1">
-              <span className="text-[10px] font-black uppercase tracking-widest">C123051</span>
-              <ChevronDown className="h-3 w-3 opacity-50" />
-            </div>
+          <div className="bg-white rounded-lg px-4 py-1 flex flex-col items-start min-w-[100px] h-12 justify-center">
+            <span className="text-[9px] font-bold text-[#1a4b8c]/60 leading-none">EXP</span>
+            <span className="text-sm font-black text-[#1a4b8c]">{exposure.toFixed(0)}</span>
           </div>
         </div>
+
+        {/* User ID Right */}
+        <button 
+          onClick={onProfileClick}
+          className="bg-[#4a90e2] hover:bg-[#357abd] text-white px-4 py-2 rounded-lg font-black text-xs flex items-center gap-2 h-12 ml-2"
+        >
+          C123051
+          <svg className="h-3 w-3 fill-white" viewBox="0 0 24 24">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+          </svg>
+        </button>
       </div>
     </header>
   );

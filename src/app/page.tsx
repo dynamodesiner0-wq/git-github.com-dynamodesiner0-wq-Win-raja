@@ -7,6 +7,7 @@ import { SidebarNav } from "@/components/dashboard/SidebarNav";
 import { LiveMatchHub } from "@/components/dashboard/LiveMatchHub";
 import { BettingSlip } from "@/components/dashboard/BettingSlip";
 import { ProfileView } from "@/components/dashboard/ProfileView";
+import { MainDashboard } from "@/components/dashboard/MainDashboard";
 import { SmartPredictorModal } from "@/components/predictor/SmartPredictorModal";
 import { fetchLiveMatches, type LiveMatchData } from "@/lib/api/sports";
 import { useToast } from "@/hooks/use-toast";
@@ -20,7 +21,7 @@ export default function Home() {
   const [isPredictorOpen, setIsPredictorOpen] = useState(false);
   const [liveMatches, setLiveMatches] = useState<LiveMatchData[]>([]);
   const [activeMatch, setActiveMatch] = useState<LiveMatchData | null>(null);
-  const [activeView, setActiveView] = useState<'exchange' | 'profile'>('exchange');
+  const [activeView, setActiveView] = useState<'main' | 'exchange' | 'profile'>('main');
   const [isMobileSlipOpen, setIsMobileSlipOpen] = useState(false);
   
   // Real-time Betting State
@@ -107,17 +108,22 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-[#f0f2f5]">
+    <div className="flex flex-col h-screen overflow-hidden bg-[#f4f7fa]">
       <Navbar 
         balance={balance} 
         exposure={exposure} 
         onProfileClick={() => setActiveView('profile')} 
-        onLogoClick={() => setActiveView('exchange')} 
+        onLogoClick={() => setActiveView('main')} 
       />
       <div className="flex flex-1 overflow-hidden">
-        <SidebarNav activeView={activeView} onViewChange={setActiveView} />
+        {activeView !== 'main' && (
+          <SidebarNav activeView={activeView === 'exchange' ? 'exchange' : 'profile'} onViewChange={setActiveView} />
+        )}
+        
         <main className="flex-1 flex flex-col min-w-0 relative">
-          {activeView === 'exchange' ? (
+          {activeView === 'main' ? (
+            <MainDashboard onViewChange={setActiveView} />
+          ) : activeView === 'exchange' ? (
             <LiveMatchHub 
               matches={liveMatches}
               onSelectMarket={handleSelectMarket} 
@@ -143,8 +149,8 @@ export default function Home() {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="bottom" className="h-[85vh] p-0 bg-[#f0f2f5] border-t-4 border-accent rounded-t-3xl">
-                  <SheetHeader className="sr-only">
-                    <SheetTitle>Betting Slip</SheetTitle>
+                  <SheetHeader className="p-4 border-b bg-white rounded-t-3xl">
+                    <SheetTitle className="text-center text-[#1a4b8c] font-black uppercase tracking-widest">Your Betting Slip</SheetTitle>
                   </SheetHeader>
                   <BettingSlip 
                     selections={selections} 
