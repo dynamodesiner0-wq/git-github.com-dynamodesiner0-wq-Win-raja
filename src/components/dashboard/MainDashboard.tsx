@@ -43,7 +43,7 @@ function DashboardCard({ title, imageUrl, onClick, isLarge }: DashboardCardProps
 }
 
 interface MainDashboardProps {
-  onViewChange: (view: 'main' | 'exchange' | 'profile' | 'inplay' | 'casino' | 'aviator' | 'chicken') => void;
+  onViewChange: (view: 'main' | 'exchange' | 'profile' | 'inplay' | 'casino' | 'aviator' | 'chicken' | 'password') => void;
 }
 
 export function MainDashboard({ onViewChange }: MainDashboardProps) {
@@ -85,7 +85,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
     },
     { 
       title: "Change Password", 
-      view: 'profile' as const,
+      view: 'password' as const,
       imageUrl: "https://i.ibb.co/RkxtDXJp/CP.png" 
     },
   ];
