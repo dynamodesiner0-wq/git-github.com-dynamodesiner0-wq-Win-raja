@@ -4,29 +4,35 @@ import { useState, useEffect } from "react";
 import { Monitor, Info, Minus, BrainCircuit, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { fetchLiveMatches, type LiveMatchData } from "@/lib/api/sports";
+import { type LiveMatchData } from "@/lib/api/sports";
 
 interface LiveMatchHubProps {
+  matches: LiveMatchData[];
   onSelectMarket: (team: string, type: 'Lagai' | 'Khai', price: string) => void;
   onOpenPredictor: () => void;
+  onMatchChange: (match: LiveMatchData) => void;
 }
 
-export function LiveMatchHub({ onSelectMarket, onOpenPredictor }: LiveMatchHubProps) {
-  const [liveMatches, setLiveMatches] = useState<LiveMatchData[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const loadMatches = async () => {
-    setLoading(true);
-    const matches = await fetchLiveMatches();
-    setLiveMatches(matches);
-    setLoading(false);
-  };
+export function LiveMatchHub({ matches, onSelectMarket, onOpenPredictor, onMatchChange }: LiveMatchHubProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const currentMatch = matches[currentIndex];
 
   useEffect(() => {
-    loadMatches();
-    const interval = setInterval(loadMatches, 60000); // Refresh every minute
-    return () => clearInterval(interval);
-  }, []);
+    if (currentMatch) {
+      onMatchChange(currentMatch);
+    }
+  }, [currentIndex, currentMatch, onMatchChange]);
+
+  if (!currentMatch) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-[#f0f2f5]">
+        <div className="text-center space-y-4">
+          <RefreshCw className="h-8 w-8 animate-spin mx-auto text-[#2c58a0]" />
+          <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Finding Live Markets...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 bg-[#f0f2f5] overflow-y-auto custom-scrollbar">
@@ -38,8 +44,8 @@ export function LiveMatchHub({ onSelectMarket, onOpenPredictor }: LiveMatchHubPr
             Next match starting soon. Use AI PREDICT for precision betting. Chicken Road and 32 Cards available now!
           </marquee>
         </div>
-        <button onClick={loadMatches} className="p-1 hover:bg-white/10 rounded">
-          <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+        <button className="p-1 hover:bg-white/10 rounded">
+          <RefreshCw className="h-3.5 w-3.5" />
         </button>
       </div>
 
@@ -57,12 +63,19 @@ export function LiveMatchHub({ onSelectMarket, onOpenPredictor }: LiveMatchHubPr
 
         {/* Match Selector Tabs */}
         <div className="flex gap-1 overflow-x-auto pb-1 no-scrollbar">
-          <div className="bg-[#0b2146] text-white px-4 py-2 rounded-t-lg text-[10px] font-bold uppercase whitespace-nowrap border-b-2 border-yellow-500 shrink-0 cursor-pointer">
-            In-Play
-          </div>
-          <div className="bg-[#2c58a0] text-white/70 px-4 py-2 rounded-t-lg text-[10px] font-bold uppercase whitespace-nowrap shrink-0 cursor-pointer hover:text-white transition-colors">
-            Upcoming
-          </div>
+          {matches.slice(0, 5).map((m, i) => (
+            <div 
+              key={m.id}
+              onClick={() => setCurrentIndex(i)}
+              className={`px-4 py-2 rounded-t-lg text-[10px] font-bold uppercase whitespace-nowrap shrink-0 cursor-pointer transition-all ${
+                i === currentIndex 
+                ? 'bg-[#0b2146] text-white border-b-2 border-yellow-500' 
+                : 'bg-[#2c58a0] text-white/70 hover:text-white'
+              }`}
+            >
+              {m.homeTeam} vs {m.awayTeam}
+            </div>
+          ))}
         </div>
 
         {/* Detailed Scoreboard Card */}
@@ -70,7 +83,7 @@ export function LiveMatchHub({ onSelectMarket, onOpenPredictor }: LiveMatchHubPr
           <div className="bg-[#2c58a0] text-white px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <h3 className="text-xs font-bold uppercase tracking-wider">
-                {liveMatches.length > 0 ? liveMatches[0].name : "England vs New Zealand"}
+                {currentMatch.name}
               </h3>
               <Button 
                 variant="ghost" 
@@ -91,22 +104,19 @@ export function LiveMatchHub({ onSelectMarket, onOpenPredictor }: LiveMatchHubPr
           <div className="p-4 grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-bold text-[#2c58a0]">J. Cox 0 (12)*</span>
+                <span className="text-sm font-bold text-[#2c58a0]">{currentMatch.homeTeam}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm font-bold text-[#2c58a0]">J. Root 75 (137)</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-bold text-[#2c58a0]">K. Jamieson 37-3 (14.0)</span>
+                <span className="text-sm font-bold text-[#2c58a0]">{currentMatch.awayTeam}</span>
               </div>
             </div>
 
             <div className="text-right space-y-1">
               <div className="text-sm font-bold text-[#2c58a0]">
-                {liveMatches.length > 0 && liveMatches[0].score ? liveMatches[0].score : "ENG 182-5 (48.0)"}
+                {currentMatch.score}
               </div>
               <div className="text-xs font-medium text-muted-foreground italic">
-                {liveMatches.length > 0 ? liveMatches[0].status : "England Need 281 Runs To Win"}
+                {currentMatch.status}
               </div>
               <div className="flex justify-end gap-1.5 mt-4">
                 {[0, 1, 4, 0, 6, 0].map((run, i) => (
@@ -144,13 +154,13 @@ export function LiveMatchHub({ onSelectMarket, onOpenPredictor }: LiveMatchHubPr
             </thead>
             <tbody className="divide-y">
               <MarketRow 
-                team={liveMatches.length > 0 ? liveMatches[0].name.split(' v ')[0] : "England"} 
+                team={currentMatch.homeTeam} 
                 onSelect={onSelectMarket} 
                 backPrice="1.45" 
                 layPrice="1.47" 
               />
               <MarketRow 
-                team={liveMatches.length > 0 ? liveMatches[0].name.split(' v ')[1] : "New Zealand"} 
+                team={currentMatch.awayTeam} 
                 onSelect={onSelectMarket} 
                 backPrice="3.20" 
                 layPrice="3.25" 

@@ -1,23 +1,29 @@
-
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { SidebarNav } from "@/components/dashboard/SidebarNav";
 import { LiveMatchHub } from "@/components/dashboard/LiveMatchHub";
 import { BettingSlip } from "@/components/dashboard/BettingSlip";
 import { SmartPredictorModal } from "@/components/predictor/SmartPredictorModal";
+import { fetchLiveMatches, type LiveMatchData } from "@/lib/api/sports";
 
 export default function Home() {
   const [selections, setSelections] = useState<any[]>([]);
   const [isPredictorOpen, setIsPredictorOpen] = useState(false);
-  const [activeMatch, setActiveMatch] = useState({
-    id: "eng-nz-test",
-    sport: "Cricket",
-    homeTeam: "England",
-    awayTeam: "New Zealand",
-    score: "ENG 182-5"
-  });
+  const [liveMatches, setLiveMatches] = useState<LiveMatchData[]>([]);
+  const [activeMatch, setActiveMatch] = useState<LiveMatchData | null>(null);
+
+  useEffect(() => {
+    async function loadInitialData() {
+      const matches = await fetchLiveMatches();
+      setLiveMatches(matches);
+      if (matches.length > 0) {
+        setActiveMatch(matches[0]);
+      }
+    }
+    loadInitialData();
+  }, []);
 
   const handleSelectMarket = (team: string, type: 'Lagai' | 'Khai', price: string) => {
     const newSelection = {
@@ -44,8 +50,10 @@ export default function Home() {
         <SidebarNav />
         <main className="flex-1 flex flex-col min-w-0 relative">
           <LiveMatchHub 
+            matches={liveMatches}
             onSelectMarket={handleSelectMarket} 
             onOpenPredictor={() => setIsPredictorOpen(true)}
+            onMatchChange={(match) => setActiveMatch(match)}
           />
         </main>
         <BettingSlip 
