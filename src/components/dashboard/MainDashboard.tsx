@@ -17,7 +17,7 @@ function DashboardCard({ title, imageUrl, onClick, isLarge }: DashboardCardProps
       onClick={onClick}
       className={cn(
         "bg-white rounded-[1.5rem] flex flex-col items-center justify-between p-4 aspect-square shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-blue-50/50 hover:bg-blue-50/30 transition-all group overflow-hidden",
-        isLarge && "col-span-1"
+        isLarge && "col-span-2 aspect-auto h-32"
       )}
     >
       <div className="flex-1 flex items-center justify-center w-full">
@@ -25,7 +25,10 @@ function DashboardCard({ title, imageUrl, onClick, isLarge }: DashboardCardProps
           <img 
             src={imageUrl} 
             alt={title} 
-            className="w-20 h-20 object-contain transition-transform duration-300 group-hover:scale-110"
+            className={cn(
+              "w-20 h-20 object-contain transition-transform duration-300 group-hover:scale-110",
+              isLarge && "w-full h-full object-cover"
+            )}
             data-ai-hint={title}
           />
         ) : (
@@ -58,7 +61,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
     { 
       title: "Aviator", 
       view: 'aviator' as const,
-      imageUrl: "https://picsum.photos/seed/aviator-icon/200/200" 
+      imageUrl: "https://i.ibb.co/4nggD2C0/image-search-1782097596224.png" 
     },
     { 
       title: "Chicken Road", 

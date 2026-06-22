@@ -30,6 +30,12 @@
       "description": "User profile dashboard icon",
       "imageUrl": "https://i.ibb.co/KjfBnct4/image-search-1782097067195.jpg",
       "imageHint": "profile icon"
+    },
+    {
+      "id": "aviator-icon-img",
+      "description": "Aviator game professional icon",
+      "imageUrl": "https://i.ibb.co/4nggD2C0/image-search-1782097596224.png",
+      "imageHint": "aviator game"
     }
   ]
 }
