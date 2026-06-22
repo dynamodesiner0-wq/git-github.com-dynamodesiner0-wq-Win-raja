@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { collection, getDocs, setDoc, doc, updateDoc, increment, query, orderBy, getDoc } from "firebase/firestore";
+import { collection, getDocs, setDoc, doc, updateDoc, increment, query, orderBy } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
 
 interface UserRecord {
@@ -41,6 +41,7 @@ interface UserRecord {
   password?: string;
   balance: number;
   status: 'Active' | 'Suspended';
+  createdAt?: string;
 }
 
 interface AdminDashboardProps {
@@ -75,12 +76,15 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         ...doc.data()
       })) as UserRecord[];
       
-      setUsers(userList);
+      // Deduplicate by clientCode just in case
+      const uniqueUsers = Array.from(new Map(userList.map(u => [u.clientCode, u])).values());
+      setUsers(uniqueUsers);
     } catch (error: any) {
+      console.error("Fetch error:", error);
       toast({
         variant: "destructive",
         title: "Sync Failed",
-        description: "Check your internet connection."
+        description: "Could not fetch user list."
       });
     } finally {
       setLoading(false);
@@ -123,7 +127,6 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       createdAt: new Date().toISOString()
     };
     
-    // Non-blocking setDoc for instant UI feel
     setDoc(userRef, newUserDoc)
       .then(() => {
         toast({ title: "Success", description: `ID ${cleanCode} created successfully.` });
@@ -256,7 +259,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <tr><td colSpan={6} className="p-20 text-center uppercase font-black opacity-30">No Data Found</td></tr>
                     ) : (
                       filteredUsers.map((user) => (
-                        <tr key={`${user.clientCode}-${user.id || Math.random()}`} className="hover:bg-gray-50">
+                        <tr key={`${user.clientCode}-${user.createdAt || 'initial'}`} className="hover:bg-gray-50">
                           <td className="p-4"><span className="font-black text-[#0b2146] text-sm uppercase">{user.name}</span></td>
                           <td className="p-4"><code className="bg-gray-100 px-2 py-1 rounded text-xs font-bold uppercase">{user.clientCode}</code></td>
                           <td className="p-4">

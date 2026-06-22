@@ -21,7 +21,8 @@ export function initializeFirebase(): {
     auth = getAuth(firebaseApp);
   } catch (error) {
     console.error("Firebase Initialization Error:", error);
-    firebaseApp = getApp(); // Fallback to existing
+    // Attempt to recover existing instances if possible
+    firebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     firestore = getFirestore(firebaseApp);
     auth = getAuth(firebaseApp);
   }

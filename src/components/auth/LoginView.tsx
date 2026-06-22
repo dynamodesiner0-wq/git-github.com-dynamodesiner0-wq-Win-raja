@@ -36,7 +36,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
       toast({
         variant: "destructive",
         title: "Server Offline",
-        description: "Checking connection...",
+        description: "Firebase not initialized.",
       });
       return;
     }
@@ -92,10 +92,11 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
         });
       }
     } catch (error: any) {
+      console.error("Login Error:", error);
       toast({
         variant: "destructive",
         title: "Connection Error",
-        description: error.message || "Failed to reach server.",
+        description: "Failed to reach server. Please check your network.",
       });
     } finally {
       setLoading(false);
