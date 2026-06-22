@@ -17,7 +17,9 @@ import {
   Search,
   IndianRupee,
   UserPlus,
-  RefreshCw
+  RefreshCw,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { 
   Dialog, 
@@ -52,6 +54,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
   
   // Create User State
   const [newUserName, setNewUserName] = useState("");
@@ -135,6 +138,13 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     } catch (error) {
       toast({ variant: "destructive", title: "Update Failed", description: "Could not add balance." });
     }
+  };
+
+  const togglePasswordVisibility = (clientCode: string) => {
+    setShowPasswords(prev => ({
+      ...prev,
+      [clientCode]: !prev[clientCode]
+    }));
   };
 
   const filteredUsers = users.filter(u => 
@@ -301,6 +311,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <tr>
                         <th className="p-4">User Details</th>
                         <th className="p-4">Client Code</th>
+                        <th className="p-4">Password</th>
                         <th className="p-4">Current Balance</th>
                         <th className="p-4">Status</th>
                         <th className="p-4 text-right">Actions</th>
@@ -319,6 +330,19 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                           </td>
                           <td className="p-4">
                             <code className="bg-gray-100 px-2 py-1 rounded text-xs font-bold text-gray-600">{user.clientCode}</code>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-sm bg-blue-50 text-blue-700 px-2 py-1 rounded-md border border-blue-100 flex items-center gap-2">
+                                {showPasswords[user.clientCode] ? user.password : "••••••••"}
+                                <button 
+                                  onClick={() => togglePasswordVisibility(user.clientCode)}
+                                  className="hover:text-blue-900 transition-colors"
+                                >
+                                  {showPasswords[user.clientCode] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                                </button>
+                              </span>
+                            </div>
                           </td>
                           <td className="p-4">
                             <span className="font-black text-green-600">₹{(user.balance || 0).toLocaleString()}</span>
