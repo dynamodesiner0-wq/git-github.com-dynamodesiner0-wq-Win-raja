@@ -35,6 +35,8 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { collection, getDocs, setDoc, doc, updateDoc, increment, query, orderBy, limit, onSnapshot } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 interface UserRecord {
   id: string;
@@ -107,17 +109,19 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     if (!db) return;
     fetchUsers();
 
-    // Live Bets Listener
+    // Live Bets Listener for real-time activity
     const betsQuery = query(collection(db, "bets"), orderBy("timestamp", "desc"), limit(20));
     const unsubscribe = onSnapshot(betsQuery, (snapshot) => {
       const bets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as BetRecord[];
       setLiveBets(bets);
+    }, (err) => {
+      console.error("Bets listener error:", err);
     });
 
     return () => unsubscribe();
   }, [db, fetchUsers]);
 
-  const handleCreateUser = async () => {
+  const handleCreateUser = () => {
     if (!db) return;
 
     const cleanName = newUserName.trim();
@@ -131,53 +135,63 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     }
 
     setLoading(true);
-    try {
-      const userRef = doc(db, "users", cleanCode);
-      const newUserDoc = {
-        name: cleanName,
-        clientCode: cleanCode,
-        password: cleanPass,
-        balance: balanceNum,
-        exposure: 0,
-        status: "Active",
-        role: "User",
-        createdAt: new Date().toISOString()
-      };
-      
-      await setDoc(userRef, newUserDoc, { merge: true });
-      toast({ title: "Success", description: `ID ${cleanCode} created successfully.` });
-      setNewUserName(""); 
-      setNewUserCode(""); 
-      setNewUserPassword(""); 
-      setNewUserBalance("");
-      fetchUsers();
-    } catch (err: any) {
-      toast({ variant: "destructive", title: "Creation Failed", description: err.message });
-    } finally {
-      setLoading(false);
-    }
+    const userRef = doc(db, "users", cleanCode);
+    const newUserDoc = {
+      name: cleanName,
+      clientCode: cleanCode,
+      password: cleanPass,
+      balance: balanceNum,
+      exposure: 0,
+      status: "Active",
+      role: "User",
+      createdAt: new Date().toISOString()
+    };
+    
+    setDoc(userRef, newUserDoc, { merge: true })
+      .then(() => {
+        toast({ title: "Success", description: `ID ${cleanCode} created successfully.` });
+        setNewUserName(""); 
+        setNewUserCode(""); 
+        setNewUserPassword(""); 
+        setNewUserBalance("");
+        fetchUsers();
+      })
+      .catch(async (error) => {
+        const permissionError = new FirestorePermissionError({
+          path: userRef.path,
+          operation: 'write',
+          requestResourceData: newUserDoc,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      })
+      .finally(() => setLoading(false));
   };
 
-  const handleAddBalance = async () => {
+  const handleAddBalance = () => {
     if (!db || !selectedUser || !addAmount) return;
     const amount = parseFloat(addAmount);
     if (isNaN(amount)) return;
     
     setLoading(true);
-    try {
-      const userRef = doc(db, "users", selectedUser.clientCode.toUpperCase());
-      await updateDoc(userRef, {
-        balance: increment(amount)
-      });
+    const userRef = doc(db, "users", selectedUser.clientCode.toUpperCase());
+    updateDoc(userRef, {
+      balance: increment(amount)
+    })
+    .then(() => {
       toast({ title: "Deposit Confirmed", description: `Added ₹${amount} to ${selectedUser.name}.` });
       setAddAmount(""); 
       setSelectedUser(null);
       fetchUsers();
-    } catch (err: any) {
-      toast({ variant: "destructive", title: "Update Failed", description: err.message });
-    } finally {
-      setLoading(false);
-    }
+    })
+    .catch(async (error) => {
+      const permissionError = new FirestorePermissionError({
+        path: userRef.path,
+        operation: 'write',
+        requestResourceData: { balance: increment(amount) },
+      });
+      errorEmitter.emit('permission-error', permissionError);
+    })
+    .finally(() => setLoading(false));
   };
 
   const togglePasswordVisibility = (clientCode: string) => {
@@ -230,7 +244,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <StatCard label="Total Users" value={users.length.toString()} icon={Users} color="text-blue-600" />
               <StatCard label="Total Balance" value={`₹${users.reduce((acc, u) => acc + (u.balance || 0), 0).toLocaleString()}`} icon={Wallet} color="text-green-600" />
-              <StatCard label="Live Bets" value={liveBets.length.toString()} icon={Activity} color="text-orange-600" />
+              <StatCard label="Live Activity" value={liveBets.length.toString()} icon={Activity} color="text-orange-600" />
               <StatCard label="DB Status" value={db ? "ONLINE" : "OFFLINE"} icon={Database} color={db ? "text-green-600" : "text-red-600"} />
             </div>
 
@@ -246,7 +260,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                         {bet.userName?.[0] || 'U'}
                       </div>
                       <div>
-                        <p className="text-xs font-black text-[#0b2146]">{bet.userName} <span className="font-normal opacity-50 ml-1">placed a bet on</span> {bet.team}</p>
+                        <p className="text-xs font-black text-[#0b2146]">{bet.userName} <span className="font-normal opacity-50 ml-1">played {bet.sport === 'AVIATOR' ? 'Aviator' : 'a Bet'}</span></p>
                         <p className="text-[10px] text-muted-foreground uppercase">{bet.sport} • {new Date(bet.timestamp).toLocaleTimeString()}</p>
                       </div>
                     </div>
@@ -274,11 +288,23 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 </DialogTrigger>
                 <DialogContent className="rounded-3xl sm:max-w-md bg-white">
                   <DialogHeader><DialogTitle className="text-xl font-black uppercase text-[#0b2146]">Add User ID</DialogTitle></DialogHeader>
-                  <div className="space-y-4 py-4 text-[#0b2146]">
-                    <Input value={newUserName} onChange={(e) => setNewUserName(e.target.value)} placeholder="Full Name" className="h-12 rounded-xl bg-gray-50 border-none text-[#0b2146]" />
-                    <Input value={newUserCode} onChange={(e) => setNewUserCode(e.target.value)} placeholder="Client ID (e.g. C101)" className="h-12 rounded-xl bg-gray-50 border-none uppercase text-[#0b2146]" />
-                    <Input value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} placeholder="Password" className="h-12 rounded-xl bg-gray-50 border-none text-[#0b2146]" />
-                    <Input type="number" value={newUserBalance} onChange={(e) => setNewUserBalance(e.target.value)} placeholder="Initial Balance" className="h-12 rounded-xl bg-gray-50 border-none text-[#0b2146]" />
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-1">
+                       <label className="text-[10px] font-black text-muted-foreground uppercase px-1">Full Name</label>
+                       <Input value={newUserName} onChange={(e) => setNewUserName(e.target.value)} placeholder="Full Name" className="h-12 rounded-xl bg-gray-50 border-none text-[#0b2146] font-bold" />
+                    </div>
+                    <div className="space-y-1">
+                       <label className="text-[10px] font-black text-muted-foreground uppercase px-1">Client ID</label>
+                       <Input value={newUserCode} onChange={(e) => setNewUserCode(e.target.value)} placeholder="Client ID (e.g. C101)" className="h-12 rounded-xl bg-gray-50 border-none uppercase text-[#0b2146] font-bold" />
+                    </div>
+                    <div className="space-y-1">
+                       <label className="text-[10px] font-black text-muted-foreground uppercase px-1">Password</label>
+                       <Input value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} placeholder="Password" className="h-12 rounded-xl bg-gray-50 border-none text-[#0b2146] font-bold" />
+                    </div>
+                    <div className="space-y-1">
+                       <label className="text-[10px] font-black text-muted-foreground uppercase px-1">Initial Balance</label>
+                       <Input type="number" value={newUserBalance} onChange={(e) => setNewUserBalance(e.target.value)} placeholder="Initial Balance" className="h-12 rounded-xl bg-gray-50 border-none text-[#0b2146] font-bold" />
+                    </div>
                   </div>
                   <DialogFooter>
                     <Button onClick={handleCreateUser} disabled={loading} className="w-full h-12 bg-blue-600 font-black uppercase rounded-xl">Save to Cloud</Button>
@@ -297,8 +323,8 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     {filteredUsers.length === 0 ? (
                       <tr><td colSpan={6} className="p-20 text-center uppercase font-black opacity-30">No Data Found</td></tr>
                     ) : (
-                      filteredUsers.map((user) => (
-                        <tr key={user.clientCode} className="hover:bg-gray-50">
+                      filteredUsers.map((user, idx) => (
+                        <tr key={user.clientCode || idx} className="hover:bg-gray-50">
                           <td className="p-4"><span className="font-black text-[#0b2146] text-sm uppercase">{user.name}</span></td>
                           <td className="p-4"><code className="bg-gray-100 px-2 py-1 rounded text-xs font-bold uppercase">{user.clientCode}</code></td>
                           <td className="p-4">
@@ -320,7 +346,10 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                               </DialogTrigger>
                               <DialogContent className="rounded-3xl bg-white">
                                 <DialogHeader><DialogTitle className="font-black uppercase text-[#0b2146]">Deposit to {selectedUser?.name}</DialogTitle></DialogHeader>
-                                <div className="py-6"><Input type="number" placeholder="Amount" value={addAmount} onChange={(e) => setAddAmount(e.target.value)} className="h-14 text-2xl font-black rounded-2xl bg-gray-50 border-none text-[#0b2146]" /></div>
+                                <div className="py-6">
+                                   <label className="text-[10px] font-black text-muted-foreground uppercase px-1 mb-2 block">Enter Amount</label>
+                                   <Input type="number" placeholder="Amount" value={addAmount} onChange={(e) => setAddAmount(e.target.value)} className="h-14 text-2xl font-black rounded-2xl bg-gray-50 border-none text-[#0b2146]" />
+                                </div>
                                 <DialogFooter><Button onClick={handleAddBalance} disabled={loading} className="w-full h-12 bg-green-600 font-black uppercase rounded-xl">Confirm</Button></DialogFooter>
                               </DialogContent>
                             </Dialog>
