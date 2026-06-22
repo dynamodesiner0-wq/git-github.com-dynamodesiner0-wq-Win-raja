@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -124,7 +123,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
       await setDoc(userRef, userData);
       toast({ title: "ID CREATED!", description: `Client ${code} is now active.` });
       
-      // Reset fields for unlimited creation
+      // Reset fields
       setNewUserName(""); 
       setNewUserCode(""); 
       setNewUserPassword(""); 
@@ -217,7 +216,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                   value={searchQuery} 
                   onChange={(e) => setSearchQuery(e.target.value)} 
                   placeholder="Search ID..." 
-                  className="pl-12 h-14 rounded-2xl bg-white shadow-sm border-none text-black font-bold" 
+                  className="pl-12 h-14 rounded-2xl bg-white shadow-sm border-none text-[#0b2146] font-bold" 
                 />
               </div>
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

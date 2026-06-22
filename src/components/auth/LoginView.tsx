@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -57,7 +56,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
             setLoading(false);
             return;
           }
-          // Instant success - Directly passing data for super fast transition
+          // Fast transition
           onLoginSuccess({ ...userData, clientCode: cleanCode });
         } else {
           toast({ variant: "destructive", title: "Error", description: "Invalid password provided." });
