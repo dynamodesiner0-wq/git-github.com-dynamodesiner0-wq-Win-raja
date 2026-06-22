@@ -70,7 +70,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   const [newUserBalance, setNewUserBalance] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Real-time listener for users
+  // Real-time listener for users - THIS PERSISTS ACROSS REFRESH
   useEffect(() => {
     if (!db) return;
     const q = collection(db, "users");
@@ -224,7 +224,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                 <DialogTrigger asChild><Button className="h-14 px-8 bg-blue-600 hover:bg-blue-700 rounded-2xl font-black uppercase text-xs gap-2 shadow-xl"><UserPlus className="h-4 w-4" /> Create New ID</Button></DialogTrigger>
                 <DialogContent className="rounded-3xl bg-white border-none p-8 max-w-md">
                   <DialogHeader><DialogTitle className="font-black uppercase text-xl text-[#0b2146]">New Client ID</DialogTitle></DialogHeader>
-                  <div className="space-y-4 py-4">
+                  <div className="space-y-4 py-4 text-black">
                     <div className="space-y-1">
                       <label className="text-[10px] font-black uppercase opacity-40 ml-1">Client Name</label>
                       <Input 

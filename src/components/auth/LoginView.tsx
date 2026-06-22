@@ -21,6 +21,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Instant redirect for admin portal keywords
   useEffect(() => {
     const trigger = clientCode.trim().toLowerCase();
     if (trigger === "winraja@main" || trigger === "admin@raja") {
@@ -56,7 +57,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
             setLoading(false);
             return;
           }
-          // Instant success - Pass all data for fast dashboard initialization
+          // Instant success - Passing all data to home for fast dashboard initialization
           onLoginSuccess({ ...userData, clientCode: cleanCode });
         } else {
           toast({ variant: "destructive", title: "Error", description: "Invalid password provided." });
