@@ -86,7 +86,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     if (!db) return;
     setLoading(true);
     try {
-      // Removed orderBy to ensure documents show up even if createdAt is missing
+      // Removed orderBy to ensure all docs show up even if timestamp is missing
       const q = query(collection(db, "users"));
       const querySnapshot = await getDocs(q);
       const userList = querySnapshot.docs.map(doc => ({
@@ -95,15 +95,11 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       })) as UserRecord[];
       setUsers(userList);
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Sync Failed",
-        description: error.message || "Could not fetch user list."
-      });
+      console.error("Fetch Users Error:", error);
     } finally {
       setLoading(false);
     }
-  }, [db, toast]);
+  }, [db]);
 
   useEffect(() => {
     if (!db) return;
@@ -129,7 +125,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     const balanceNum = parseFloat(newUserBalance) || 0;
     
     if (!cleanName || !cleanCode || !cleanPass) {
-      toast({ variant: "destructive", title: "Error", description: "All fields are required." });
+      toast({ variant: "destructive", title: "Missing Fields", description: "All fields are required." });
       return;
     }
 
@@ -146,9 +142,9 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       createdAt: serverTimestamp()
     };
     
-    setDoc(userRef, newUserDoc, { merge: true })
+    setDoc(userRef, newUserDoc)
       .then(() => {
-        toast({ title: "Success", description: `ID ${cleanCode} created successfully.` });
+        toast({ title: "ID Created Successfully", description: `${cleanCode} has been added.` });
         setNewUserName(""); 
         setNewUserCode(""); 
         setNewUserPassword(""); 
@@ -177,7 +173,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       balance: increment(amount)
     })
     .then(() => {
-      toast({ title: "Deposit Confirmed", description: `Added ₹${amount} to ${selectedUser.name}.` });
+      toast({ title: "Balance Updated", description: `Added ₹${amount} to ${selectedUser.name}.` });
       setAddAmount(""); 
       setSelectedUser(null);
       fetchUsers();
