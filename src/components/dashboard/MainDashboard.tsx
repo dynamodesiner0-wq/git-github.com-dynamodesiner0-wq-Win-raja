@@ -34,19 +34,19 @@ function DashboardCard({ title, icon: Icon, onClick }: DashboardCardProps) {
 }
 
 interface MainDashboardProps {
-  onViewChange: (view: any) => void;
+  onViewChange: (view: 'main' | 'exchange' | 'profile' | 'inplay') => void;
 }
 
 export function MainDashboard({ onViewChange }: MainDashboardProps) {
   const menuItems = [
-    { title: "In Play", icon: Trophy, view: 'exchange' },
-    { title: "Casino", icon: Gamepad2, view: 'exchange' },
-    { title: "Aviator", icon: Plane, view: 'exchange' },
-    { title: "Chicken Road", icon: Bird, view: 'exchange' },
-    { title: "Complete Games", icon: CheckCircle2, view: 'profile' },
-    { title: "My Profile", icon: User, view: 'profile' },
-    { title: "My Ledger", icon: History, view: 'profile' },
-    { title: "Change Password", icon: Lock, view: 'profile' },
+    { title: "In Play", icon: Trophy, view: 'inplay' as const },
+    { title: "Casino", icon: Gamepad2, view: 'exchange' as const },
+    { title: "Aviator", icon: Plane, view: 'exchange' as const },
+    { title: "Chicken Road", icon: Bird, view: 'exchange' as const },
+    { title: "Complete Games", icon: CheckCircle2, view: 'profile' as const },
+    { title: "My Profile", icon: User, view: 'profile' as const },
+    { title: "My Ledger", icon: History, view: 'profile' as const },
+    { title: "Change Password", icon: Lock, view: 'profile' as const },
   ];
 
   return (
@@ -56,7 +56,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
         <div className="bg-yellow-500 text-black text-[10px] font-black px-2 py-0.5 rounded-md">NEW</div>
         <div className="flex-1 overflow-hidden ml-4">
           <p className="text-[11px] font-bold text-center truncate">
-            हमारे एक्सचेंज पर अब नए रोमांचक गेम्स लाइव
+            हमारे एक्सचेंज पर अब नए रोमांचक गेम्स लाइव हो गए हैं। Chicken Road और अन्य गेम्स खेलें।
           </p>
         </div>
       </div>

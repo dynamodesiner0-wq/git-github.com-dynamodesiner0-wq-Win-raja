@@ -8,6 +8,7 @@ import { LiveMatchHub } from "@/components/dashboard/LiveMatchHub";
 import { BettingSlip } from "@/components/dashboard/BettingSlip";
 import { ProfileView } from "@/components/dashboard/ProfileView";
 import { MainDashboard } from "@/components/dashboard/MainDashboard";
+import { InPlayList } from "@/components/dashboard/InPlayList";
 import { SmartPredictorModal } from "@/components/predictor/SmartPredictorModal";
 import { fetchLiveMatches, type LiveMatchData } from "@/lib/api/sports";
 import { useToast } from "@/hooks/use-toast";
@@ -21,7 +22,7 @@ export default function Home() {
   const [isPredictorOpen, setIsPredictorOpen] = useState(false);
   const [liveMatches, setLiveMatches] = useState<LiveMatchData[]>([]);
   const [activeMatch, setActiveMatch] = useState<LiveMatchData | null>(null);
-  const [activeView, setActiveView] = useState<'main' | 'exchange' | 'profile'>('main');
+  const [activeView, setActiveView] = useState<'main' | 'exchange' | 'profile' | 'inplay'>('main');
   const [isMobileSlipOpen, setIsMobileSlipOpen] = useState(false);
   
   // Real-time Betting State
@@ -51,7 +52,6 @@ export default function Home() {
     };
     setSelections(prev => [newSelection, ...prev]);
     
-    // Auto open slip on mobile/small screens
     if (typeof window !== 'undefined' && window.innerWidth < 1280) {
       setIsMobileSlipOpen(true);
     }
@@ -94,7 +94,6 @@ export default function Home() {
       status: 'OPEN'
     }));
 
-    // Update Global State
     setBalance(prev => prev - totalStake);
     setExposure(prev => prev + totalStake);
     setMyBets(prev => [...newBets, ...prev]);
@@ -116,13 +115,22 @@ export default function Home() {
         onLogoClick={() => setActiveView('main')} 
       />
       <div className="flex flex-1 overflow-hidden">
-        {activeView !== 'main' && (
+        {activeView !== 'main' && activeView !== 'inplay' && (
           <SidebarNav activeView={activeView === 'exchange' ? 'exchange' : 'profile'} onViewChange={setActiveView} />
         )}
         
         <main className="flex-1 flex flex-col min-w-0 relative">
           {activeView === 'main' ? (
             <MainDashboard onViewChange={setActiveView} />
+          ) : activeView === 'inplay' ? (
+            <InPlayList 
+              onBack={() => setActiveView('main')} 
+              onSelectMatch={(matchId) => {
+                const match = liveMatches.find(m => m.id === matchId) || liveMatches[0];
+                setActiveMatch(match);
+                setActiveView('exchange');
+              }}
+            />
           ) : activeView === 'exchange' ? (
             <LiveMatchHub 
               matches={liveMatches}
@@ -134,7 +142,6 @@ export default function Home() {
             <ProfileView balance={balance} exposure={exposure} myBets={myBets} />
           )}
 
-          {/* Mobile Bet Slip Drawer */}
           {activeView === 'exchange' && selections.length > 0 && (
             <div className="xl:hidden fixed bottom-6 right-6 z-50">
               <Sheet open={isMobileSlipOpen} onOpenChange={setIsMobileSlipOpen}>
@@ -166,7 +173,6 @@ export default function Home() {
           )}
         </main>
         
-        {/* Desktop Sidebar Slip */}
         {activeView === 'exchange' && (
           <BettingSlip 
             selections={selections} 
