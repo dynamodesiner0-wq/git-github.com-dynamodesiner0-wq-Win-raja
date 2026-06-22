@@ -48,6 +48,12 @@
       "description": "My Ledger professional icon",
       "imageUrl": "https://i.ibb.co/vCzgZBjk/CG1.jpg",
       "imageHint": "ledger icon"
+    },
+    {
+      "id": "chicken-road-img",
+      "description": "Chicken Road game professional icon",
+      "imageUrl": "https://i.ibb.co/tTMMz9M3/chicken-road.png",
+      "imageHint": "chicken road"
     }
   ]
 }

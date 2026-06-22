@@ -66,7 +66,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
     { 
       title: "Chicken Road", 
       view: 'chicken' as const,
-      imageUrl: "https://picsum.photos/seed/chicken-icon/200/200" 
+      imageUrl: "https://i.ibb.co/tTMMz9M3/chicken-road.png" 
     },
     { 
       title: "Complete Games", 
