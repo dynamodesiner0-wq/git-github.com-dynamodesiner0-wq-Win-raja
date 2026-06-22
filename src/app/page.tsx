@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -12,6 +11,7 @@ import { MainDashboard } from "@/components/dashboard/MainDashboard";
 import { InPlayList } from "@/components/dashboard/InPlayList";
 import { LedgerView } from "@/components/dashboard/LedgerView";
 import { CompleteGamesView } from "@/components/dashboard/CompleteGamesView";
+import { AviatorGameView } from "@/components/dashboard/AviatorGameView";
 import { SmartPredictorModal } from "@/components/predictor/SmartPredictorModal";
 import { fetchLiveMatches, type LiveMatchData } from "@/lib/api/sports";
 import { useToast } from "@/hooks/use-toast";
@@ -136,7 +136,13 @@ export default function Home() {
                 setActiveView('exchange');
               }}
             />
-          ) : (activeView === 'casino' || activeView === 'aviator' || activeView === 'chicken') ? (
+          ) : activeView === 'aviator' ? (
+            <AviatorGameView 
+              balance={balance} 
+              setBalance={setBalance}
+              onBackToMenu={() => setActiveView('main')}
+            />
+          ) : (activeView === 'casino' || activeView === 'chicken') ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-6">
               <div className="h-24 w-24 rounded-full bg-blue-100 flex items-center justify-center">
                 <AlertCircle className="h-12 w-12 text-[#1a4b8c]" />
