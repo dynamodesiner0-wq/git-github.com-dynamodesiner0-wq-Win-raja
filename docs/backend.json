@@ -18,6 +18,24 @@
       },
       "required": ["clientCode", "name", "password", "balance", "status"]
     },
+    "Bet": {
+      "title": "Bet",
+      "description": "Represents a bet placed by a user on a match or game.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "market": { "type": "string" },
+        "team": { "type": "string" },
+        "type": { "type": "string" },
+        "price": { "type": "string" },
+        "stake": { "type": "number" },
+        "status": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "sport": { "type": "string" }
+      },
+      "required": ["userId", "stake", "timestamp"]
+    },
     "Transaction": {
       "title": "Transaction",
       "description": "Records balance additions or deductions.",
@@ -39,6 +57,10 @@
     "/users/{clientCode}": {
       "schema": "UserAccount",
       "description": "User profile and balance data, keyed by client code."
+    },
+    "/bets/{betId}": {
+      "schema": "Bet",
+      "description": "Records of all bets placed across the platform."
     },
     "/transactions/{transactionId}": {
       "schema": "Transaction",

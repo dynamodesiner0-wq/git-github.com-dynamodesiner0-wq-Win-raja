@@ -7,14 +7,18 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Plane, History, TrendingUp, Info, Wallet, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useFirestore } from "@/firebase";
+import { doc, updateDoc, increment, collection, addDoc } from "firebase/firestore";
 
 interface AviatorGameViewProps {
+  user: any;
   balance: number;
   setBalance: (updater: (prev: number) => number) => void;
   onBackToMenu: () => void;
 }
 
-export function AviatorGameView({ balance, setBalance, onBackToMenu }: AviatorGameViewProps) {
+export function AviatorGameView({ user, balance, setBalance, onBackToMenu }: AviatorGameViewProps) {
+  const db = useFirestore();
   const [multiplier, setMultiplier] = useState(1.00);
   const [status, setStatus] = useState<'IDLE' | 'FLYING' | 'CRASHED'>('IDLE');
   const [betAmount, setBetAmount] = useState(100);
@@ -63,23 +67,66 @@ export function AviatorGameView({ balance, setBalance, onBackToMenu }: AviatorGa
     }
   }, [countdown, status]);
 
-  const handleBet = () => {
-    if (betAmount > balance || betAmount <= 0) return;
+  const handleBet = async () => {
+    if (betAmount > balance || betAmount <= 0 || !db || !user) return;
+    
     setBalance(prev => prev - betAmount);
     setIsBetting(true);
+
+    // Persist Bet
+    try {
+      const userRef = doc(db, "users", user.clientCode.toUpperCase());
+      updateDoc(userRef, { balance: increment(-betAmount) });
+      
+      addDoc(collection(db, "bets"), {
+        userId: user.clientCode,
+        userName: user.name,
+        team: "Aviator Plane",
+        market: "Crash Game",
+        type: "Bet",
+        price: "Pending",
+        stake: betAmount,
+        status: "ACTIVE",
+        sport: "AVIATOR",
+        timestamp: new Date().toISOString()
+      });
+    } catch (e) {
+      console.error(e);
+    }
+
     if (status === 'IDLE') {
       startRound();
     }
   };
 
-  const handleCashOut = () => {
-    if (!isBetting || hasCashedOut || status !== 'FLYING') return;
+  const handleCashOut = async () => {
+    if (!isBetting || hasCashedOut || status !== 'FLYING' || !db || !user) return;
     
     const win = betAmount * multiplier;
     setWonAmount(win);
     setBalance(prev => prev + win);
     setHasCashedOut(true);
     setIsBetting(false);
+
+    try {
+      const userRef = doc(db, "users", user.clientCode.toUpperCase());
+      updateDoc(userRef, { balance: increment(win) });
+      
+      addDoc(collection(db, "bets"), {
+        userId: user.clientCode,
+        userName: user.name,
+        team: "Aviator Plane",
+        market: "Crash Game",
+        type: "CASH OUT",
+        price: `${multiplier.toFixed(2)}x`,
+        stake: win,
+        status: "WON",
+        sport: "AVIATOR",
+        timestamp: new Date().toISOString()
+      });
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (

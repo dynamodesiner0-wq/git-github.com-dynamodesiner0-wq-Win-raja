@@ -19,7 +19,9 @@ import {
   EyeOff,
   Database,
   Wifi,
-  WifiOff
+  WifiOff,
+  Activity,
+  ArrowUpRight
 } from "lucide-react";
 import { 
   Dialog, 
@@ -31,7 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { collection, getDocs, setDoc, doc, updateDoc, increment, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, setDoc, doc, updateDoc, increment, query, orderBy, limit, onSnapshot } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
 
 interface UserRecord {
@@ -44,6 +46,19 @@ interface UserRecord {
   createdAt?: string;
 }
 
+interface BetRecord {
+  id: string;
+  userId: string;
+  userName: string;
+  team: string;
+  market: string;
+  type: string;
+  stake: number;
+  price: string;
+  timestamp: string;
+  sport: string;
+}
+
 interface AdminDashboardProps {
   onLogout: () => void;
 }
@@ -51,9 +66,10 @@ interface AdminDashboardProps {
 export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const { toast } = useToast();
   const db = useFirestore();
-  const [activeTab, setActiveTab] = useState<'stats' | 'users'>('stats');
+  const [activeTab, setActiveTab] = useState<'stats' | 'users' | 'activity'>('stats');
   const [searchQuery, setSearchQuery] = useState("");
   const [users, setUsers] = useState<UserRecord[]>([]);
+  const [liveBets, setLiveBets] = useState<BetRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
   
@@ -75,16 +91,8 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         id: doc.id,
         ...doc.data()
       })) as UserRecord[];
-      
-      const uniqueUsersMap = new Map();
-      userList.forEach(u => {
-        if (u.clientCode) {
-          uniqueUsersMap.set(u.clientCode.toUpperCase(), u);
-        }
-      });
-      setUsers(Array.from(uniqueUsersMap.values()));
+      setUsers(userList);
     } catch (error: any) {
-      console.error("Fetch error:", error);
       toast({
         variant: "destructive",
         title: "Sync Failed",
@@ -96,16 +104,21 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   }, [db, toast]);
 
   useEffect(() => {
-    if (db) {
-      fetchUsers();
-    }
+    if (!db) return;
+    fetchUsers();
+
+    // Live Bets Listener
+    const betsQuery = query(collection(db, "bets"), orderBy("timestamp", "desc"), limit(20));
+    const unsubscribe = onSnapshot(betsQuery, (snapshot) => {
+      const bets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as BetRecord[];
+      setLiveBets(bets);
+    });
+
+    return () => unsubscribe();
   }, [db, fetchUsers]);
 
-  const handleCreateUser = () => {
-    if (!db) {
-      toast({ variant: "destructive", title: "Error", description: "Database not connected." });
-      return;
-    }
+  const handleCreateUser = async () => {
+    if (!db) return;
 
     const cleanName = newUserName.trim();
     const cleanCode = newUserCode.trim().toUpperCase();
@@ -118,59 +131,53 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     }
 
     setLoading(true);
-    const userRef = doc(db, "users", cleanCode);
-    
-    const newUserDoc = {
-      name: cleanName,
-      clientCode: cleanCode,
-      password: cleanPass,
-      balance: balanceNum,
-      exposure: 0,
-      status: "Active",
-      role: "User",
-      createdAt: new Date().toISOString()
-    };
-    
-    setDoc(userRef, newUserDoc, { merge: true })
-      .then(() => {
-        toast({ title: "Success", description: `ID ${cleanCode} created successfully.` });
-        setNewUserName(""); 
-        setNewUserCode(""); 
-        setNewUserPassword(""); 
-        setNewUserBalance("");
-        fetchUsers();
-      })
-      .catch((err) => {
-        toast({ variant: "destructive", title: "Creation Failed", description: err.message });
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    try {
+      const userRef = doc(db, "users", cleanCode);
+      const newUserDoc = {
+        name: cleanName,
+        clientCode: cleanCode,
+        password: cleanPass,
+        balance: balanceNum,
+        exposure: 0,
+        status: "Active",
+        role: "User",
+        createdAt: new Date().toISOString()
+      };
+      
+      await setDoc(userRef, newUserDoc, { merge: true });
+      toast({ title: "Success", description: `ID ${cleanCode} created successfully.` });
+      setNewUserName(""); 
+      setNewUserCode(""); 
+      setNewUserPassword(""); 
+      setNewUserBalance("");
+      fetchUsers();
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Creation Failed", description: err.message });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleAddBalance = () => {
+  const handleAddBalance = async () => {
     if (!db || !selectedUser || !addAmount) return;
     const amount = parseFloat(addAmount);
     if (isNaN(amount)) return;
     
     setLoading(true);
-    const userRef = doc(db, "users", selectedUser.clientCode.toUpperCase());
-    
-    updateDoc(userRef, {
-      balance: increment(amount)
-    })
-    .then(() => {
+    try {
+      const userRef = doc(db, "users", selectedUser.clientCode.toUpperCase());
+      await updateDoc(userRef, {
+        balance: increment(amount)
+      });
       toast({ title: "Deposit Confirmed", description: `Added ₹${amount} to ${selectedUser.name}.` });
       setAddAmount(""); 
       setSelectedUser(null);
       fetchUsers();
-    })
-    .catch((err) => {
+    } catch (err: any) {
       toast({ variant: "destructive", title: "Update Failed", description: err.message });
-    })
-    .finally(() => {
+    } finally {
       setLoading(false);
-    });
+    }
   };
 
   const togglePasswordVisibility = (clientCode: string) => {
@@ -192,8 +199,8 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
           <div>
             <h1 className="text-lg font-black uppercase tracking-tighter">WinRaja Admin</h1>
             <div className="flex items-center gap-2">
-              <Badge className="bg-green-500 text-[10px] font-black h-4">SUPER ADMIN</Badge>
-              <Badge variant={db ? "outline" : "destructive"} className="text-[10px] h-4 flex gap-1">
+              <Badge className="bg-green-500 text-[10px] font-black h-4 px-2">SUPER ADMIN</Badge>
+              <Badge variant={db ? "outline" : "destructive"} className="text-[10px] h-4 flex gap-1 border-white/20">
                 {db ? <Wifi className="h-2 w-2" /> : <WifiOff className="h-2 w-2" />}
                 {db ? "DATABASE LIVE" : "OFFLINE"}
               </Badge>
@@ -212,19 +219,47 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       </header>
 
       <div className="bg-white border-b flex px-6">
-        <button onClick={() => setActiveTab('stats')} className={cn("px-6 py-4 text-xs font-black uppercase border-b-2 transition-all", activeTab === 'stats' ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground")}>Stats</button>
+        <button onClick={() => setActiveTab('stats')} className={cn("px-6 py-4 text-xs font-black uppercase border-b-2 transition-all", activeTab === 'stats' ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground")}>Dashboard</button>
         <button onClick={() => setActiveTab('users')} className={cn("px-6 py-4 text-xs font-black uppercase border-b-2 transition-all", activeTab === 'users' ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground")}>User List</button>
+        <button onClick={() => setActiveTab('activity')} className={cn("px-6 py-4 text-xs font-black uppercase border-b-2 transition-all", activeTab === 'activity' ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground")}>Live Activity</button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6">
         {activeTab === 'stats' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard label="Total Users" value={users.length.toString()} icon={Users} color="text-blue-600" />
-            <StatCard label="Total Balance" value={`₹${users.reduce((acc, u) => acc + (u.balance || 0), 0).toLocaleString()}`} icon={Wallet} color="text-green-600" />
-            <StatCard label="Net Flow" value="STABLE" icon={TrendingUp} color="text-purple-600" />
-            <StatCard label="DB Status" value={db ? "ONLINE" : "OFFLINE"} icon={Database} color={db ? "text-green-600" : "text-red-600"} />
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <StatCard label="Total Users" value={users.length.toString()} icon={Users} color="text-blue-600" />
+              <StatCard label="Total Balance" value={`₹${users.reduce((acc, u) => acc + (u.balance || 0), 0).toLocaleString()}`} icon={Wallet} color="text-green-600" />
+              <StatCard label="Live Bets" value={liveBets.length.toString()} icon={Activity} color="text-orange-600" />
+              <StatCard label="DB Status" value={db ? "ONLINE" : "OFFLINE"} icon={Database} color={db ? "text-green-600" : "text-red-600"} />
+            </div>
+
+            <Card className="rounded-3xl border-none shadow-md bg-white p-6">
+              <h3 className="text-sm font-black uppercase text-[#0b2146] mb-4 flex items-center gap-2">
+                <ArrowUpRight className="h-4 w-4" /> Recent Global Activity
+              </h3>
+              <div className="space-y-4">
+                {liveBets.slice(0, 5).map((bet) => (
+                  <div key={bet.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                    <div className="flex gap-3 items-center">
+                      <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-black text-xs">
+                        {bet.userName?.[0] || 'U'}
+                      </div>
+                      <div>
+                        <p className="text-xs font-black text-[#0b2146]">{bet.userName} <span className="font-normal opacity-50 ml-1">placed a bet on</span> {bet.team}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase">{bet.sport} • {new Date(bet.timestamp).toLocaleTimeString()}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-black text-green-600">₹{bet.stake}</p>
+                      <p className="text-[10px] font-bold text-muted-foreground">@{bet.price}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
           </div>
-        ) : (
+        ) : activeTab === 'users' ? (
           <div className="space-y-6">
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
               <div className="relative w-full md:w-96">
@@ -289,6 +324,43 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                                 <DialogFooter><Button onClick={handleAddBalance} disabled={loading} className="w-full h-12 bg-green-600 font-black uppercase rounded-xl">Confirm</Button></DialogFooter>
                               </DialogContent>
                             </Dialog>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <h2 className="text-xl font-black text-[#0b2146] uppercase">Live Betting Activity</h2>
+            <Card className="rounded-3xl border-none shadow-md overflow-hidden bg-white">
+               <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="bg-[#f8f9fb] border-b text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                    <tr><th className="p-4">Time</th><th className="p-4">User</th><th className="p-4">Selection</th><th className="p-4">Stake</th><th className="p-4">Odds</th><th className="p-4 text-right">Type</th></tr>
+                  </thead>
+                  <tbody className="divide-y text-[#0b2146]">
+                    {liveBets.length === 0 ? (
+                      <tr><td colSpan={6} className="p-20 text-center uppercase font-black opacity-30">No Live Activity</td></tr>
+                    ) : (
+                      liveBets.map((bet) => (
+                        <tr key={bet.id} className="hover:bg-gray-50">
+                          <td className="p-4 text-xs opacity-60">{new Date(bet.timestamp).toLocaleTimeString()}</td>
+                          <td className="p-4">
+                             <p className="font-black text-sm uppercase">{bet.userName}</p>
+                             <p className="text-[10px] opacity-50">{bet.userId}</p>
+                          </td>
+                          <td className="p-4">
+                             <p className="font-black text-xs uppercase">{bet.team}</p>
+                             <p className="text-[9px] opacity-50 uppercase">{bet.market}</p>
+                          </td>
+                          <td className="p-4"><span className="font-black text-blue-600">₹{bet.stake.toLocaleString()}</span></td>
+                          <td className="p-4 font-mono font-bold text-accent">{bet.price}</td>
+                          <td className="p-4 text-right">
+                             <Badge className={bet.type === 'Lagai' ? 'bg-lagai text-lagai' : bet.type === 'Khai' ? 'bg-khai text-khai' : 'bg-gray-100'}>{bet.type}</Badge>
                           </td>
                         </tr>
                       ))

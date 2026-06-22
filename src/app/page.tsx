@@ -22,9 +22,12 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { ReceiptText, AlertCircle, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useFirestore } from "@/firebase";
+import { doc, setDoc, addDoc, collection, updateDoc, increment, serverTimestamp } from "firebase/firestore";
 
 export default function Home() {
   const { toast } = useToast();
+  const db = useFirestore();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [selections, setSelections] = useState<any[]>([]);
   const [isPredictorOpen, setIsPredictorOpen] = useState(false);
@@ -85,42 +88,48 @@ export default function Home() {
 
   const clearSelections = () => setSelections([]);
 
-  const handlePlaceBets = (totalStake: number) => {
-    if (totalStake <= 0) {
-      toast({
-        variant: "destructive",
-        title: "Invalid Stake",
-        description: "Please enter a valid amount to bet.",
-      });
-      return;
-    }
+  const handlePlaceBets = async (totalStake: number) => {
+    if (totalStake <= 0 || !db || !currentUser) return;
 
     if (totalStake > balance) {
-      toast({
-        variant: "destructive",
-        title: "Insufficient Balance",
-        description: "Your balance is too low for this bet.",
-      });
+      toast({ variant: "destructive", title: "Insufficient Balance" });
       return;
     }
 
+    const timestamp = new Date().toISOString();
     const newBets = selections.map(s => ({
       ...s,
+      userId: currentUser.clientCode,
+      userName: currentUser.name,
       stake: totalStake / selections.length,
-      timestamp: new Date().toISOString(),
+      timestamp,
       status: 'OPEN'
     }));
 
+    // Local Updates
     setBalance(prev => prev - totalStake);
     setExposure(prev => prev + totalStake);
     setMyBets(prev => [...newBets, ...prev]);
     setSelections([]);
     setIsMobileSlipOpen(false);
 
-    toast({
-      title: "Success! Bets Placed",
-      description: `${newBets.length} bet(s) confirmed and active.`,
-    });
+    // Persistence
+    try {
+      const userRef = doc(db, "users", currentUser.clientCode.toUpperCase());
+      updateDoc(userRef, {
+        balance: increment(-totalStake),
+        exposure: increment(totalStake)
+      });
+
+      // Log each bet for admin
+      newBets.forEach(bet => {
+        addDoc(collection(db, "bets"), bet);
+      });
+
+      toast({ title: "Success! Bets Placed" });
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleAdminLogin = () => {
@@ -184,6 +193,7 @@ export default function Home() {
             />
           ) : activeView === 'aviator' ? (
             <AviatorGameView 
+              user={currentUser}
               balance={balance} 
               setBalance={setBalance}
               onBackToMenu={() => setActiveView('main')}
@@ -203,14 +213,14 @@ export default function Home() {
                     placeholder="Admin Email" 
                     value={adminEmail}
                     onChange={(e) => setAdminEmail(e.target.value)}
-                    className="h-12 rounded-xl"
+                    className="h-12 rounded-xl text-[#0b2146]"
                   />
                   <Input 
                     type="password" 
                     placeholder="Password" 
                     value={adminPassword}
                     onChange={(e) => setAdminPassword(e.target.value)}
-                    className="h-12 rounded-xl"
+                    className="h-12 rounded-xl text-[#0b2146]"
                   />
                   <Button 
                     onClick={handleAdminLogin}
