@@ -5,17 +5,21 @@ import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X, Trash2, Wallet, Zap, ReceiptText } from "lucide-react";
+import { X, Trash2, Wallet, Zap, ReceiptText, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface BettingSlipProps {
   selections: any[];
+  myBets: any[];
   onRemove: (id: string) => void;
   onClear: () => void;
+  onPlaceBets: (stake: number) => void;
 }
 
-export function BettingSlip({ selections, onRemove, onClear }: BettingSlipProps) {
+export function BettingSlip({ selections, myBets, onRemove, onClear, onPlaceBets }: BettingSlipProps) {
   const [stake, setStake] = useState("100");
+
+  const totalStakeValue = parseFloat(stake) * selections.length;
 
   const totalReturn = selections.reduce((acc, sel) => {
     const s = parseFloat(stake) || 0;
@@ -30,7 +34,9 @@ export function BettingSlip({ selections, onRemove, onClear }: BettingSlipProps)
           <TabsTrigger value="slip" className="flex-1 font-bold gap-2">
             Slip {selections.length > 0 && <Badge className="bg-accent h-4 px-1">{selections.length}</Badge>}
           </TabsTrigger>
-          <TabsTrigger value="my-bets" className="flex-1 font-bold">My Bets</TabsTrigger>
+          <TabsTrigger value="my-bets" className="flex-1 font-bold gap-2">
+            My Bets {myBets.length > 0 && <Badge variant="outline" className="h-4 px-1 opacity-50">{myBets.length}</Badge>}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="slip" className="flex-1 flex flex-col gap-4 mt-0">
@@ -83,13 +89,13 @@ export function BettingSlip({ selections, onRemove, onClear }: BettingSlipProps)
             </div>
 
             <div className="grid grid-cols-4 gap-2">
-              {["10", "50", "100", "500"].map((v) => (
+              {["100", "500", "1000", "5000"].map((v) => (
                 <button 
                   key={v}
                   onClick={() => setStake(v)}
                   className="py-2 text-[10px] font-bold bg-secondary hover:bg-secondary/80 rounded-lg border border-border transition-all active:scale-90"
                 >
-                  +${v}
+                  {v}
                 </button>
               ))}
             </div>
@@ -97,17 +103,18 @@ export function BettingSlip({ selections, onRemove, onClear }: BettingSlipProps)
             <div className="space-y-2 bg-secondary/20 p-4 rounded-xl border border-border/50">
               <div className="flex justify-between text-xs font-medium text-muted-foreground">
                 <span>Total Stake</span>
-                <span>${(parseFloat(stake) * (selections.length || 0)).toFixed(2)}</span>
+                <span>₹{totalStakeValue.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-lg font-bold text-white">
                 <span>Est. Return</span>
-                <span className="text-accent">${totalReturn.toFixed(2)}</span>
+                <span className="text-accent">₹{totalReturn.toLocaleString()}</span>
               </div>
             </div>
 
             <Button 
-              disabled={selections.length === 0}
-              className="w-full h-14 rounded-xl bg-accent text-accent-foreground font-black text-lg glow-cyan flex items-center justify-center gap-2 group transition-all enabled:active:scale-95"
+              onClick={() => onPlaceBets(totalStakeValue)}
+              disabled={selections.length === 0 || totalStakeValue <= 0}
+              className="w-full h-14 rounded-xl bg-accent text-accent-foreground font-black text-lg shadow-[0_0_20px_rgba(30,174,219,0.3)] flex items-center justify-center gap-2 group transition-all enabled:active:scale-95"
             >
               <Zap className="h-5 w-5 fill-current group-hover:scale-125 transition-transform" />
               PLACE BETS
@@ -123,14 +130,42 @@ export function BettingSlip({ selections, onRemove, onClear }: BettingSlipProps)
           </div>
         </TabsContent>
 
-        <TabsContent value="my-bets" className="flex-1 mt-0">
-          <div className="text-center py-20">
-             <div className="h-12 w-12 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4 opacity-50">
-               <Wallet className="h-6 w-6 text-muted-foreground" />
-             </div>
-             <p className="text-sm font-bold text-muted-foreground">No active bets found.</p>
-             <p className="text-xs text-muted-foreground/60 mt-1">Your recent betting activity will appear here.</p>
-          </div>
+        <TabsContent value="my-bets" className="flex-1 mt-0 overflow-y-auto custom-scrollbar">
+          {myBets.length === 0 ? (
+            <div className="text-center py-20">
+               <div className="h-12 w-12 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4 opacity-50">
+                 <Wallet className="h-6 w-6 text-muted-foreground" />
+               </div>
+               <p className="text-sm font-bold text-muted-foreground">No active bets found.</p>
+               <p className="text-xs text-muted-foreground/60 mt-1">Your recent activity will appear here.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {myBets.map((bet, i) => (
+                <div key={i} className="bg-secondary/40 p-3 rounded-xl border border-border">
+                  <div className="flex justify-between items-start mb-2">
+                    <Badge variant="outline" className="text-[8px] h-4 border-accent/30 text-accent uppercase">{bet.market}</Badge>
+                    <span className="text-[9px] text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-2.5 w-2.5" />
+                      {new Date(bet.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                  <p className="text-xs font-black uppercase text-white mb-1">{bet.team}</p>
+                  <div className="flex justify-between items-center text-[10px]">
+                    <div className="flex gap-2">
+                      <span className={`font-bold ${bet.type === 'Lagai' ? 'text-lagai' : 'text-khai'}`}>{bet.type}</span>
+                      <span className="text-muted-foreground">@</span>
+                      <span className="font-bold text-accent">{bet.price}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-muted-foreground mr-1">STAKE:</span>
+                      <span className="font-bold">₹{bet.stake.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

@@ -15,15 +15,22 @@ import {
   ChevronRight,
   TrendingUp,
   Clock,
-  CreditCard
+  CreditCard,
+  LayoutGrid
 } from "lucide-react";
 
-export function ProfileView() {
+interface ProfileViewProps {
+  balance: number;
+  exposure: number;
+  myBets: any[];
+}
+
+export function ProfileView({ balance, exposure, myBets }: ProfileViewProps) {
   const accountStats = [
-    { label: "Main Balance", value: "0.00", icon: Wallet, color: "text-yellow-500" },
-    { label: "Total Exposure", value: "0", icon: TrendingUp, color: "text-red-500" },
+    { label: "Main Balance", value: `₹${balance.toLocaleString()}`, icon: Wallet, color: "text-yellow-500" },
+    { label: "Total Exposure", value: `₹${exposure.toLocaleString()}`, icon: TrendingUp, color: "text-red-500" },
     { label: "Bonus Points", value: "1,250", icon: Clock, color: "text-blue-500" },
-    { label: "Win Rate", value: "68%", icon: LayoutGridIcon, color: "text-green-500" },
+    { label: "Win Rate", value: "68%", icon: LayoutGrid, color: "text-green-500" },
   ];
 
   return (
@@ -101,20 +108,23 @@ export function ProfileView() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {[1, 2, 3].map((item) => (
-                    <div key={item} className="flex items-center justify-between p-3 rounded-lg bg-[#f8f9fa] border border-border/50">
+                  {myBets.slice(0, 3).map((bet, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-[#f8f9fa] border border-border/50">
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                          <TrendingUp className="h-4 w-4 text-green-600" />
+                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                          <TrendingUp className="h-4 w-4 text-blue-600" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-[#0b2146]">Bet Won - Cricket</p>
-                          <p className="text-[10px] text-muted-foreground font-medium">2 hours ago</p>
+                          <p className="text-xs font-bold text-[#0b2146] uppercase">{bet.team}</p>
+                          <p className="text-[10px] text-muted-foreground font-medium">Bet Placed • {new Date(bet.timestamp).toLocaleDateString()}</p>
                         </div>
                       </div>
-                      <span className="text-xs font-black text-green-600">+₹540.00</span>
+                      <span className="text-xs font-black text-[#0b2146]">₹{bet.stake.toLocaleString()}</span>
                     </div>
                   ))}
+                  {myBets.length === 0 && (
+                     <p className="text-center py-6 text-xs text-muted-foreground italic">No recent activity found.</p>
+                  )}
                   <Button variant="ghost" className="w-full text-[10px] font-black uppercase text-[#2c58a0] hover:bg-blue-50">VIEW ALL ACTIVITY</Button>
                 </CardContent>
               </Card>
@@ -122,13 +132,52 @@ export function ProfileView() {
           </TabsContent>
 
           <TabsContent value="history">
-            <Card className="bg-white border-none shadow-sm p-20 text-center space-y-4">
-              <History className="h-12 w-12 text-muted-foreground/30 mx-auto" />
-              <div className="space-y-1">
-                <p className="font-black text-[#0b2146] uppercase">No Recent Bets</p>
-                <p className="text-sm text-muted-foreground">You haven't placed any bets in the last 30 days.</p>
-              </div>
-              <Button onClick={() => window.location.reload()} className="bg-[#2c58a0] text-white font-black rounded-xl">GO TO EXCHANGE</Button>
+            <Card className="bg-white border-none shadow-sm min-h-[400px]">
+              {myBets.length === 0 ? (
+                <div className="p-20 text-center space-y-4">
+                  <History className="h-12 w-12 text-muted-foreground/30 mx-auto" />
+                  <div className="space-y-1">
+                    <p className="font-black text-[#0b2146] uppercase">No Recent Bets</p>
+                    <p className="text-sm text-muted-foreground">You haven't placed any bets in the last 30 days.</p>
+                  </div>
+                  <Button variant="outline" className="border-[#2c58a0] text-[#2c58a0] font-black rounded-xl">GO TO EXCHANGE</Button>
+                </div>
+              ) : (
+                <div className="p-0 overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead className="bg-[#f8f9fa] border-b">
+                      <tr className="text-[9px] font-black uppercase text-muted-foreground">
+                        <th className="text-left p-4">Date & Time</th>
+                        <th className="text-left p-4">Selection</th>
+                        <th className="text-left p-4">Type</th>
+                        <th className="text-left p-4">Odds</th>
+                        <th className="text-right p-4">Stake</th>
+                        <th className="text-right p-4">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {myBets.map((bet, i) => (
+                        <tr key={i} className="hover:bg-muted/30">
+                          <td className="p-4 text-muted-foreground font-mono">
+                            {new Date(bet.timestamp).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                          </td>
+                          <td className="p-4 font-bold text-[#0b2146] uppercase">{bet.team}</td>
+                          <td className="p-4">
+                            <Badge className={bet.type === 'Lagai' ? 'bg-lagai/20 text-lagai' : 'bg-khai/20 text-khai'}>
+                              {bet.type.toUpperCase()}
+                            </Badge>
+                          </td>
+                          <td className="p-4 font-black">{bet.price}</td>
+                          <td className="p-4 text-right font-bold">₹{bet.stake.toLocaleString()}</td>
+                          <td className="p-4 text-right">
+                             <Badge variant="outline" className="text-yellow-600 border-yellow-600 font-black">OPEN</Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </Card>
           </TabsContent>
 
@@ -192,26 +241,4 @@ function SecurityAction({ icon: Icon, title, status }: { icon: any; title: strin
       </div>
     </div>
   );
-}
-
-function LayoutGridIcon(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect width="7" height="7" x="3" y="3" rx="1" />
-      <rect width="7" height="7" x="14" y="3" rx="1" />
-      <rect width="7" height="7" x="14" y="14" rx="1" />
-      <rect width="7" height="7" x="3" y="14" rx="1" />
-    </svg>
-  )
 }
