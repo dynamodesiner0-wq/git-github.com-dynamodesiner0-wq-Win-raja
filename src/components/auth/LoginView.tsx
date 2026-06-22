@@ -46,7 +46,6 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
     setLoading(true);
     try {
       const userRef = doc(db, "users", cleanCode);
-      // Fast getDoc call
       const userSnap = await getDoc(userRef);
 
       if (userSnap.exists()) {
@@ -57,9 +56,8 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
             setLoading(false);
             return;
           }
-          // Instant success
+          // Instant success - Pass all data for fast dashboard initialization
           onLoginSuccess({ ...userData, clientCode: cleanCode });
-          toast({ title: "Welcome back!", description: `Logged in as ${userData.name}` });
         } else {
           toast({ variant: "destructive", title: "Error", description: "Invalid password provided." });
           setLoading(false);

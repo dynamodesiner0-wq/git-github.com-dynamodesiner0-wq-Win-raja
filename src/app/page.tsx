@@ -42,6 +42,14 @@ export default function Home() {
   const [exposure, setExposure] = useState(0);
   const [myBets, setMyBets] = useState<any[]>([]);
 
+  // Fast initialization when user logs in
+  useEffect(() => {
+    if (currentUser) {
+      setBalance(currentUser.balance || 0);
+      setExposure(currentUser.exposure || 0);
+    }
+  }, [currentUser]);
+
   // Sync user data in real-time if logged in
   useEffect(() => {
     if (!db || !currentUser) return;
