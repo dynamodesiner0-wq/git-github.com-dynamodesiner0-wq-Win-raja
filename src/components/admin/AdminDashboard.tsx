@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -36,7 +35,7 @@ import { cn } from "@/lib/utils";
 import { collection, getDocs, setDoc, doc, updateDoc, increment, query, orderBy, limit, onSnapshot } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 interface UserRecord {
   id: string;
@@ -109,7 +108,6 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     if (!db) return;
     fetchUsers();
 
-    // Live Bets Listener for real-time activity
     const betsQuery = query(collection(db, "bets"), orderBy("timestamp", "desc"), limit(20));
     const unsubscribe = onSnapshot(betsQuery, (snapshot) => {
       const bets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as BetRecord[];
@@ -161,7 +159,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
           path: userRef.path,
           operation: 'write',
           requestResourceData: newUserDoc,
-        });
+        } satisfies SecurityRuleContext);
         errorEmitter.emit('permission-error', permissionError);
       })
       .finally(() => setLoading(false));
@@ -188,7 +186,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         path: userRef.path,
         operation: 'write',
         requestResourceData: { balance: increment(amount) },
-      });
+      } satisfies SecurityRuleContext);
       errorEmitter.emit('permission-error', permissionError);
     })
     .finally(() => setLoading(false));
@@ -278,7 +276,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
               <div className="relative w-full md:w-96">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search ID or Name..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 h-12 rounded-xl border-none shadow-md text-[#0b2146]" />
+                <Input placeholder="Search ID or Name..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 h-12 rounded-xl border-none shadow-md text-[#0b2146] font-bold" />
               </div>
               <Dialog>
                 <DialogTrigger asChild>
@@ -323,8 +321,8 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     {filteredUsers.length === 0 ? (
                       <tr><td colSpan={6} className="p-20 text-center uppercase font-black opacity-30">No Data Found</td></tr>
                     ) : (
-                      filteredUsers.map((user, idx) => (
-                        <tr key={user.clientCode || idx} className="hover:bg-gray-50">
+                      filteredUsers.map((user) => (
+                        <tr key={user.clientCode} className="hover:bg-gray-50">
                           <td className="p-4"><span className="font-black text-[#0b2146] text-sm uppercase">{user.name}</span></td>
                           <td className="p-4"><code className="bg-gray-100 px-2 py-1 rounded text-xs font-bold uppercase">{user.clientCode}</code></td>
                           <td className="p-4">
@@ -407,7 +405,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
 function StatCard({ label, value, icon: Icon, color }: { label: string; value: string; icon: any; color: string }) {
   return (
-    <Card className="rounded-3xl border-none shadow-md">
+    <Card className="rounded-3xl border-none shadow-md bg-white">
       <CardContent className="p-6 flex justify-between">
         <div><p className="text-[10px] font-black text-muted-foreground uppercase">{label}</p><h3 className="text-2xl font-black text-[#0b2146]">{value}</h3></div>
         <div className={cn("p-3 rounded-2xl bg-gray-50", color)}><Icon className="h-6 w-6" /></div>

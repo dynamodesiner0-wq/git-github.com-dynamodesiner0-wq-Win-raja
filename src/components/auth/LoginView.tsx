@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -140,7 +139,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
                   value={clientCode}
                   onChange={(e) => setClientCode(e.target.value)}
                   placeholder="e.g. C101"
-                  className="h-14 pl-12 rounded-2xl bg-[#f0f2f5] border-none text-lg font-black uppercase text-[#0b2146]"
+                  className="h-14 pl-12 rounded-2xl bg-[#f0f2f5] border-none text-lg font-black uppercase text-[#0b2146] placeholder:text-[#0b2146]/20"
                 />
               </div>
             </div>
@@ -154,7 +153,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="h-14 pl-12 rounded-2xl bg-[#f0f2f5] border-none text-lg font-black text-[#0b2146]"
+                  className="h-14 pl-12 rounded-2xl bg-[#f0f2f5] border-none text-lg font-black text-[#0b2146] placeholder:text-[#0b2146]/20"
                 />
               </div>
             </div>
