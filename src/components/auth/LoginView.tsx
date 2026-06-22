@@ -4,11 +4,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ShieldCheck, User, Lock, ArrowRight, Loader2 } from "lucide-react";
+import { User, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { doc, getDoc } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
-import { cn } from "@/lib/utils";
 
 interface LoginViewProps {
   onLoginSuccess: (userData: any) => void;
