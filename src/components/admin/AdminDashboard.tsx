@@ -72,6 +72,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   const [newUserCode, setNewUserCode] = useState("");
   const [newUserPassword, setNewUserPassword] = useState("");
   const [newUserBalance, setNewUserBalance] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Real-time listener for users
   useEffect(() => {
@@ -105,7 +106,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
     }
     const code = newUserCode.trim().toUpperCase();
     if (!newUserName || !code || !newUserPassword) {
-      toast({ variant: "destructive", title: "Error", description: "Sari details bharo!" });
+      toast({ variant: "destructive", title: "Required", description: "Please fill all details." });
       return;
     }
 
@@ -122,20 +123,25 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
       role: "User"
     };
 
-    setDoc(userRef, userData)
-      .then(() => {
-        toast({ title: "ID BANN GAYI!", description: `Client ${code} ab live hai.` });
-        // RESET FIELDS TO ALLOW UNLIMITED CREATION
-        setNewUserName(""); 
-        setNewUserCode(""); 
-        setNewUserPassword(""); 
-        setNewUserBalance("");
-      })
-      .catch((e) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: userRef.path, operation: 'write', requestResourceData: userData }));
-        toast({ variant: "destructive", title: "Error", description: "ID nahi bani. Try again." });
-      })
-      .finally(() => setLoading(false));
+    try {
+      await setDoc(userRef, userData);
+      toast({ title: "ID CREATED!", description: `Client ${code} is now active.` });
+      // Reset fields for unlimited creation
+      setNewUserName(""); 
+      setNewUserCode(""); 
+      setNewUserPassword(""); 
+      setNewUserBalance("");
+      setIsDialogOpen(false);
+    } catch (e: any) {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({ 
+        path: userRef.path, 
+        operation: 'write', 
+        requestResourceData: userData 
+      }));
+      toast({ variant: "destructive", title: "Error", description: "Failed to create ID." });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSeed = async () => {
@@ -153,14 +159,14 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
       createdAt: new Date().toISOString(),
       role: "User"
     };
-    setDoc(userRef, seedData)
-      .then(() => {
-        toast({ title: "Seed Successful", description: "Praveen ID (C885929) ready hai." });
-      })
-      .catch((e) => {
-        toast({ variant: "destructive", title: "Seed Failed" });
-      })
-      .finally(() => setLoading(false));
+    try {
+      await setDoc(userRef, seedData);
+      toast({ title: "Seed Successful", description: "Praveen ID (C885929) is ready." });
+    } catch (e) {
+      toast({ variant: "destructive", title: "Seed Failed" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -215,25 +221,25 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search ID..." className="pl-12 h-14 rounded-2xl bg-white shadow-sm border-none text-[#0b2146] font-bold" />
               </div>
-              <Dialog>
-                <DialogTrigger asChild><Button className="h-14 px-8 bg-blue-600 hover:bg-blue-700 rounded-2xl font-black uppercase text-xs gap-2 shadow-xl"><UserPlus className="h-4 w-4" /> Nayi ID Banao</Button></DialogTrigger>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild><Button className="h-14 px-8 bg-blue-600 hover:bg-blue-700 rounded-2xl font-black uppercase text-xs gap-2 shadow-xl"><UserPlus className="h-4 w-4" /> Create New ID</Button></DialogTrigger>
                 <DialogContent className="rounded-3xl bg-white border-none p-8 max-w-md">
-                  <DialogHeader><DialogTitle className="font-black uppercase text-xl text-[#0b2146]">Create New Client ID</DialogTitle></DialogHeader>
+                  <DialogHeader><DialogTitle className="font-black uppercase text-xl text-[#0b2146]">New Client ID</DialogTitle></DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-1">
                       <label className="text-[10px] font-black uppercase opacity-40 ml-1">Client Name</label>
                       <Input value={newUserName} onChange={(e) => setNewUserName(e.target.value)} placeholder="Full Name" className="h-14 rounded-xl text-[#0b2146] font-bold" />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase opacity-40 ml-1">Client ID (Login ID)</label>
+                      <label className="text-[10px] font-black uppercase opacity-40 ml-1">Client ID</label>
                       <Input value={newUserCode} onChange={(e) => setNewUserCode(e.target.value)} placeholder="e.g. C101" className="h-14 rounded-xl text-[#0b2146] font-bold uppercase" />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase opacity-40 ml-1">Login Password</label>
+                      <label className="text-[10px] font-black uppercase opacity-40 ml-1">Password</label>
                       <Input value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} placeholder="Set Password" type="text" className="h-14 rounded-xl text-[#0b2146] font-bold" />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-black uppercase opacity-40 ml-1">Deposit Balance</label>
+                      <label className="text-[10px] font-black uppercase opacity-40 ml-1">Initial Deposit</label>
                       <Input value={newUserBalance} onChange={(e) => setNewUserBalance(e.target.value)} type="number" placeholder="0.00" className="h-14 rounded-xl text-[#0b2146] font-bold" />
                     </div>
                   </div>
