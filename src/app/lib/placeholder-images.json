@@ -66,6 +66,36 @@
       "description": "Change Password professional icon",
       "imageUrl": "https://i.ibb.co/RkxtDXJp/CP.png",
       "imageHint": "change password"
+    },
+    {
+      "id": "game-chicken-main",
+      "description": "Main chicken character",
+      "imageUrl": "https://i.ibb.co/3YMBb8pj/image-search-1782117022136.png",
+      "imageHint": "chicken character"
+    },
+    {
+      "id": "game-chicken-dead",
+      "description": "Dead chicken obstacle/end",
+      "imageUrl": "https://i.ibb.co/Y72CQqg0/image-search-1782117030928.jpg",
+      "imageHint": "dead chicken"
+    },
+    {
+      "id": "game-car-red",
+      "description": "Red car obstacle",
+      "imageUrl": "https://i.ibb.co/DgQmKRrV/image-search-1782117063908.jpg",
+      "imageHint": "red car"
+    },
+    {
+      "id": "game-car-blue",
+      "description": "Blue car obstacle",
+      "imageUrl": "https://i.ibb.co/ZzSwRMhb/image-search-1782117056632.jpg",
+      "imageHint": "blue car"
+    },
+    {
+      "id": "game-car-yellow",
+      "description": "Yellow car obstacle",
+      "imageUrl": "https://i.ibb.co/XrDjdLf6/image-search-1782117051150.jpg",
+      "imageHint": "yellow car"
     }
   ]
 }

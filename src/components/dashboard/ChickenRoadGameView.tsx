@@ -1,13 +1,15 @@
+
 "use client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, Car, Trophy, ChevronUp, Zap, Skull } from "lucide-react";
+import { Wallet, Trophy, ChevronUp, Zap, Skull } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useFirestore } from "@/firebase";
 import { doc, updateDoc, increment, collection, addDoc } from "firebase/firestore";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 interface ChickenRoadGameViewProps {
   user: any;
@@ -17,11 +19,11 @@ interface ChickenRoadGameViewProps {
 }
 
 const LANES = [
-  { level: 1, multiplier: 1.2, risk: 0.15 },
-  { level: 2, multiplier: 1.8, risk: 0.25 },
-  { level: 3, multiplier: 2.5, risk: 0.35 },
-  { level: 4, multiplier: 4.0, risk: 0.45 },
-  { level: 5, multiplier: 7.5, risk: 0.55 },
+  { level: 1, multiplier: 1.2, risk: 0.15, car: "game-car-red" },
+  { level: 2, multiplier: 1.8, risk: 0.25, car: "game-car-blue" },
+  { level: 3, multiplier: 2.5, risk: 0.35, car: "game-car-yellow" },
+  { level: 4, multiplier: 4.0, risk: 0.45, car: "game-car-red" },
+  { level: 5, multiplier: 7.5, risk: 0.55, car: "game-car-blue" },
 ];
 
 export function ChickenRoadGameView({ user, balance, setBalance, onBackToMenu }: ChickenRoadGameViewProps) {
@@ -31,33 +33,38 @@ export function ChickenRoadGameView({ user, balance, setBalance, onBackToMenu }:
   const [betAmount, setBetAmount] = useState(100);
   const [wonAmount, setWonAmount] = useState(0);
 
+  const chickenImg = PlaceHolderImages.find(i => i.id === 'game-chicken-main')?.imageUrl;
+  const deadChickenImg = PlaceHolderImages.find(i => i.id === 'game-chicken-dead')?.imageUrl;
+
   const currentMultiplier = lane === 0 ? 0 : LANES[lane - 1].multiplier;
 
   const handleStart = async () => {
-    if (betAmount > balance || betAmount <= 0 || !db || !user) return;
+    if (betAmount > balance || betAmount <= 0) return;
 
     setBalance(prev => prev - betAmount);
     setLane(0);
     setStatus('PLAYING');
 
-    try {
-      const userRef = doc(db, "users", user.clientCode.toUpperCase());
-      updateDoc(userRef, { balance: increment(-betAmount) });
-      
-      addDoc(collection(db, "bets"), {
-        userId: user.clientCode,
-        userName: user.name,
-        team: "Chicken Road",
-        market: "Crossing Game",
-        type: "Bet",
-        price: "Pending",
-        stake: betAmount,
-        status: "ACTIVE",
-        sport: "CHICKEN",
-        timestamp: new Date().toISOString()
-      });
-    } catch (e) {
-      console.error(e);
+    if (db && user) {
+      try {
+        const userRef = doc(db, "users", user.clientCode.toUpperCase());
+        updateDoc(userRef, { balance: increment(-betAmount) });
+        
+        addDoc(collection(db, "bets"), {
+          userId: user.clientCode,
+          userName: user.name,
+          team: "Chicken Road",
+          market: "Crossing Game",
+          type: "Bet",
+          price: "Pending",
+          stake: betAmount,
+          status: "ACTIVE",
+          sport: "CHICKEN",
+          timestamp: new Date().toISOString()
+        });
+      } catch (e) {
+        console.error(e);
+      }
     }
   };
 
@@ -80,7 +87,7 @@ export function ChickenRoadGameView({ user, balance, setBalance, onBackToMenu }:
 
   const handleCashOut = async (finalLane?: number) => {
     const l = finalLane || lane;
-    if (status !== 'PLAYING' || l === 0 || !db || !user) return;
+    if (status !== 'PLAYING' || l === 0) return;
 
     const mult = LANES[l - 1].multiplier;
     const win = betAmount * mult;
@@ -89,24 +96,26 @@ export function ChickenRoadGameView({ user, balance, setBalance, onBackToMenu }:
     setBalance(prev => prev + win);
     setStatus('WON');
 
-    try {
-      const userRef = doc(db, "users", user.clientCode.toUpperCase());
-      updateDoc(userRef, { balance: increment(win) });
-      
-      addDoc(collection(db, "bets"), {
-        userId: user.clientCode,
-        userName: user.name,
-        team: "Chicken Road",
-        market: "Crossing Game",
-        type: "CASH OUT",
-        price: `${mult}x`,
-        stake: win,
-        status: "WON",
-        sport: "CHICKEN",
-        timestamp: new Date().toISOString()
-      });
-    } catch (e) {
-      console.error(e);
+    if (db && user) {
+      try {
+        const userRef = doc(db, "users", user.clientCode.toUpperCase());
+        updateDoc(userRef, { balance: increment(win) });
+        
+        addDoc(collection(db, "bets"), {
+          userId: user.clientCode,
+          userName: user.name,
+          team: "Chicken Road",
+          market: "Crossing Game",
+          type: "CASH OUT",
+          price: `${mult}x`,
+          stake: win,
+          status: "WON",
+          sport: "CHICKEN",
+          timestamp: new Date().toISOString()
+        });
+      } catch (e) {
+        console.error(e);
+      }
     }
   };
 
@@ -114,8 +123,8 @@ export function ChickenRoadGameView({ user, balance, setBalance, onBackToMenu }:
     <div className="flex-1 bg-[#1a2b3c] flex flex-col overflow-hidden text-white font-body">
       <div className="bg-[#0b1a2a] p-4 flex items-center justify-between border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-yellow-500 rounded-lg flex items-center justify-center shadow-lg">
-             <span className="text-2xl">🐥</span>
+          <div className="h-10 w-10 bg-yellow-500 rounded-lg flex items-center justify-center shadow-lg overflow-hidden">
+             <img src={chickenImg} alt="Chicken" className="h-full w-full object-cover" />
           </div>
           <h2 className="text-xl font-black tracking-tighter text-yellow-500 uppercase">CHICKEN ROAD</h2>
         </div>
@@ -130,24 +139,29 @@ export function ChickenRoadGameView({ user, balance, setBalance, onBackToMenu }:
 
       <div className="flex-1 relative flex flex-col items-center justify-center p-4 bg-[#0d1621]">
         <div className="w-full max-w-md h-[500px] relative bg-[#2a3a4a] rounded-3xl overflow-hidden border-4 border-white/5 shadow-2xl flex flex-col">
-          {[5, 4, 3, 2, 1].map((lvl) => (
-            <div 
-              key={lvl} 
-              className={cn(
-                "flex-1 border-b border-white/5 flex items-center justify-between px-6 transition-colors",
-                lane === lvl ? "bg-yellow-500/10" : "bg-transparent",
-                lane > lvl ? "bg-green-500/5" : ""
-              )}
-            >
-              <div className="flex items-center gap-2">
-                <Car className={cn("h-5 w-5", status === 'PLAYING' ? "animate-bounce" : "opacity-20")} />
-                <span className="text-[10px] font-black opacity-30">LANE {lvl}</span>
+          {[5, 4, 3, 2, 1].map((lvl) => {
+            const carImg = PlaceHolderImages.find(i => i.id === LANES[lvl-1].car)?.imageUrl;
+            return (
+              <div 
+                key={lvl} 
+                className={cn(
+                  "flex-1 border-b border-white/5 flex items-center justify-between px-6 transition-colors relative",
+                  lane === lvl ? "bg-yellow-500/10" : "bg-transparent",
+                  lane > lvl ? "bg-green-500/5" : ""
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  <div className={cn("h-12 w-12 rounded-lg overflow-hidden border border-white/10", status === 'PLAYING' ? "animate-pulse" : "opacity-40")}>
+                    <img src={carImg} alt="Car" className="h-full w-full object-contain" />
+                  </div>
+                  <span className="text-[10px] font-black opacity-30">LANE {lvl}</span>
+                </div>
+                <Badge className={cn("font-black text-sm", lane >= lvl ? "bg-green-600" : "bg-white/10")}>
+                  {LANES[lvl - 1].multiplier}x
+                </Badge>
               </div>
-              <Badge className={cn("font-black text-sm", lane >= lvl ? "bg-green-600" : "bg-white/10")}>
-                {LANES[lvl - 1].multiplier}x
-              </Badge>
-            </div>
-          ))}
+            );
+          })}
 
           <div className="h-20 bg-[#1a2b3c] flex items-center justify-center border-t-4 border-yellow-500/20">
             <span className="text-[10px] font-black opacity-30 uppercase tracking-[0.2em]">Safety Zone</span>
@@ -158,10 +172,14 @@ export function ChickenRoadGameView({ user, balance, setBalance, onBackToMenu }:
             style={{ bottom: `${20 + lane * 85}px` }}
           >
             <div className={cn(
-              "text-5xl transition-transform",
-              status === 'CRASHED' ? "rotate-90 grayscale" : "animate-bounce"
+              "h-16 w-16 transition-transform",
+              status === 'CRASHED' ? "rotate-90 grayscale opacity-50" : "animate-bounce"
             )}>
-              {status === 'CRASHED' ? '🍗' : '🐥'}
+              <img 
+                src={status === 'CRASHED' ? deadChickenImg : chickenImg} 
+                alt="Chicken" 
+                className="h-full w-full object-contain drop-shadow-xl" 
+              />
             </div>
             {status === 'CRASHED' && (
               <div className="absolute -top-10 left-1/2 -translate-x-1/2">
@@ -191,6 +209,9 @@ export function ChickenRoadGameView({ user, balance, setBalance, onBackToMenu }:
              <div className="text-center space-y-4">
                 <h3 className="text-6xl font-black text-red-600 italic tracking-tighter shadow-red-600/50">SMASHED!</h3>
                 <p className="text-xl font-bold opacity-60">Chicken didn't make it...</p>
+                <div className="h-32 w-32 mx-auto rounded-full overflow-hidden border-4 border-red-600">
+                  <img src={deadChickenImg} alt="Killed" className="h-full w-full object-cover" />
+                </div>
                 <Button onClick={() => setStatus('IDLE')} className="bg-white text-black font-black px-10 h-12 rounded-full">TRY AGAIN</Button>
              </div>
           </div>
