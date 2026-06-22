@@ -11,7 +11,7 @@ import {
   DialogTitle, 
   DialogTrigger 
 } from "@/components/ui/dialog";
-import { ShieldCheck, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ProfileViewProps {
@@ -20,11 +20,10 @@ interface ProfileViewProps {
   exposure: number;
   myBets: any[];
   onBackToMenu: () => void;
-  onAdminClick?: () => void;
   onLogout: () => void;
 }
 
-export function ProfileView({ user, balance, exposure, myBets, onBackToMenu, onAdminClick, onLogout }: ProfileViewProps) {
+export function ProfileView({ user, balance, exposure, myBets, onBackToMenu, onLogout }: ProfileViewProps) {
   const [rateDiff, setRateDiff] = useState("0.05");
   const [isRateModalOpen, setIsRateModalOpen] = useState(false);
 
@@ -52,12 +51,6 @@ export function ProfileView({ user, balance, exposure, myBets, onBackToMenu, onA
             BACK TO MAIN MENU
           </Button>
           <div className="flex gap-2">
-            <button 
-              onClick={onAdminClick}
-              className="h-10 w-10 rounded-full bg-white/50 border border-border flex items-center justify-center text-muted-foreground hover:text-[#1a4b8c] hover:bg-white transition-all shadow-sm"
-            >
-              <ShieldCheck className="h-5 w-5" />
-            </button>
             <button 
               onClick={onLogout}
               className="h-10 w-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm"
@@ -104,7 +97,7 @@ export function ProfileView({ user, balance, exposure, myBets, onBackToMenu, onA
                         "h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all",
                         rateDiff === rate ? "border-[#0b2146]" : "border-gray-300"
                       )}>
-                        {rateDiff === rate && <div className="h-3 w-3 rounded-full bg-[#0b2146]" />}
+                        {rateDiff === rate && <div className="h-3 w-3 rounded-full bg-[#0b2146] ?" />}
                       </div>
                     </div>
                   ))}

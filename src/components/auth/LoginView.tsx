@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ShieldCheck, User, Lock, ArrowRight } from "lucide-react";
@@ -10,13 +10,23 @@ import { doc, getDoc, getFirestore } from "firebase/firestore";
 
 interface LoginViewProps {
   onLoginSuccess: (userData: any) => void;
+  onAdminPortal: () => void;
 }
 
-export function LoginView({ onLoginSuccess }: LoginViewProps) {
+export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
   const { toast } = useToast();
   const [clientCode, setClientCode] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Secret trigger for Admin Panel
+  useEffect(() => {
+    const trigger = clientCode.trim().toLowerCase();
+    if (trigger === "winraja@main" || trigger === "admin") {
+      onAdminPortal();
+      setClientCode(""); // Clear it after trigger
+    }
+  }, [clientCode, onAdminPortal]);
 
   const handleLogin = async () => {
     if (!clientCode || !password) {

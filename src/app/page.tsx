@@ -143,13 +143,16 @@ export default function Home() {
   };
 
   // If not logged in, show login view
-  if (!currentUser) {
-    return <LoginView onLoginSuccess={(user) => setCurrentUser(user)} />;
+  if (!currentUser && activeView !== 'admin' && activeView !== 'admin-login') {
+    return <LoginView 
+      onLoginSuccess={(user) => setCurrentUser(user)} 
+      onAdminPortal={() => setActiveView('admin-login')}
+    />;
   }
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[#f4f7fa]">
-      {activeView !== 'admin' && (
+      {activeView !== 'admin' && activeView !== 'admin-login' && (
         <Navbar 
           balance={balance} 
           exposure={exposure} 
@@ -223,7 +226,10 @@ export default function Home() {
               </div>
             </div>
           ) : activeView === 'admin' ? (
-            <AdminDashboard onLogout={() => setActiveView('main')} />
+            <AdminDashboard onLogout={() => {
+              setActiveView('main');
+              setCurrentUser(null);
+            }} />
           ) : (activeView === 'casino' || activeView === 'chicken') ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-6">
               <div className="h-24 w-24 rounded-full bg-blue-100 flex items-center justify-center">
@@ -260,7 +266,6 @@ export default function Home() {
               exposure={exposure} 
               myBets={myBets} 
               onBackToMenu={() => setActiveView('main')}
-              onAdminClick={() => setActiveView('admin-login')}
               onLogout={() => setCurrentUser(null)}
             />
           )}
@@ -315,4 +320,3 @@ export default function Home() {
     </div>
   );
 }
-
