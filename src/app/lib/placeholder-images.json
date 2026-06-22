@@ -24,6 +24,12 @@
       "description": "Live In Play matches reference",
       "imageUrl": "https://i.ibb.co/mFBqVD8f/image-search-1782096841440.png",
       "imageHint": "sports exchange"
+    },
+    {
+      "id": "profile-icon-user",
+      "description": "User profile dashboard icon",
+      "imageUrl": "https://i.ibb.co/KjfBnct4/image-search-1782097067195.jpg",
+      "imageHint": "profile icon"
     }
   ]
 }

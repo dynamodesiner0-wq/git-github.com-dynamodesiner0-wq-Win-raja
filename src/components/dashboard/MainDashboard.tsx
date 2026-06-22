@@ -19,20 +19,27 @@ interface DashboardCardProps {
   icon: any;
   onClick: () => void;
   imageUrl?: string;
+  isFullWidth?: boolean;
 }
 
-function DashboardCard({ title, icon: Icon, onClick, imageUrl }: DashboardCardProps) {
+function DashboardCard({ title, icon: Icon, onClick, imageUrl, isFullWidth }: DashboardCardProps) {
   return (
     <button 
       onClick={onClick}
-      className="bg-white rounded-[1.5rem] flex flex-col items-center justify-center p-6 gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-blue-50/50 hover:bg-blue-50/30 transition-all group aspect-square"
+      className={cn(
+        "bg-white rounded-[1.5rem] flex flex-col items-center justify-center p-6 gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-blue-50/50 hover:bg-blue-50/30 transition-all group aspect-square",
+        isFullWidth && "col-span-2 aspect-[2/1] p-0 overflow-hidden"
+      )}
     >
-      <div className="flex-1 flex items-center justify-center w-full">
+      <div className={cn("flex-1 flex items-center justify-center w-full h-full", isFullWidth && "p-0")}>
         {imageUrl ? (
           <img 
             src={imageUrl} 
             alt={title} 
-            className="w-24 h-24 object-contain group-hover:scale-110 transition-transform duration-300"
+            className={cn(
+              "object-contain group-hover:scale-110 transition-transform duration-300",
+              isFullWidth ? "w-full h-full object-cover" : "w-24 h-24"
+            )}
           />
         ) : (
           <div className="h-20 w-20 rounded-full bg-blue-50 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -40,7 +47,7 @@ function DashboardCard({ title, icon: Icon, onClick, imageUrl }: DashboardCardPr
           </div>
         )}
       </div>
-      <span className="text-[13px] font-black text-[#0b2146] uppercase tracking-tight">{title}</span>
+      {!isFullWidth && <span className="text-[13px] font-black text-[#0b2146] uppercase tracking-tight mb-2">{title}</span>}
     </button>
   );
 }
@@ -55,7 +62,8 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
       title: "In Play", 
       icon: Trophy, 
       view: 'inplay' as const,
-      imageUrl: "https://i.ibb.co/mFBqVD8f/image-search-1782096841440.png" 
+      imageUrl: "https://i.ibb.co/mFBqVD8f/image-search-1782096841440.png",
+      isFullWidth: true
     },
     { 
       title: "Casino", 
@@ -85,7 +93,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
       title: "My Profile", 
       icon: User, 
       view: 'profile' as const,
-      imageUrl: "https://picsum.photos/seed/user-icon/200/200" 
+      imageUrl: "https://i.ibb.co/KjfBnct4/image-search-1782097067195.jpg" 
     },
     { 
       title: "My Ledger", 
@@ -121,6 +129,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
             title={item.title} 
             icon={item.icon} 
             imageUrl={item.imageUrl}
+            isFullWidth={item.isFullWidth}
             onClick={() => onViewChange(item.view)}
           />
         ))}
