@@ -70,7 +70,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   const [newUserBalance, setNewUserBalance] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Real-time listener for users - THIS PERSISTS ACROSS REFRESH
+  // Real-time listener for users
   useEffect(() => {
     if (!db) return;
     const q = collection(db, "users");
@@ -217,7 +217,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                   value={searchQuery} 
                   onChange={(e) => setSearchQuery(e.target.value)} 
                   placeholder="Search ID..." 
-                  className="pl-12 h-14 rounded-2xl bg-white shadow-sm border-none text-[#0b2146] font-bold" 
+                  className="pl-12 h-14 rounded-2xl bg-white shadow-sm border-none text-black font-bold" 
                 />
               </div>
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -231,7 +231,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                         value={newUserName} 
                         onChange={(e) => setNewUserName(e.target.value)} 
                         placeholder="Full Name" 
-                        className="h-14 rounded-xl text-[#0b2146] bg-white font-bold border-2" 
+                        className="h-14 rounded-xl text-black bg-white font-bold border-2" 
                       />
                     </div>
                     <div className="space-y-1">
@@ -240,7 +240,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                         value={newUserCode} 
                         onChange={(e) => setNewUserCode(e.target.value)} 
                         placeholder="e.g. C101" 
-                        className="h-14 rounded-xl text-[#0b2146] bg-white font-bold uppercase border-2" 
+                        className="h-14 rounded-xl text-black bg-white font-bold uppercase border-2" 
                       />
                     </div>
                     <div className="space-y-1">
@@ -250,7 +250,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                         onChange={(e) => setNewUserPassword(e.target.value)} 
                         placeholder="Set Password" 
                         type="text" 
-                        className="h-14 rounded-xl text-[#0b2146] bg-white font-bold border-2" 
+                        className="h-14 rounded-xl text-black bg-white font-bold border-2" 
                       />
                     </div>
                     <div className="space-y-1">
@@ -260,7 +260,7 @@ export function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                         onChange={(e) => setNewUserBalance(e.target.value)} 
                         type="number" 
                         placeholder="0.00" 
-                        className="h-14 rounded-xl text-[#0b2146] bg-white font-bold border-2" 
+                        className="h-14 rounded-xl text-black bg-white font-bold border-2" 
                       />
                     </div>
                   </div>

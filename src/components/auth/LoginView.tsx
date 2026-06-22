@@ -57,7 +57,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
             setLoading(false);
             return;
           }
-          // Instant success - Passing all data to home for fast dashboard initialization
+          // Instant success - Directly passing data for super fast transition
           onLoginSuccess({ ...userData, clientCode: cleanCode });
         } else {
           toast({ variant: "destructive", title: "Error", description: "Invalid password provided." });
@@ -69,14 +69,14 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
       }
     } catch (error: any) {
       console.error("Login error:", error);
-      toast({ variant: "destructive", title: "Connection Error", description: "Server is unreachable. Check internet." });
+      toast({ variant: "destructive", title: "Connection Error", description: "Server is unreachable." });
       setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-[#0b2146] flex items-center justify-center p-4 font-body">
-      <div className="w-full max-w-[420px] space-y-8 animate-in fade-in zoom-in duration-500">
+      <div className="w-full max-w-[420px] space-y-8 animate-in fade-in zoom-in duration-300">
         <div className="text-center space-y-2">
           <div className="h-32 w-full relative mb-4 flex items-center justify-center">
              <img 
@@ -126,7 +126,7 @@ export function LoginView({ onLoginSuccess, onAdminPortal }: LoginViewProps) {
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  Login to Account <ArrowRight className="h-5 w-5" />
+                  Login <ArrowRight className="h-5 w-5" />
                 </div>
               )}
             </Button>
