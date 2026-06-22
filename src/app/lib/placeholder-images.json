@@ -44,10 +44,10 @@
       "imageHint": "casino games"
     },
     {
-      "id": "ledger-icon-img",
-      "description": "My Ledger professional icon",
+      "id": "complete-games-img",
+      "description": "Complete Games professional icon",
       "imageUrl": "https://i.ibb.co/vCzgZBjk/CG1.jpg",
-      "imageHint": "ledger icon"
+      "imageHint": "complete games"
     },
     {
       "id": "chicken-road-img",

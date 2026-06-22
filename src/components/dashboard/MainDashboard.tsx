@@ -71,7 +71,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
     { 
       title: "Complete Games", 
       view: 'profile' as const,
-      imageUrl: "https://picsum.photos/seed/complete-icon/200/200" 
+      imageUrl: "https://i.ibb.co/vCzgZBjk/CG1.jpg" 
     },
     { 
       title: "My Profile", 
@@ -81,7 +81,7 @@ export function MainDashboard({ onViewChange }: MainDashboardProps) {
     { 
       title: "My Ledger", 
       view: 'profile' as const,
-      imageUrl: "https://i.ibb.co/vCzgZBjk/CG1.jpg" 
+      imageUrl: "https://picsum.photos/seed/ledger-placeholder/200/200" 
     },
     { 
       title: "Change Password", 
