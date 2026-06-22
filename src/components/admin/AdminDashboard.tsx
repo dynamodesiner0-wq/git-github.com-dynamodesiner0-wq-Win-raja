@@ -312,7 +312,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                        <label className="text-[10px] font-black text-muted-foreground uppercase px-1">Password</label>
                        <Input 
                         value={newUserPassword} 
-                        onChange={(e) => setNewUserPassword(e.target.value)} 
+                        onChange={(e) => newUserPassword(e.target.value)} 
                         placeholder="Password" 
                         className="h-12 rounded-xl bg-gray-50 border-none text-[#0b2146] font-bold" 
                        />

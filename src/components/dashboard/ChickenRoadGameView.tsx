@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, Car, Trophy, ChevronUp, Zap, Skull } from "lucide-react";
@@ -72,7 +72,6 @@ export function ChickenRoadGameView({ user, balance, setBalance, onBackToMenu }:
     } else {
       setLane(nextLane);
       if (nextLane === 5) {
-        // Automatically win if last lane reached
         handleCashOut(nextLane);
       }
     }
@@ -112,7 +111,6 @@ export function ChickenRoadGameView({ user, balance, setBalance, onBackToMenu }:
 
   return (
     <div className="flex-1 bg-[#1a2b3c] flex flex-col overflow-hidden text-white font-body">
-      {/* Game Header */}
       <div className="bg-[#0b1a2a] p-4 flex items-center justify-between border-b border-white/5">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 bg-yellow-500 rounded-lg flex items-center justify-center shadow-lg">
@@ -129,10 +127,8 @@ export function ChickenRoadGameView({ user, balance, setBalance, onBackToMenu }:
         </div>
       </div>
 
-      {/* Game Area */}
       <div className="flex-1 relative flex flex-col items-center justify-center p-4 bg-[#0d1621]">
         <div className="w-full max-w-md h-[500px] relative bg-[#2a3a4a] rounded-3xl overflow-hidden border-4 border-white/5 shadow-2xl flex flex-col">
-          {/* Lanes */}
           {[5, 4, 3, 2, 1].map((lvl) => (
             <div 
               key={lvl} 
@@ -152,12 +148,10 @@ export function ChickenRoadGameView({ user, balance, setBalance, onBackToMenu }:
             </div>
           ))}
 
-          {/* Starting Area */}
           <div className="h-20 bg-[#1a2b3c] flex items-center justify-center border-t-4 border-yellow-500/20">
             <span className="text-[10px] font-black opacity-30 uppercase tracking-[0.2em]">Safety Zone</span>
           </div>
 
-          {/* The Chicken */}
           <div 
             className="absolute left-1/2 -translate-x-1/2 transition-all duration-300 ease-out z-20"
             style={{ bottom: `${20 + lane * 85}px` }}
@@ -176,7 +170,6 @@ export function ChickenRoadGameView({ user, balance, setBalance, onBackToMenu }:
           </div>
         </div>
 
-        {/* Win Overlay */}
         {status === 'WON' && (
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
             <div className="bg-green-600 p-8 rounded-[2.5rem] text-center shadow-[0_0_50px_rgba(22,163,74,0.5)] border-4 border-white/20">
@@ -203,12 +196,10 @@ export function ChickenRoadGameView({ user, balance, setBalance, onBackToMenu }:
         )}
       </div>
 
-      {/* Controls */}
       <div className="bg-[#0b1a2a] p-6 border-t border-white/10 grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-[#1a2b3c] p-5 rounded-[2rem] border border-white/10 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-black uppercase text-white/40">Set Bet Amount</span>
-            <span className="text-xs font-black text-green-500">₹10 - ₹25,000</span>
           </div>
           <div className="flex gap-2">
             {[100, 500, 1000, 5000].map(amt => (
